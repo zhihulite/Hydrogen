@@ -160,7 +160,7 @@
         orientation="vertical";
 
         {
-          ViewPager;
+          MyViewPager;
           id="page_home";
           nestedScrollingEnabled=true,
           layout_width="fill";
