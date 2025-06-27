@@ -100,13 +100,13 @@ bottomSheetDialog.getWindow().setDecorFitsSystemWindows(false)
     bottomSheetDialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
   end)
 ]]bottomSheetDialog.setContentView(loadlayout2(dann,tmpview))
-  
+
   bottomSheetDialog.setCancelable(true);
   bottomSheetDialog.behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
   bottomSheetDialog.behavior.setDraggable(false)
   bottomSheetDialog.behavior.setMaxWidth(dp2px(600))
   local an=bottomSheetDialog.show()
-tmpview.close_button.onClick=function()
+  tmpview.close_button.onClick=function()
     an.cancel()
   end
 
@@ -137,7 +137,9 @@ tmpview.close_button.onClick=function()
       检查链接(url)
     end,
     onPageFinished=function(view,url)
-初始化背景(view)
+      if 全局主题值=="Night" then
+        夜间模式回答页(view)
+      end
       imgReset()
     end,
   }

@@ -178,18 +178,14 @@ MyWebViewUtils:initWebViewClient{
     加载js(view,获取js("mdcopy"))
   end,
   onPageFinished=function(view,l)
+    if 全局主题值=="Night" then
+      夜间模式回答页(view)
+    end
     view.setVisibility(0)
   end
 }
 
-MyWebViewUtils:initChromeClient({
-  onProgressChanged=function(view,url,favicon)
-    if 全局主题值=="Night" then
-      夜间模式回答页(view)
-    end
-end})
 
- 
 import "androidx.activity.result.ActivityResultCallback"
 import "androidx.activity.result.contract.ActivityResultContracts"
 createDocumentLauncher = thisFragment.registerForActivityResult(ActivityResultContracts.CreateDocument("text/markdown"),

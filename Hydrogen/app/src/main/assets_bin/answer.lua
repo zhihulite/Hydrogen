@@ -214,6 +214,11 @@ function 数据添加(t,b)
       end
     end,
     onPageStarted=function(view,url,favicon)
+      if 全局主题值=="Night" then
+        夜间模式回答页(view)
+       else
+        初始化背景(view)
+      end
       t.content.setVisibility(8)
       if t.progress~=nil then
         t.progress.setVisibility(0)
@@ -289,9 +294,6 @@ function 数据添加(t,b)
   }
 
   MyWebViewUtils:initChromeClient({
-    onProgressChanged=function(view,url,favicon)
-      初始化背景(view)
-    end,
     onConsoleMessage=function(consoleMessage)
       --打印控制台信息
       if consoleMessage.message():find("开始滑动") then

@@ -133,6 +133,8 @@ MyWebViewUtils:initWebViewClient{
     --加载js(view,获取js("eruda"))
     if 全局主题值=="Night" then
       夜间模式主题(view)
+      else
+      初始化背景(view)
     end
     if url:find("https://www.zhihu.com/appview/pin/"..id) then
       加载js(view,获取js("pin"))

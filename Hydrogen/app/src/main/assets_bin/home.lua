@@ -14,6 +14,9 @@ import "android.view.ViewTreeObserver"
 import "com.google.android.material.appbar.AppBarLayout"
 import "com.google.android.material.navigationrail.NavigationRailView"
 
+--导入 MyViewPager
+MyViewPager = require "views/MyViewPager"
+
 activity.setContentView(loadlayout("layout/fragment"))
 --activity.window.setNavigationBarContrastEnforced(false)
 inSekai=false
@@ -1443,13 +1446,13 @@ function setupDrawerEdge(drawerLayout)
 
   -- 设置边缘大小为屏幕宽度或默认值中较大的一个
   edgeSizeField.setInt(viewDragHelper, math.max(defaultEdgeSize, point.x))
-  -- 调整触摸滑动阈值（提升滑动灵敏度）
+  -- 调整触摸滑动阈值（降低滑动灵敏度）
   local touchSlopField = viewDragHelper.getClass().getDeclaredField("mTouchSlop")
   touchSlopField.setAccessible(true)
 
   local originalTouchSlop = touchSlopField.getInt(viewDragHelper)
-  -- 将滑动阈值调整为2.5倍避免滑动过于灵敏
-  touchSlopField.setInt(viewDragHelper, originalTouchSlop * 2.5)
+  -- 将滑动阈值调整为2倍避免滑动过于灵敏
+  touchSlopField.setInt(viewDragHelper, originalTouchSlop * 2)
 
   -- 禁用长按唤出抽屉 替换 mPeekRunnable 为空实现
   local leftCallbackField = drawerLayoutClass.getDeclaredField("mLeftCallback")
