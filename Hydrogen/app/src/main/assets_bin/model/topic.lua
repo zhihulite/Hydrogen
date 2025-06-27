@@ -175,10 +175,10 @@ function base:initpage(view,sr)
     func=self.resolvedata,
     addpos=1,
     urls={
-      "https://api.zhihu.com/v5.1/topics/"..topic_id.."/feeds/essence",
-      "https://api.zhihu.com/v5.1/topics/"..topic_id.."/feeds/pin-hot",
-      "https://api.zhihu.com/v5.1/topics/"..topic_id.."/feeds/top_zvideo",
-      "https://api.zhihu.com/v5.1/topics/"..topic_id.."/feeds/top_question",
+      "https://www.zhihu.com/api/v5.1/topics/"..topic_id.."/feeds/essence/v2",
+      "https://www.zhihu.com/api/v5.1/topics/"..topic_id.."/feeds/pin-hot/v2",
+      "https://www.zhihu.com/api/v5.1/topics/"..topic_id.."/feeds/top_zvideo/v2",
+      "https://www.zhihu.com/api/v5.1/topics/"..topic_id.."/feeds/top_question/v2",
     },
   })
   :addPage(2,{"详情","讨论","想法","视频","问题"})

@@ -23,7 +23,7 @@ SwipeRefreshLayout = luajava.bindClass "com.hydrogen.view.CustomSwipeRefresh"
 --重写BottomSheetDialog到自定义view 解决横屏显示不全问题
 BottomSheetDialog = luajava.bindClass "com.hydrogen.view.BaseBottomSheetDialog"
 
-versionCode=0.609
+versionCode=0.610
 layout_dir="layout/item_layout/"
 无图模式=Boolean.valueOf(activity.getSharedData("不加载图片"))
 
@@ -287,7 +287,6 @@ function webviewToBitmap(webView, func) --由于存在延迟，后续操作使�
         webView.evaluateJavascript(
         "getScreenshot()",
         {onReceiveValue=function(b)
-            print(b)
             func(base64ToBitmap(b))
         end})
       end)
@@ -2606,8 +2605,22 @@ cardradius=nil
 --cardback=全局主题值=="Day" and cardedge or backgroundc
 --cardmargin=全局主题值=="Day" and "4px" or false
 
+function 初始化背景(view)
+  local js=获取js("initbackground")
+  local gsub_str='"'..backgroundc:sub(4,#backgroundc)..'"'
+  js=js:gsub("appbackgroudc",gsub_str)
+  加载js(view,js)
+end
+
 function 夜间模式主题(view)
   local js=获取js("darktheme")
+  加载js(view,js)
+end
+
+function 夜间模式回答页(view)
+  local js=获取js("darkanswer")
+  local gsub_str='"'..backgroundc:sub(4,#backgroundc)..'"'
+  js=js:gsub("appbackgroudc",gsub_str)
   加载js(view,js)
 end
 
@@ -2615,18 +2628,6 @@ function 等待doc(view)
   local js=获取js("waitdoc")
   加载js(view,js)
 end
-
-function 初始化背景(view)
-  local js=获取js("initbackground")
-  if 全局主题值~="Night" then
-    js=js:gsub("80","5")
-  end
-  local gsub_str='"'..backgroundc:sub(4,#backgroundc)..'"'
-  js=js:gsub("appbackgroudc",gsub_str)
-
-  加载js(view,js)
-end
-
 
 function getFont_b64(filePath)
   local FileInputStream=luajava.bindClass"java.io.FileInputStream"

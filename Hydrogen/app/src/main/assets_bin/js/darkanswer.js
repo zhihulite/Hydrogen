@@ -2,14 +2,18 @@
     var styleElem = null,
         doc = document,
         ie = doc.all,
+        fontColor = 80;
+
+    // 设置 .AnswerItem-time 和 .ExtraInfo 保持原字体颜色
+    styleElem = createCSS('.AnswerItem-time *, .ExtraInfo *', 'color: inherit !important;', styleElem);
+
+    // 设置 .GifPlayer-icon 及其内部的所有子元素透明色
+    styleElem = createCSS('.GifPlayer-icon, .GifPlayer-icon *', 'background-color: transparent !important;', styleElem);
 
     // 设置其他元素的新字体颜色和背景颜色
     // appbackgroudc为软件backgroudc 加载js时会替换 如果调用需要赋值 apppbackgroudc 哦
-    // CommentSection 评论区 Toolbar 底部栏 skeleton预加载 AuthorCard 用户卡片 PostIndex-Footer 文章底部
-    styleElem = createCSS('body,body > div:not([class]):not([id]) *, root, .AppMain,  .AppMain > div, .CommentSection , .CommentSection, .skeleton, .Toolbar, .AuthorCard-wrapper > div, .PostIndex-Footer *', 'background-color: #' + appbackgroudc + ' !important;', styleElem);
-    
-    // 设置 文章下反馈 .css-1kvz3a2 遮罩 bottom-shadow 无背景
-    styleElem = createCSS('.css-1kvz3a2,.bottom-shadow', 'background: unset !important;')
+    styleElem = createCSS('body, body *', 'background-color: #' + appbackgroudc + ' !important; color: RGB(' + fontColor + '%,' + fontColor + '%,' + fontColor + '%) !important;', styleElem);
+
     function createCSS(sel, decl, styleElem) {
         var doc = document,
             h = doc.getElementsByTagName("head")[0],
