@@ -139,6 +139,8 @@ bottomSheetDialog.getWindow().setDecorFitsSystemWindows(false)
     onPageFinished=function(view,url)
       if 全局主题值=="Night" then
         夜间模式回答页(view)
+       else
+        初始化背景(view)
       end
       imgReset()
     end,

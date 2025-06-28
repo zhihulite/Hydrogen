@@ -1173,9 +1173,12 @@ function check()
   end
 end
 
---[[function onResume()
-  activity.getDecorView().post{run=function()check()end}
-end]]
+function onResume()
+  activity.getDecorView().post{run=function()
+      check()
+      设置主题()
+  end}
+end
 
 
 if this.getSharedData("自动检测更新")=="true" then
@@ -1468,7 +1471,7 @@ function setupDrawerEdge(drawerLayout)
     run = function()
     end
   })
-  
+
   peekRunnableField.set(dragCallback, nullRunnable)
 end
 

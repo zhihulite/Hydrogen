@@ -8,7 +8,7 @@
   id="mainLay";
   {
     LinearLayout;
-id="topbar";
+    id="topbar";
     layout_width="-1";
     layout_height="56dp";
     gravity="center|left";
@@ -32,7 +32,7 @@ id="topbar";
 
     {
       MaterialCardView;
-      radius=cardradius;
+      radius=0;
       CardBackgroundColor=backgroundc;
       elevation="0dp";
       layout_width="-1",

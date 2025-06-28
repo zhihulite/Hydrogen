@@ -180,6 +180,8 @@ MyWebViewUtils:initWebViewClient{
   onPageFinished=function(view,l)
     if 全局主题值=="Night" then
       夜间模式回答页(view)
+     else
+      初始化背景(view)
     end
     view.setVisibility(0)
   end
