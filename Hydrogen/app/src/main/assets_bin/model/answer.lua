@@ -33,7 +33,7 @@ end
 
 
 function base:getAnswer(id,cb)
-  local include='?include=author%2Ccontent%2Cvoteup_count%2Ccomment_count%2Cfavlists_count%2Cthanks_count%2Cpagination_info%2Cad_track_url%2Ccontent%2Ccreated_time%2Cupdated_time%2Creshipment_settings%2Cmark_infos%2Ccopyright_applications_count%2Cis_collapsed%2Ccollapse_reason%2Cannotation_detail%2Cis_normal%2Ccollaboration_status%2Creview_info%2Creward_info%2Crelationship.voting%2Crelationship.is_author%3Bsuggest_edit.unnormal_details%3Bcommercial_info%2Crelevant_info%2Csearch_words%2Cpagination_info%2Cfavlists_count%2Ccomment_count%2Cexcerpt'
+  local include='?include=author%2Ccontent%2Cvoteup_count%2Ccomment_count%2Cfavlists_count%2Cthanks_count%2Cpagination_info%2Cad_track_url%2Ccontent%2Ccreated_time%2Cupdated_time%2Creshipment_settings%2Cmark_infos%2Ccopyright_applications_count%2Cis_collapsed%2Ccollapse_reason%2Cannotation_detail%2Cis_normal%2Ccollaboration_status%2Creview_info%2Creward_info%2Crelationship.voting%2Crelationship.is_author%3Bsuggest_edit.unnormal_details%3Bcommercial_info%2Crelevant_info%2Csearch_words%2Cpagination_info%2Cfavlists_count%2Ccomment_count%2Cexcerpt%2Cattachment'
   local url="https://www.zhihu.com/api/v4/answers/"..id..include
   zHttp.get(url,head,function(a,b)
     if a==200 then

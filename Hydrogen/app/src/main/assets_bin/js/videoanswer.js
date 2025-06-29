@@ -8,4 +8,4 @@ function setmyvideo() {
 	videourl.innerHTML = '<video style="margin: auto;width: 100%;".." src="'+myvideourl+'" controls=""></video>'
 	document.getElementsByClassName("RichText ztext")[0].insertBefore(videourl, document.getElementsByClassName("RichText ztext")[0].firstChild);
 }
-waitForKeyElements('.RichText.ztext', setmyvideo);
+waitForKeyElements('.ExtraInfo', setmyvideo);
