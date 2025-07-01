@@ -10,13 +10,14 @@ on:
         options:
           - 'assembleRelease'
           - 'assembleRelease_unlua'
+          - 'build_and_publish'
         default: 'assembleRelease'
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
 
     steps:
@@ -38,6 +39,8 @@ jobs:
             (cd Hydrogen && ./gradlew app:assembleRelease)
           elif [ "${{ github.event.inputs.build_type }}" = "assembleRelease_unlua" ]; then
             (cd Hydrogen && ./gradlew app:assembleRelease_unlua)
+          elif [ "${{ github.event.inputs.build_type }}" = "build_and_publish" ]; then
+            (cd Hydrogen && ./gradlew app:assembleRelease)
           fi
 
       # 上传 assembleRelease 产物
@@ -59,3 +62,42 @@ jobs:
           path: |
             Hydrogen/app/build/outputs/apk/release/*.apk
             Hydrogen/app/build/outputs/mapping/release/mapping.txt
+
+      # 提取版本号
+      - name: Extract version from APK filename
+        if: github.event.inputs.build_type == 'build_and_publish'
+        id: extract_version
+        run: |
+          # 查找 APK 文件
+          APK_FILE=$(find Hydrogen/app/build/outputs/apk/release/ -name "Hydrogen_new_*.apk" | head -1)
+          if [ -n "$APK_FILE" ]; then
+            # 获取 APK 文件的创建时间
+            BUILD_TIME=$(stat -c '%y' "$APK_FILE" | cut -d'.' -f1)
+            echo "APK 文件创建时间: $BUILD_TIME"
+
+            # 提取版本号
+            VERSION=$(basename "$APK_FILE" | grep -o 'Hydrogen_new_0\.\([0-9]\{3\}\)\.apk' | sed 's/Hydrogen_new_0\.\([0-9]\{3\}\)\.apk/\1/')
+            if [ -n "$VERSION" ]; then
+              echo "提取到版本号: $VERSION"
+
+              # 设置输出变量
+              echo "version=$VERSION" >> $GITHUB_OUTPUT
+              echo "build_time=$BUILD_TIME" >> $GITHUB_OUTPUT
+              echo "apk_file=$APK_FILE" >> $GITHUB_OUTPUT
+            else
+              echo "无法从文件名提取版本号"
+              echo "APK 文件: $APK_FILE"
+              exit 1
+            fi
+          else
+            echo "未找到匹配的 APK 文件"
+            exit 1
+          fi
+
+      - name: Publish Release APK to GitHub Releases
+        if: github.event.inputs.build_type == 'build_and_publish'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v0.${{ steps.extract_version.outputs.version }}
+          files: |
+            ${{ steps.extract_version.outputs.apk_file }}
