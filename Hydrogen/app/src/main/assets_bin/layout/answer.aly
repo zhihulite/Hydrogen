@@ -49,9 +49,9 @@
         {
           TextView;
           textColor=primaryc;
-          textSize="18sp";
+          textSize="14sp";
           id="_title";
-          SingleLine=true;
+          maxLines=2;
           ellipsize='end',
           Selected=true,
           gravity="center|left";
