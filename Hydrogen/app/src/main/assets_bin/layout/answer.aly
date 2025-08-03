@@ -286,7 +286,7 @@
         };
         {
           MaterialCardView;
-          layout_width="56dp",
+          layout_width="82dp",
           layout_height="56dp",
           layout_weight="1";
           radius="28dp";
@@ -295,13 +295,29 @@
           alpha=1,
           id="comment_card";
           {
-            ImageView;
-            src=图标("message");
-            ColorFilter=primaryc;
-            padding="16dp";
-            layout_width="-1",
-            layout_height="-1",
+            LinearLayout;
+            orientation="horizontal";
+            layout_height="-1";
+            layout_width="80dp",
+            gravity="center";
+            LayoutTransition=LayoutTransition().enableTransitionType(LayoutTransition.CHANGING);
             id="comment";
+            {
+              ImageView;
+              src=图标("message");
+              layout_width="24dp",
+              layout_height="24dp",
+              ColorFilter=primaryc;
+            };
+            {
+              TextView;
+              textSize="12sp";
+              textColor=stextc;
+              layout_marginLeft="4dp",
+              Typeface=字体("product-Bold");
+              id="comment_count";
+              Text="0";
+            };
           };
         };
       };

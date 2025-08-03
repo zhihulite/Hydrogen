@@ -336,6 +336,7 @@ function 初始化页(mviews)
     vote_count.Text=(mviews.data.voteup_count)..""
     thanks_count.Text=(mviews.data.thanks_count)..""
     favlists_count.Text=(mviews.data.favlists_count)..""
+    comment_count.Text=(mviews.data.comment_count)..""
     comment.onLongClick=function()
       提示(mviews.data.comment_count.."条评论")
       return true
@@ -751,6 +752,7 @@ task(1,function()
           写入内容=写入内容..'thanks_count="'..thanks_count.Text..'"\n'
           写入内容=写入内容..'vote_count="'..vote_count.Text..'"\n'
           写入内容=写入内容..'favlists_count="'..favlists_count.Text..'"\n'
+          写入内容=写入内容..'comment_count="'..comment_count.Text..'"\n'
           写入内容=写入内容..'author="'..username.Text..'"\n'
           写入内容=写入内容..'headline="'..userheadline.Text..'"\n'
           写入文件(保存路径.."/detail.txt",写入内容)
