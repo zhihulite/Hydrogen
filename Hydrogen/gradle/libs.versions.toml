@@ -15,7 +15,8 @@ webviewup = "0.1.0"
 activity = "1.9.3"
 kotlin = "1.8.22"
 fastscroll = "1.2.0"
-agp = "8.2.0"
+agp = "8.6.0"
+core = "1.16.0"
 
 [libraries]
 # AndroidX
@@ -30,7 +31,7 @@ androidx-drawerlayout = { group = "androidx.drawerlayout", name = "drawerlayout"
 androidx-cardview = { group = "androidx.cardview", name = "cardview", version.ref = "cardview" }
 androidx-coordinatorlayout = { group = "androidx.coordinatorlayout", name = "coordinatorlayout", version.ref = "coordinatorlayout" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
-
+androidx-core = { group = "androidx.core", name = "core", version.ref = "core"}
 
 # Google
 flexbox = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexbox" }
