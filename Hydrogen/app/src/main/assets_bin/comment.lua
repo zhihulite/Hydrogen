@@ -30,7 +30,7 @@ comment_recy.addOnScrollListener(RecyclerView.OnScrollListener{
 
 })
 --activity.setContentView(loadlayout("layout/comment"))
-edgeToedge(mainLay,send)
+edgeToedge(mainLay,{send,comment_recy})
 
 波纹({fh,_more},"圆主题")
 

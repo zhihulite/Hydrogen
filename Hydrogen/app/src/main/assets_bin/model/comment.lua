@@ -356,15 +356,99 @@ function base.getAdapter(comment_pagetool,pos)
       local 赞=data.赞
       local isme=data.isme
 
+      views.标题.text=标题
+      views.时间.text=时间
+      views.赞.text=赞
+      views.评论.text=评论
+      views.预览内容.text=预览内容
+      loadglide(views.图像,图像)
+      --[[if 预览图片
+        loadglide(views.预览图片,预览图片)
+        views.预览图片.onClick=function()
+          nTView=views.预览图片
+          this.setSharedData("imagedata",luajson.encode(预览图片))
+        activity.newActivity("image")
+        end
+      end]]
+
       if 评论~="false"then
-        views.评论.Visibility=0
+        views.评论.visibility=0
        else
-        views.评论.Visibility=8
+        views.评论.visibility=8
+
       end
       if (data.liked)
         views.赞.ChipIcon=liked_drawable
        else
         views.赞.ChipIcon=like_drawable
+      end
+      import "android.view.MotionEvent"
+      import "android.animation.ObjectAnimator"
+
+      views.赞.onTouch=function(v,e)
+        local action = e.action
+        if action == MotionEvent.ACTION_DOWN then
+          赞set=AnimatorSet()
+          赞set.setInterpolator(AnticipateOvershootInterpolator(0.1))
+          赞set.setDuration(200)
+          赞set.play(ObjectAnimator.ofFloat(views.赞, "ChipCornerRadius", {views.赞.ChipCornerRadius, dp2px(4)}))
+          .with(ObjectAnimator.ofFloat(views.赞, "ChipStartPadding", {views.赞.ChipStartPadding, dp2px(16)}))
+          .with(ObjectAnimator.ofFloat(views.赞, "ChipEndPadding", {views.赞.ChipEndPadding, dp2px(16)}))
+          .with(ObjectAnimator.ofFloat(views.评论, "ChipStartPadding", {views.评论.ChipStartPadding, dp2px(2)}))
+          .with(ObjectAnimator.ofFloat(views.评论, "ChipEndPadding", {views.评论.ChipEndPadding, dp2px(2)}))
+          views.赞.tag="t"
+          赞set.start()
+         else
+          if views.赞.tag=="t"
+            views.赞.tag="off"
+            task(200,function()
+              赞set=AnimatorSet()
+              赞set.setInterpolator(AnticipateOvershootInterpolator(0.1))
+              赞set.setDuration(200)
+              赞set.play(ObjectAnimator.ofFloat(views.赞, "ChipCornerRadius", {views.赞.ChipCornerRadius, dp2px(16)}))
+              .with(ObjectAnimator.ofFloat(views.赞, "ChipStartPadding", {views.赞.ChipStartPadding, dp2px(8)}))
+              .with(ObjectAnimator.ofFloat(views.赞, "ChipEndPadding", {views.赞.ChipEndPadding, dp2px(8)}))
+              .with(ObjectAnimator.ofFloat(views.评论, "ChipStartPadding", {views.评论.ChipStartPadding, dp2px(8)}))
+              .with(ObjectAnimator.ofFloat(views.评论, "ChipEndPadding", {views.评论.ChipEndPadding, dp2px(8)}))
+
+              赞set.start()
+            end)
+          end
+        end
+        return false
+      end
+      views.评论.onTouch=function(v,e)
+        local action = e.action
+        if action == MotionEvent.ACTION_DOWN then
+views.评论.tag="t"
+          评论set=AnimatorSet()
+          评论set.setInterpolator(AnticipateOvershootInterpolator(0.1))
+          评论set.setDuration(200)
+          评论set.play(ObjectAnimator.ofFloat(views.评论, "ChipCornerRadius", {views.评论.ChipCornerRadius, dp2px(4)}))
+          .with(ObjectAnimator.ofFloat(views.评论, "ChipStartPadding", {views.评论.ChipStartPadding, dp2px(16)}))
+          .with(ObjectAnimator.ofFloat(views.评论, "ChipEndPadding", {views.评论.ChipEndPadding, dp2px(16)}))
+          .with(ObjectAnimator.ofFloat(views.赞, "ChipStartPadding", {views.赞.ChipStartPadding, dp2px(2)}))
+          .with(ObjectAnimator.ofFloat(views.赞, "ChipEndPadding", {views.赞.ChipEndPadding, dp2px(2)}))
+
+          评论set.start()
+         else
+if views.评论.tag=="t"
+views.评论.tag="off"
+task(200,function()
+          评论set=AnimatorSet()
+          评论set.setInterpolator(AnticipateOvershootInterpolator(0.1))
+          评论set.setDuration(200)
+          评论set.play(ObjectAnimator.ofFloat(views.评论, "ChipCornerRadius", {views.评论.ChipCornerRadius, dp2px(16)}))
+          .with(ObjectAnimator.ofFloat(views.评论, "ChipStartPadding", {views.评论.ChipStartPadding, dp2px(8)}))
+          .with(ObjectAnimator.ofFloat(views.评论, "ChipEndPadding", {views.评论.ChipEndPadding, dp2px(8)}))
+          .with(ObjectAnimator.ofFloat(views.赞, "ChipStartPadding", {views.赞.ChipStartPadding, dp2px(8)}))
+          .with(ObjectAnimator.ofFloat(views.赞, "ChipEndPadding", {views.赞.ChipEndPadding, dp2px(8)}))
+
+          评论set.start()
+end)
+end
+        end
+        return false
       end
       if comment_type=="comments"&&position==0
         local layoutParams = views.line.LayoutParams;
@@ -396,26 +480,12 @@ function base.getAdapter(comment_pagetool,pos)
 
 
 
-        views.评论.visibility=8
+
         --[[已有加粗分割线，没必要 elseif comment_type=="comments"
         local layoutParams = views.card.LayoutParams;
         layoutParams.setMargins(dp2px(20), layoutParams.rightMargin, layoutParams.rightMargin,layoutParams.bottomMargin);
         views.card.setLayoutParams(layoutParams);]]
       end
-      views.标题.text=标题
-      views.时间.text=时间
-      views.赞.text=赞
-      views.评论.text=评论
-      views.预览内容.text=预览内容
-      loadglide(views.图像,图像)
-      --[[if 预览图片
-        loadglide(views.预览图片,预览图片)
-        views.预览图片.onClick=function()
-          nTView=views.预览图片
-          this.setSharedData("imagedata",luajson.encode(预览图片))
-        activity.newActivity("image")
-        end
-      end]]
       views.评论.onClick=function()
         发送评论(id内容,"回复"..data.标题.."发送的评论")
       end
@@ -428,6 +498,7 @@ function base.getAdapter(comment_pagetool,pos)
               data.like_count=data.like_count+1
               views.赞.ChipIcon=liked_drawable
               views.赞.text=data.like_count..""
+
             end
           end)
          else
@@ -459,32 +530,27 @@ function base.getAdapter(comment_pagetool,pos)
         downy=event.getY()
       end
       views.card.onClick=function()
-        if views.评论.getVisibility()==0 then
-          if fn~=nil then
-            if fn[#fn]~=nil then
-              if (fn[#fn][3] or "")==data.id内容 then
-                return 提示("当前已在该对话列表内")
-              end
-            end
+        if 评论=="false" then
+          return
+         else
+          if comment_type=="comments" then
+            return 提示("当前已在该对话列表内")
           end
-          nTView=views.card
-          newActivity("comment",{data.id内容,"comments",保存路径,comment_id})
         end
+        nTView=views.card
+        newActivity("comment",{data.id内容,"comments",保存路径,comment_id})
       end
       views.预览内容.onClick=function()
-        if views.评论.getVisibility()==0 then
-          if fn~=nil then
-            if fn[#fn]~=nil then
-              if (fn[#fn][3] or "")==data.id内容 then
-                return 提示("当前已在该对话列表内")
-              end
-            end
+        if 评论=="false" then
+          return
+         else
+          if comment_type=="comments" then
+            return 提示("当前已在该对话列表内")
           end
-          nTView=views.card
-          newActivity("comment",{data.id内容,"comments",保存路径,comment_id})
         end
+        nTView=views.card
+        newActivity("comment",{data.id内容,"comments",保存路径,comment_id})
       end
-
       views.card.onLongClick=function(view)
         多选菜单(data,view)
       end
@@ -557,7 +623,8 @@ function 发送评论(id,title)
 
 
   bottomSheetDialog = BottomSheetDialog(this)
-  bottomSheetDialog.setContentView(loadlayout({
+  bottomSheetDialog.setContentView(
+  loadlayout({
     LinearLayout;
     id="root",
     fitsSystemWindows=false;

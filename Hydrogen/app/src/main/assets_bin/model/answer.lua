@@ -7,7 +7,8 @@
 
 local base={--表初始化
   getid=nil,
-  pageinfo={}
+  pageinfo={},
+
 }
 
 
@@ -59,9 +60,19 @@ function base:getAnswer(id,cb)
   end)
 end
 
+function base:updateLR()
+  local mypageinfo=self.pageinfo
+  if mypageinfo[self.getid] then
+    local prev_ids=mypageinfo[self.getid].prev_ids
+    local next_ids=mypageinfo[self.getid].next_ids
+    --即使滑动到已经加载过的页面再次判断是否在最左or最右端
+    self.isleft=#prev_ids==0
+    self.isright=#next_ids==0
+  end
+end
 
 function base:getOneData(cb,z) --获取一条数据
-  local getid=self.getid
+  local getid=self.getid..""
   local pageinfo=self.pageinfo
 
   if pageinfo[getid] then
@@ -74,7 +85,6 @@ function base:getOneData(cb,z) --获取一条数据
     end
   end
   self:getAnswer((getid),function(myz)
-
     if myz==false then
       if z then
         table.remove(pageinfo[self.getid].prev_ids)
@@ -85,7 +95,7 @@ function base:getOneData(cb,z) --获取一条数据
     end
 
     --更新getid
-    self.getid=getid
+    self.getid=getid..""
 
     local mypageinfo=myz.pagination_info
     if mypageinfo then

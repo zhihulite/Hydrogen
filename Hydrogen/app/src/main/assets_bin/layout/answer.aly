@@ -6,97 +6,104 @@
   background=backgroundc;
   orientation="vertical";
   id="mainLay";
-
-  {
-    LinearLayout;
-    layout_width="-1";
-    layout_height="56dp";
-    gravity="center|left";
+  {MaterialCardView;
+    id="root_card",
+    radius=0;
+    elevation="0dp";
+    layout_width="fill",
+    layout_height="64dp",
+    cardBackgroundColor=0x00000000,
+    StrokeWidth=0,
     {
       LinearLayout;
-      orientation="horizontal";
-      layout_height="56dp";
-      layout_width="56dp";
-      gravity="center";
-      onClick=function()
-        关闭页面()
-      end;
-      {
-        ImageView;
-        ColorFilter=primaryc;
-        src=图标("arrow_back");
-        layout_height="32dp";
-        layout_width="32dp";
-        padding="4dp";
-        id="fh";
-      };
-    };
-
-    {
-      MaterialCardView;
-      radius=0;
-      CardBackgroundColor=backgroundc;
-      elevation="0dp";
-      layout_width="-1",
-      layout_weight="1",
-      StrokeWidth=0,
+      layout_width="-1";
+      layout_height="64dp";
+      gravity="center|left";
       {
         LinearLayout;
-        id="all_root",
-        layout_width="-1",
-        padding="2dp";
-        orientation="vertical";
+        orientation="horizontal";
+        layout_height="56dp";
+        layout_width="56dp";
+        gravity="center";
+        onClick=function()
+          关闭页面()
+        end;
         {
-          TextView;
-          textColor=primaryc;
-          textSize="14sp";
-          id="_title";
-          maxLines=2;
-          ellipsize='end',
-          Selected=true,
-          gravity="center|left";
-          Typeface=字体("product-Bold");
-        };
-        {
-          TextView;
-          textColor=textc;
-          textSize="10sp";
-          text="点击查看全部0个回答 >",
-          id="all_answer";
-          gravity="center|left";
-          Typeface=字体("product-Bold");
+          ImageView;
+          ColorFilter=primaryc;
+          src=图标("arrow_back");
+          layout_height="32dp";
+          layout_width="32dp";
+          padding="4dp";
+          id="fh";
         };
       };
+
+      {
+        MaterialCardView;
+        radius=0;
+        CardBackgroundColor=0x00000000;
+        elevation="0dp";
+        layout_width="-1",
+        layout_weight="1",
+        StrokeWidth=0,
+        {
+          LinearLayout;
+          id="all_root",
+          layout_width="-1",
+          padding="2dp";
+          orientation="vertical";
+          {
+            TextView;
+            textColor=primaryc;
+            textSize="14sp";
+            id="_title";
+            maxLines=2;
+            ellipsize='end',
+            Selected=true,
+            gravity="center|left";
+            Typeface=字体("product-Bold");
+          };
+          {
+            TextView;
+            textColor=textc;
+            textSize="10sp";
+            text="点击查看全部0个回答 >",
+            id="all_answer";
+            gravity="center|left";
+            Typeface=字体("product-Bold");
+          };
+        };
+      };
+      {
+        ImageView;
+        src=图标("more_vert");
+        ColorFilter=primaryc;
+        layout_width="32dp",
+        layout_height="32dp",
+        padding="4dp";
+        id="_more";
+        tooltip="更多",
+        layout_margin="8dp";
+        onClick=function()
+          showpop(_more_lay,a.pop)
+        end;
+      };
+      {
+        TextView;
+        id="_more_lay";
+        layout_width="0",
+        layout_height="0",
+        layout_gravity="top";
+      };
     };
-    {
-      ImageView;
-      src=图标("more_vert");
-      ColorFilter=primaryc;
-      layout_width="32dp",
-      layout_height="32dp",
-      padding="4dp";
-      id="_more";
-      tooltip="更多",
-      layout_margin="8dp";
-      onClick=function()
-        showpop(_more_lay,a.pop)
-      end;
-    };
-    {
-      TextView;
-      id="_more_lay";
-      layout_width="0",
-      layout_height="0",
-      layout_gravity="top";
-    };
-  };
+  },
 
   {
     CoordinatorLayout;
-    id="mainLay";
+    id="coord";
     layout_height="fill";
     layout_width="fill";
-    background=backgroundc;
 
     {
       AppBarLayout;
@@ -104,69 +111,43 @@
       layout_height="wrap";
       layout_width="fill";
       TargetElevation=0;
-      background=backgroundc;
 
       {
-        MaterialToolbar;
-        id="toolbar";
-        layout_width="fill";
-        layout_height="wrap";
-        layout_gravity="center";
-
+        LinearLayout;
+        id="all_root_expand",
+        layout_width="fill",
+        layout_height="wrap",
+        orientation="vertical";
+        paddingTop=0,
+        paddingLeft="16dp",
+        paddingRight="8dp",
+        paddingBottom="16dp",
+        LayoutTransition=LayoutTransition().enableTransitionType(LayoutTransition.CHANGING);
 
         {
-          MaterialCardView;
-          layout_gravity="center";
-          layout_height="-2";
-          CardBackgroundColor=cardedge,
-          Elevation="0";
-          layout_width="-1";
-          layout_margin="16dp";
-          layout_marginTop="8dp";
-          layout_marginBottom="8dp";
-          radius=cardradius;
-          StrokeColor=cardedge;
-          StrokeWidth=dp2px(1),
-          id="userinfo",
-          {
-            CircleImageView,
-            layout_marginLeft="8dp";
-            layout_width="45dp",
-            layout_height="45dp",
-            layout_gravity="left|center",
-            id="usericon",
-          },
-          {
-            View,
-            layout_height="75dp",
-            id="mripple",
-          },
-          {
-            TextView,
-            Typeface=字体("product-Bold");
-            layout_marginTop="15dp",
-            layout_marginLeft="60dp",
-            gravity="left|center",
-            textColor=textc,
-            id="username",
-            textSize=标题文字大小,
-            lineHeight=标题行高;
-          },
-          {
-            TextView,
-            Typeface=字体("product");
-            layout_marginLeft="60dp",
-            layout_marginRight="5dp",
-            layout_marginTop="40dp",
-            layout_marginBottom="10dp",
-            gravity="left|bottom",
-            textColor="#FF767676",
-            id="userheadline",
-            textSize=内容文字大小,
-            lineHeight=内容行高;
-          },
+          TextView;
+          textColor=primaryc;
+          textSize="24sp";
+          id="expand_title";
+          maxLines=3;
+          ellipsize='end',
+          Selected=true,
+          gravity="center|left";
+          layout_mariginLeft="8dp",
+          Typeface=字体("product-Bold");
         };
 
+        {
+          TextView;
+          textColor=textc;
+          textSize="14sp";
+          layout_mariginLeft="8dp",
+          layout_marginTop="6dp",
+          text="点击查看全部0个回答 >",
+          id="all_answer_expand";
+          gravity="center|left";
+          Typeface=字体("product");
+        };
 
       };
     };
@@ -176,6 +157,7 @@
       ViewPager2;
       layout_width="fill";
       layout_height="fill";
+      clipToPadding=false,
       --layout_marginBottom=dp2px(56);
       id="pg",
       layout_behavior="@string/appbar_scrolling_view_behavior";
@@ -286,7 +268,7 @@
         };
         {
           MaterialCardView;
-          layout_width="82dp",
+          layout_width="wrap",
           layout_height="56dp",
           layout_weight="1";
           radius="28dp";

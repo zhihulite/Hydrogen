@@ -1,11 +1,12 @@
 {
-  CoordinatorLayout;
+  LinearLayout;
   backgroundColor=backgroundc ;
   layout_height="fill";
   layout_width="fill";
   id="mainfLay";
   {
-    LinearLayout,--layoutTransition=LayoutTransition().enableTransitionType(LayoutTransition.CHANGING),
+    LinearLayout,
+layoutTransition=LayoutTransition().enableTransitionType(LayoutTransition.CHANGING),
     layout_width="fill",id="fg";
     layout_height="fill",
     {

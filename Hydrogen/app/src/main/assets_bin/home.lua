@@ -13,12 +13,17 @@ import "com.google.android.material.bottomnavigation.BottomNavigationView"
 import "android.view.ViewTreeObserver"
 import "com.google.android.material.appbar.AppBarLayout"
 import "com.google.android.material.navigationrail.NavigationRailView"
+import "androidx.core.view.insets.ProtectionLayout"
+import "androidx.core.view.insets.Protection"
+import "androidx.core.view.WindowInsetsCompat"
 
 --导入 MyViewPager
 MyViewPager = require "views/MyViewPager"
 
 activity.setContentView(loadlayout("layout/fragment"))
 --activity.window.setNavigationBarContrastEnforced(false)
+--edgeToedge(mainfLay,true)
+Protection=luajava.bindClass("androidx.core.view.insets.Protection")
 inSekai=false
 if activity.getSharedData("平行世界")~="false" then
   local rootView = activity.getDecorView()

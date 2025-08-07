@@ -23,7 +23,7 @@ SwipeRefreshLayout = luajava.bindClass "com.hydrogen.view.CustomSwipeRefresh"
 --重写BottomSheetDialog到自定义view 解决横屏显示不全问题
 BottomSheetDialog = luajava.bindClass "com.hydrogen.view.BaseBottomSheetDialog"
 
-versionCode=0.610
+versionCode=0.611
 layout_dir="layout/item_layout/"
 无图模式=Boolean.valueOf(activity.getSharedData("不加载图片"))
 
@@ -81,7 +81,7 @@ function 设置视图(t)
   if thisFragment
     thisFragment.setContainerView(loadlayout(t))
     if nOView~=nil
-      
+
       local backward=MaterialContainerTransform(activity,false)
       .setStartView(thisFragment.container)
       .setEndView(nOView)
@@ -133,12 +133,12 @@ function newActivity(f,b,c)
     .setBottomRightCornerSize(0)
     .setTopLeftCornerSize(0)
     .setTopRightCornerSize(0)
-    if Build.VERSION.SDK_INT >30
+    xpcall(function()
       WindowShape.setBottomLeftCornerSize(window.getDecorView().getRootWindowInsets().getRoundedCorner(3).getRadius())
       WindowShape.setBottomRightCornerSize(window.getDecorView().getRootWindowInsets().getRoundedCorner(2).getRadius())
       WindowShape.setTopLeftCornerSize(window.getDecorView().getRootWindowInsets().getRoundedCorner(0).getRadius())
       WindowShape.setTopRightCornerSize(window.getDecorView().getRootWindowInsets().getRoundedCorner(1).getRadius())
-    end
+    end, function() end)
 
     if inSekai
       if ff==f1 then
@@ -206,6 +206,7 @@ function edgeToedge(顶栏,底栏,callback)
   import "androidx.activity.EdgeToEdge"
   EdgeToEdge.enable(this);
 
+  import "androidx.core.view.OnApplyWindowInsetsListener"
   local ViewCompat = luajava.bindClass "androidx.core.view.ViewCompat"
   local WindowInsetsCompat = luajava.bindClass "androidx.core.view.WindowInsetsCompat"
   local view=window.getDecorView()
@@ -223,31 +224,68 @@ function edgeToedge(顶栏,底栏,callback)
     导航栏高度=height
 
     if 顶栏 then
-      local bottompadding=顶栏.getPaddingBottom()
-      if not 底栏 then
-        bottompadding=bottompadding+导航栏高度
+      if type(顶栏)~=type({})
+        顶栏={顶栏}
       end
-      顶栏.setPadding(
-      顶栏.getPaddingLeft(),
-      状态栏高度,
-      顶栏.getPaddingRight(),
-      bottompadding
-      );
+      for i,顶栏 in pairs(顶栏)
+        local bottompadding=顶栏.getPaddingBottom()
+        if not 底栏 then
+          bottompadding=bottompadding+导航栏高度
+        end
+        ViewCompat.setOnApplyWindowInsetsListener(顶栏,OnApplyWindowInsetsListener{
+          onApplyWindowInsets=function(顶栏,windowInsets,initPadding)
+            local top = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
+            local bottom = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).bottom;
+            local height = Math.abs(bottom - top);
+
+            状态栏高度=height
+
+            顶栏.setPadding(
+            顶栏.getPaddingLeft(),
+            状态栏高度,
+            顶栏.getPaddingRight(),
+            bottompadding
+            );
+            return windowInsets
+          end
+        })
+      end
     end
 
-    if 底栏 then
-      底栏.setPadding(
-      底栏.getPaddingLeft(),
-      底栏.getPaddingTop(),
-      底栏.getPaddingRight(),
-      导航栏高度
-      );
+    if type(底栏)~=type(false) then
+      if type(底栏)~=type({})
+        底栏={底栏}
+      end
+      for i,底栏 in pairs(底栏)
+        ViewCompat.setOnApplyWindowInsetsListener(底栏,OnApplyWindowInsetsListener{
+          onApplyWindowInsets=function(底栏,windowInsets,initPadding)
+            local top = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars()).top;
+            local bottom = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
+            local height = Math.abs(bottom - top);
+
+            导航栏高度=height
+            底栏.setPadding(
+            底栏.getPaddingLeft(),
+            底栏.getPaddingTop(),
+            底栏.getPaddingRight(),
+            导航栏高度
+            );
+            return windowInsets
+          end
+        })
+      end
     end
     if callback then
       callback()
     end
   end
 
+  --[[ViewCompat.setOnApplyWindowInsetsListener(view,ViewCompat.OnApplyWindowInsetsListener{
+    onApplyWindowInsets=function(v,windowInsets,initPadding)
+      init()
+      return WindowInsetsCompat.CONSUMED
+    end
+  })]]
   local attachedToWindow = view.isAttachedToWindow();
   if attachedToWindow then
     init()
@@ -671,10 +709,12 @@ function 保存历史记录(id, title, preview, _type)
 end
 
 function 获取历史记录()
+  初始化历史记录数据()
   return luajava.astable(MyHistoryManager.getRecentFirst())
 end
 
 function 清除历史记录()
+  初始化历史记录数据()
   MyHistoryManager.clearAll()
 end
 
@@ -3166,10 +3206,6 @@ end
 
 function 设置toolbar(toolbar)
   toolbar.setTitle("")
-  pcall(function()
-    toolbar.parent.setLifted(true)
-    toolbar.parent.setLiftOnScroll(true)
-  end)
   activity.setSupportActionBar(toolbar)
   toolbar.setContentInsetsRelative(0,0)
 end

@@ -8,7 +8,7 @@ import "com.google.android.material.materialswitch.MaterialSwitch"
 设置视图("layout/settings")
 设置toolbar(toolbar)
 设置toolbar属性(toolbar,"设置")
-edgeToedge(mainLay )
+edgeToedge(mainLay,settings_list )
 function onOptionsItemSelected()
   关闭页面()
 end
@@ -49,8 +49,6 @@ data = processTable{
       valueFrom=0,
       value=tointeger(activity.getSharedData("feed_cache")),
       valueTo=180,
-
-
   }},
   {__type=4,subtitle="回答单页模式",status={Checked=Boolean.valueOf(this.getSharedData("回答单页模式"))}},
   {__type=4,subtitle="关闭热门搜索",status={Checked=Boolean.valueOf(this.getSharedData("关闭热门搜索"))}},
@@ -94,14 +92,14 @@ data = processTable{
 }
 
 
-for k, v in ipairs(data) do
+--[[for k, v in ipairs(data) do
   if type(v) == "table" then
     local typeValue = v.__type
     if typeValue ~= 1 and typeValue ~= 6 then
       table.insert(data, k + 1, {__type = 6})
     end
   end
-end
+end]]
 
 mtip=false
 
@@ -150,14 +148,14 @@ tab=processTable{
         end
         if edit.Text~="" then
           this.setSharedData("搜索引擎",edit.Text)
-提示("设置成功")
+          提示("设置成功")
          else
           提示("无法读取")
           this.setSharedData("搜索引擎","https://www.bing.com/search?q=site%3Azhihu.com%20")
           return
         end
 
-        
+
     end})
     .setNegativeButton("取消", nil)
     .show()
@@ -175,7 +173,7 @@ tab=processTable{
     if mtip==false then
       双按钮对话框("提示","更改字号后 推荐重启App获得更好的体验","立即重启","我知道了",function(an)
         关闭对话框(an)
-        清除历史记录()
+        --清除历史记录()
         task(200,function()
           import "android.os.Process"
           local intent =activity.getBaseContext().getPackageManager().getLaunchIntentForPackage(activity.getBaseContext().getPackageName());
@@ -810,6 +808,25 @@ tab=processTable{
 
 波纹({fh},"圆主题")
 
+import "com.google.android.material.shape.ShapeAppearanceModel"
+import "com.google.android.material.shape.RelativeCornerSize"
+
+topcard=ShapeAppearanceModel.builder()
+.setBottomLeftCornerSize(RelativeCornerSize(0.1))
+.setBottomRightCornerSize(RelativeCornerSize(0.1))
+.setTopLeftCornerSize(RelativeCornerSize(0.3))
+.setTopRightCornerSize(RelativeCornerSize(0.3)).build()
+bottomcard=ShapeAppearanceModel.builder()
+.setBottomLeftCornerSize(RelativeCornerSize(0.3))
+.setBottomRightCornerSize(RelativeCornerSize(0.3))
+.setTopLeftCornerSize(RelativeCornerSize(0.1))
+.setTopRightCornerSize(RelativeCornerSize(0.1)).build()
+middlecard=ShapeAppearanceModel.builder()
+.setBottomLeftCornerSize(RelativeCornerSize(0.1))
+.setBottomRightCornerSize(RelativeCornerSize(0.1))
+.setTopLeftCornerSize(RelativeCornerSize(0.1))
+.setTopRightCornerSize(RelativeCornerSize(0.1)).build()
+
 about_item=processTable{
   {--大标题 type1
     LinearLayout;
@@ -822,9 +839,9 @@ about_item=processTable{
       layout_marginTop="12dp";
       layout_marginBottom="12dp";
       gravity="center_vertical";
-      Typeface=字体("product-Bold");
+      Typeface=字体("product");
       id="title";
-      textSize="15sp";
+      textSize="14sp";
       textColor=primaryc;
       layout_marginLeft="16dp";
     };
@@ -864,27 +881,54 @@ about_item=processTable{
     LinearLayout;
     layout_width="fill";
     layout_height="64dp";
-    gravity="center_vertical";
     {
-      TextView;
-      id="subtitle";
-      Typeface=字体("product");
-      textSize="16sp";
-      textColor=textc;
-      layout_marginLeft="16dp";
-      layout_weight="1";
-    };
-    {
-      AppCompatImageView;
-      id="rightIcon";
-      layout_margin="16dp";
-      layout_marginLeft=0;
-      layout_width="24dp";
-      layout_height="24dp";
-      colorFilter=theme.color.textColorSecondary;
-      ImageResource=R.drawable.ic_chevron_right;
-      Visibility=8;
-    }
+      MaterialCardView,
+      id="card",
+      strokeWidth=0,
+      shapeAppearanceModel=middlecard,
+      cardBackgroundColor=res.color.attr.colorSurfaceContainerLow,
+      layout_width="fill",
+      layout_height="fill",
+      layout_marginTop="2dp",
+      layout_marginBottom="2dp",
+      layout_marginLeft="12dp",
+      layout_marginRight="12dp",
+      paddingTop="0.2dp",
+      paddingBottom="0.2dp",
+      paddingLeft="16dp",
+      paddingRight="16dp",
+      layout_gravity="center";
+      {LinearLayout,
+        layout_width="fill",
+        layout_height="fill",
+        paddingTop="1dp",
+        paddingBottom="1dp",
+        paddingLeft="16dp",
+        paddingRight="16dp",
+        layout_gravity="center";
+        {
+          TextView;
+          id="subtitle";
+          layout_weight="1",
+          layout_margin="8dp",
+          layout_gravity="left|center",
+          Typeface=字体("product");
+          textSize="16sp";
+          textColor=textc;
+        };
+        {
+          AppCompatImageView;
+          id="rightIcon";
+          layout_marginLeft=0;
+          layout_width="24dp";
+          layout_height="24dp";
+          layout_gravity="right|center",
+          colorFilter=theme.color.textColorSecondary;
+          ImageResource=R.drawable.ic_chevron_right;
+          Visibility=8;
+        },
+      },
+    },
   };
 
 
@@ -895,63 +939,111 @@ about_item=processTable{
     layout_width="fill";
     layout_height="64dp";
     {
-      TextView;
-      id="subtitle";
-      Typeface=字体("product");
-      textSize="16sp";
-      textColor=textc;
-      gravity="center_vertical";
-      layout_weight="1";
-      layout_height="-1";
-      layout_marginLeft="16dp";
-    };
-    {
-      MaterialSwitch;
-      id="status";
-      focusable=false;
-      clickable=false;
-      layout_marginRight="16dp";
-    };
-  };
+      MaterialCardView,
+      id="card",
+      strokeWidth=0,
+      shapeAppearanceModel=middlecard,
+      cardBackgroundColor=res.color.attr.colorSurfaceContainerLow,
+      layout_width="fill",
+      layout_height="fill",
+      layout_marginTop="2dp",
+      layout_marginBottom="2dp",
+      layout_marginLeft="12dp",
+      layout_marginRight="12dp",
+      paddingTop="0.2dp",
+      paddingBottom="0.2dp",
+      paddingLeft="16dp",
+      paddingRight="16dp",
+      layout_gravity="center";
+      {LinearLayout,
+        layout_width="fill",
+        layout_height="fill",
+        paddingTop="1dp",
+        paddingBottom="1dp",
+        paddingLeft="16dp",
+        paddingRight="16dp",
+        layout_gravity="center";
+        {
+          TextView;
+          id="subtitle";
+          Typeface=字体("product");
+          textSize="16sp";
+          textColor=textc;
+          gravity="center_vertical";
+          layout_weight="1";
+          layout_height="-1";
+          layout_marginLeft="8dp";
+        };
+        {
+          MaterialSwitch;
+          id="status";
+          focusable=false;
+          clickable=false;
+        };
+      };
+    },
+  },
 
   {--标题 描述 选框 type5
     LinearLayout;
     gravity="center_vertical";
     layout_width="fill";
-    layout_height="64dp";
+    layout_height="100dp";
     {
-      LinearLayout;
-      orientation="vertical";
-      layout_height="fill";
-      gravity="center_vertical";
-      {
-        TextView;
-        id="subtitle";
-        textSize="16sp";
-        textColor=textc;
-        Typeface=字体("product");
-        layout_marginLeft="16dp";
-      };
+      MaterialCardView,
+      id="card",
+      strokeWidth=0,
+      shapeAppearanceModel=middlecard,
+      cardBackgroundColor=res.color.attr.colorSurfaceContainerLow,
+      layout_width="fill",
+      layout_height="fill",
+      layout_marginTop="2dp",
+      layout_marginBottom="2dp",
+      layout_marginLeft="12dp",
+      layout_marginRight="12dp",
+      paddingTop="0.2dp",
+      paddingBottom="0.2dp",
+      paddingLeft="16dp",
+      paddingRight="16dp",
+      layout_gravity="center";
+      {LinearLayout,
+        orientation="vertical",
+        layout_width="fill",
+        layout_height="fill",
+        paddingTop="12dp",
+        paddingBottom="1dp",
+        paddingLeft="16dp",
+        paddingRight="16dp",
+        layout_gravity="center";
+        {
+          TextView;
+          id="subtitle";
+          textSize="16sp";
+          textColor=textc;
+          Typeface=字体("product");
+          layout_marginLeft="8dp";
+        };
 
-    };
-    {
-      Slider;
-      id="status";
-      focusable=true;
-      clickable=true;
-      layout_marginRight="16dp";
-      getView=function(view)
-        view.addOnChangeListener(Slider.OnChangeListener{
-          onValueChange = function(slider,value,fromUser)
-            if fromUser then
-              local pos=settings_list.getPositionForView(view)+1
-              data[pos].status.value=value
-              tab[data[pos].subtitle](slider,value,fromUser)
-            end
+        {
+          Slider;
+          id="status";
+          focusable=true;
+          clickable=true;
+          layout_marginTop="2dp",
+          getView=function(view)
+            view.addOnChangeListener(Slider.OnChangeListener{
+              onValueChange = function(slider,value,fromUser)
+                if fromUser then
+                  local pos=settings_list.getPositionForView(view)+1
+                  data[pos].status.value=value
+                  tab[data[pos].subtitle](slider,value,fromUser)
+                end
+              end
+            })
           end
-        })
-      end
-    };
+        };
+      },
+    },
   };
 
   {--分割线 type6
@@ -968,14 +1060,93 @@ about_item=processTable{
     };
   };
 
+  {--导航栏 type7
+    LinearLayout;
+    layout_width="-1";
+    layout_height="-2";
+    gravity="center|left";
+    onClick=function()end;
+    {
+      TextView;
+      layout_width="-1";
+      layout_height=导航栏高度;
+
+    };
+  };
+
 };
 
+--[[for i,j in pairs(data) do
+  if j.__type==1
+    if data[i-1]~=nil
+      local upv = settings_list.getChildAt(i-2)
+      print(dump(data[i-1]))
+      upv.getChildAt(0).shapeAppearanceModel=bottomcard
+    end
+    if data[i+1]~=nil
+      local down = settings_list.getChildAt(i)
+      down.getChildAt(0).shapeAppearanceModel=topcard
+    end
+  end
+end]]
 
 if this.getSharedData("内部浏览器查看回答") == nil then
   this.setSharedData("内部浏览器查看回答","false")
 end
 
-adp=LuaMultiAdapter(this,data,about_item)
+
+adp=luajava.override(BaseAdapter,{
+  getItemViewType=function(super, position)
+    return int(0)
+  end,
+  getCount=function(super)
+    return int(#data)
+  end,
+  getItemId=function(super, position)
+    return long(position)
+  end,
+  getViewTypeCount=function(super)
+    return int(1)
+  end,
+  getItem=function(super, position)
+    return data[position+1]
+  end,
+  getView=function(super, position, convertView, parent)
+
+    local holder
+    holder = {}
+    -- 如果 convertView 为空，则需要创建新的视图和 ViewHolder
+    convertView = loadlayout(about_item[data[position+1].__type], holder)
+    convertView.setTag(holder)
+    -- 设置视图内容
+    for i,j in pairs(data[position+1])
+      if i=="type"
+        continue
+       else
+        if luajava.instanceof(holder[i],TextView)
+          holder[i].text=j
+         elseif type(j)==type({})
+          for k,v in pairs(j) do
+            holder[i][k]=v
+          end
+        end
+      end
+    end
+    if holder.card
+      if data[position] then
+        if data[position].__type==1
+          holder.card.shapeAppearanceModel=topcard
+        end
+      end
+      if data[position+2] then
+        if data[position+2].__type==1
+          holder.card.shapeAppearanceModel=bottomcard
+        end
+      end
+    end
+    return convertView
+  end
+})
 settings_list.setAdapter(adp)
 
 settab=processTable{
@@ -993,12 +1164,12 @@ settings_list.setOnItemClickListener(AdapterView.OnItemClickListener{
 
       if v.Tag.status.Checked then
         this.setSharedData(settab[tostring(v.Tag.subtitle.Text)] or v.Tag.subtitle.Text,"false")
-        data[one].status["Checked"]=false
+        data[one+1].status["Checked"]=false
        else
         this.setSharedData(settab[tostring(v.Tag.subtitle.Text)] or v.Tag.subtitle.Text,"true")
-        data[one].status["Checked"]=true
+        data[one+1].status["Checked"]=true
       end
-
+      v.Tag.status.Checked=!v.Tag.status.Checked
     end
     (tab[tostring(v.Tag.subtitle.Text)] or function()end) (tab,one)
     adp.notifyDataSetChanged()--更新列表

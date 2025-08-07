@@ -19,14 +19,14 @@
       {
         LinearLayout;
         layout_width="-1";
-        layout_height="56dp";
+        layout_height="64dp"; 
         gravity="center|left"; 
            
           {
             LinearLayout;
             orientation="horizontal";
-            layout_height="56dp";
-            layout_width="56dp";
+            layout_height="64dp";
+            layout_width="64dp";
             gravity="center";
             onClick=function()关闭页面()end;
             {
@@ -97,6 +97,7 @@
           {
             RecyclerView;
             id="comment_recy";
+clipToPadding=false,
             layout_width="-1";
             layout_height="-1";
           };

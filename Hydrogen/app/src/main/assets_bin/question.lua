@@ -95,11 +95,11 @@ function 问题详情(code)
 
   local tmpview={}
   bottomSheetDialog = BottomSheetDialog(this)
-  --[[pcall(function() 
+  pcall(function() 
 bottomSheetDialog.getWindow().setDecorFitsSystemWindows(false)
     bottomSheetDialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
   end)
-]]bottomSheetDialog.setContentView(loadlayout2(dann,tmpview))
+bottomSheetDialog.setContentView(loadlayout2(dann,tmpview))
 
   bottomSheetDialog.setCancelable(true);
   bottomSheetDialog.behavior.setState(BottomSheetBehavior.STATE_EXPANDED);

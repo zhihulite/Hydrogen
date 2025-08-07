@@ -46,7 +46,6 @@ for index,content in pairs(ThemeUtil.getAppThemes()) do
   local themestr
   if content.name=="Default" then
     themestr="blue"
-   
    else
     themestr=string.lower(content.name)
   end

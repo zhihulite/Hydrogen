@@ -20,6 +20,7 @@
       MyRecyclerView;
       layout_height="fill";
       layout_width="fill";
+      clipToPadding=false,
       id="recyclerView";
     };
   };

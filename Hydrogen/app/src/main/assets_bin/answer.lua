@@ -43,7 +43,7 @@ end
 
 
 设置视图("layout/answer")
-设置toolbar(toolbar)
+
 
 edgeToedge(nil,nil,function()
   --[[task(10,function()pg.setPadding(
@@ -70,13 +70,36 @@ touchSlopField.set(recyclerView, int(touchSlop*2.5));--通过获取原有的最�
 
 --解决快速滑动出现的bug 点击停止滑动
 local AppBarLayoutBehavior=luajava.bindClass "com.hydrogen.AppBarLayoutBehavior"
-appbar.LayoutParams.behavior=AppBarLayoutBehavior(this,nil)
-
+--appbar.LayoutParams.behavior=AppBarLayoutBehavior(this,nil)
+IArgbEvaluator=ArgbEvaluator.newInstance()
 波纹({fh,_more,mark,comment,thank,voteup},"圆主题")
 波纹({all_root},"方自适应")
 
 import "model.answer"
 
+appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{
+  onOffsetChanged = function(appBarLayout, verticalOffset)
+    local progress = Math.abs(verticalOffset)/appBarLayout.getTotalScrollRange()
+    if progress==1
+      isAppBarLaunch=true
+      mainLay.backgroundColor=res.color.attr.colorSurfaceContainer
+
+     else
+      --_title.setPadding(0,dp2px(60)*(1-progress),0,0)
+all_root.alpha=progress
+      mainLay.backgroundColor=IArgbEvaluator.evaluate(progress,int(转0x(backgroundc)),int(res.color.attr.colorSurfaceContainer))
+all_root_expand.backgroundColor=IArgbEvaluator.evaluate(progress,int(转0x(backgroundc)),int(res.color.attr.colorSurfaceContainer))
+
+    end
+    local views=数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids
+    --root_card.cardBackgroundColor=ArgbEvaluator.evaluate(progress,tointeger(转0x(backgroundc)),tointeger(res.color.attr.colorSurfaceContainer))
+    --expand_title.setPadding(dp2px(60)*(progress),0,0,0)
+    --_title.textSize=(14+10*(1-progress))
+    -- expand_title.textSize=(14+10*(1-progress))
+    --all_root_expand.setPadding(0,dp2px(6+(16)*(1-progress)),dp2px(6),dp2px(16))
+    --appbar.Elevation=dp2px(6)*(1-progress)
+  end
+})
 
 
 
@@ -90,6 +113,8 @@ local function 设置滑动跟随(t)
   end
 end
 
+username={Text=""}
+userheadline={Text=""}
 
 comment.onClick=function()
   local pos=pg.getCurrentItem()
@@ -106,20 +131,6 @@ end;
 
 
 回答容器=answer:new(回答id)
-
-mripple.onClick=function()
-  local pos=pg.getCurrentItem()
-  local mview=数据表[pg.adapter.getItem(pos).id]
-  local id=mview.data.author.id
-  if id~="0" then
-    nTView=usericon
-    newActivity("people",{id})
-   else
-    提示("回答作者已设置匿名")
-  end
-end
-
-波纹({mripple},"圆自适应")
 
 if activity.getSharedData("回答单页模式")=="true" then
   pg.setUserInputEnabled(false);
@@ -192,6 +203,27 @@ function 数据添加(t,b)
   end
 
   设置滑动跟随(t.content)
+
+  t.userinfo.onClick=function()
+    local pos=pg.getCurrentItem()
+    local mview=数据表[pg.adapter.getItem(pos).id]
+    local id=mview.data.author.id
+    if id~="0" then
+      nTView=t.usericon
+      newActivity("people",{id})
+     else
+      提示("回答作者已设置匿名")
+    end
+  end
+
+  if b.author.headline=="" then
+    t.userheadline.Text="Ta还没有签名哦~"
+   else
+    t.userheadline.Text=b.author.headline
+  end
+  t.username.Text=b.author.name
+  loadglide(t.usericon,b.author.avatar_url)
+
   --[[print(t.content.parent)
   t.content.parent.setPadding(
   t.content.parent.getPaddingLeft(),
@@ -214,14 +246,16 @@ function 数据添加(t,b)
       end
     end,
     onPageStarted=function(view,url,favicon)
+      t.content.setVisibility(8)
+      if t.progress~=nil then
+        t.progress.setVisibility(0)
+        t.userinfo.visibility=0
+      end
+
       if 全局主题值=="Night" then
         夜间模式回答页(view)
        else
         初始化背景(view)
-      end
-      t.content.setVisibility(8)
-      if t.progress~=nil then
-        t.progress.setVisibility(0)
       end
       加载js(view,获取js("answer_pages"))
       加载js(view,获取js("imgplus"))
@@ -234,6 +268,12 @@ function 数据添加(t,b)
         t.progress.getParent().removeView(t.progress)
         t.progress=nil
       end
+      if 全局主题值=="Night" then
+        夜间模式回答页(view)
+       else
+        初始化背景(view)
+      end
+
       --加载js(view,获取js("eruda"))
       屏蔽元素(view,{".AnswerReward",".AppViewRecommendedReading"})
 
@@ -247,7 +287,7 @@ function 数据添加(t,b)
               "window.scrollRestorerPos",
               {onReceiveValue=function(b)
                   local 保存滑动位置 = tonumber(b) or 0
-                  if 保存滑动位置>userinfo.height then
+                  if 保存滑动位置>t.userinfo.height then
                     appbar.setExpanded(false);
                     dtl.layoutParams.getBehavior().slideDown(dtl);
                     提示("已恢复到上次滑动位置")
@@ -341,7 +381,6 @@ function 初始化页(mviews)
       提示(mviews.data.comment_count.."条评论")
       return true
     end
-    loadglide(usericon,mviews.data.author.avatar_url)
     if mviews.data.author.headline=="" then
       userheadline.Text="Ta还没有签名哦~"
      else
@@ -382,7 +421,6 @@ function 加载页(data,isleftadd)
           点赞状态=cb.relationship.voting==1,
           感谢状态=cb.relationship.is_thanked
         }
-
         数据添加(data.ids,cb) --添加数据
         data.load=true
         初始化页(data)
@@ -401,6 +439,7 @@ function 首次设置()
       回答容器.isleft=true
     end
     _title.Text=tab.title
+
   end)
   for i=1,3 do
     pg.setCurrentItem(1,false)--设置正确的列
@@ -439,7 +478,9 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，其他�
       dtl.layoutParams.getBehavior().slideUp(dtl)
       --获取当前mviews
       local index=pg.getCurrentItem()
-      local mviews=数据表[pg.adapter.getItem(index).id]
+      local mviews=数据表[pg.adapter.getItem(pos).id]
+
+      回答容器:updateLR()
       --判断页面是否在开头or结尾 是否需要添加
       if pg.adapter.getItemCount()==pos+1 then
         if 回答容器.isright then
@@ -476,6 +517,8 @@ defer local question_base=answer
     回答容器.isleft=true
   end
   _title.Text=tab.title
+  all_answer_expand.Text="点击查看全部"..(tab.answer_count).."个回答 >"
+  expand_title.text=tab.title
 end)
 
 

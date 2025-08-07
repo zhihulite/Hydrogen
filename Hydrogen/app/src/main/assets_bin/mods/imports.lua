@@ -97,6 +97,12 @@ import "com.google.android.material.shape.ShapeAppearanceModel"
 import "com.google.android.material.shape.RelativeCornerSize"
 
 MaterialContainerTransform=luajava.bindClass("com.google.android.material.transition.MaterialContainerTransform")
+--
+if tostring(this.getSharedData("预见性返回手势"))=="false"
+function MaterialContainerTransform(a,b) 
+return luajava.override(luajava.bindClass("com.google.android.material.transition.MaterialContainerTransform"),{isSeekingSupported=function() return false end},a,b)
+end
+end
 MyLuaFileFragment=luajava.bindClass("com.hydrogen.MyLuaFileFragment")
 MaterialSharedAxis=luajava.bindClass("com.google.android.material.transition.MaterialSharedAxis")
 MaterialArcMotion=luajava.bindClass("com.google.android.material.transition.MaterialArcMotion")

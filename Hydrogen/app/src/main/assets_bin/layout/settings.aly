@@ -3,7 +3,7 @@
   id="mainLay";
   layout_height="fill";
   layout_width="fill";
-  backgroundColor=backgroundc;
+  backgroundColor=res.color.attr.colorSurfaceContainer;
   {
     LinearLayout,
     layout_width="fill",
@@ -19,7 +19,8 @@
     {
       ListView;
       layout_height="fill";
-      layout_width="-1";
+      layout_width="-1",
+      clipToPadding=false,
       DividerHeight=0;
       id="settings_list";
     };

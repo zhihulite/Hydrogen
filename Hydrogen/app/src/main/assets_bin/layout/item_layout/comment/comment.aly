@@ -79,16 +79,18 @@
             lineHeight=内容行高;
           };
           {ImageView,
-layout_width="wrap",
-layout_height="wrap",
+            layout_width="wrap",
+            layout_height="wrap",
             layout_marginLeft="0dp";
             layout_marginRight="4dp";
             id="预览图片",
           },
           {
             LinearLayout;
+            layout_marginTop="4dp";
             layout_gravity="center|left";
             -- orientation="vertical";
+
             {Chip,
               id="赞";
               layout_marginTop="4dp";
@@ -99,6 +101,9 @@ layout_height="wrap",
               ChipIconSize=dp2px(18),
               IconStartPadding=dp2px(4),
               TextStartPadding=dp2px(4),
+              MaxWidth="200dp",
+              ChipStartPadding="8dp",
+              ChipEndPadding="8dp",
               ChipStrokeWidth="0dp",
               ChipStrokeColor=ColorStateList.valueOf(res.color.attr.colorOutlineVariant),
               ChipCornerRadius="16dp",
@@ -115,6 +120,9 @@ layout_height="wrap",
               ChipIconSize=dp2px(18),
               IconStartPadding=dp2px(4),
               TextStartPadding=dp2px(4),
+              MaxWidth="200dp",
+              ChipStartPadding="8dp",
+              ChipEndPadding="8dp",
               ChipStrokeWidth="0dp",
               ChipStrokeColor=ColorStateList.valueOf(res.color.attr.colorOutlineVariant),
               ChipCornerRadius="16dp",
