@@ -11,6 +11,7 @@ on:
           - 'assembleRelease'
           - 'assembleRelease_unlua'
           - 'build_and_publish'
+          - 'build_and_nightly_publish'
         default: 'assembleRelease'
 
 jobs:
@@ -101,3 +102,14 @@ jobs:
           tag_name: v0.${{ steps.extract_version.outputs.version }}
           files: |
             ${{ steps.extract_version.outputs.apk_file }}
+            
+      - name: Publish Release APK to GitHub Nightly Releases
+        if: github.event.inputs.build_type == 'build_and_nightly_publish'
+        id: nightly_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: nightly
+          name: Nightly Build (${{ env.date_today }})
+          files: |
+            ${{ steps.extract_version.outputs.apk_file }}
+          prerelease: true
