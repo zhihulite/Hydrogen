@@ -1,0 +1,11 @@
+<animated-vector
+        xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/fox">
+    <target
+        android:name="foxGroup"
+        android:animation="@xml/fox_path" />
+
+    <target
+        android:name="star"
+        android:animation="@xml/star_path" />
+</animated-vector>

@@ -1,0 +1,13 @@
+<set xmlns:android="http://schemas.android.com/apk/res/android">
+    <objectAnimator
+        android:duration="320"
+        android:propertyName="translateY"
+        android:valueFrom="256.0"
+        android:valueTo="36.0" />
+    <objectAnimator
+        android:duration="360"
+        android:propertyName="translateX"
+        android:valueFrom="128.0"
+        android:valueTo="30.0" />
+
+</set>

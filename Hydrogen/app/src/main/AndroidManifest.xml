@@ -60,14 +60,14 @@
             android:value="2f2db2934f8eb0cddf80ba54abd741b1" />
 
         <activity
-            android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize"
+            android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
             android:launchMode="singleTask"
             android:resizeableActivity="true"
             android:enableOnBackInvokedCallback="true"
             android:windowSoftInputMode="adjustResize|stateHidden"
             android:name="com.jesse205.superlua.Main"
             android:exported="true"
-            android:theme="@style/Theme.Jesse205.Welcome">
+            android:theme="@style/Theme.Jesse205.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -144,14 +144,14 @@
         </activity>
 
         <activity
-            android:configChanges="keyboardHidden|orientation|screenSize|screenLayout"
+            android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|uiMode"
             android:windowSoftInputMode="adjustResize|stateHidden"
             android:enableOnBackInvokedCallback="true"
             android:exported="true"
             android:name="com.jesse205.superlua.LuaActivity" />
 
         <activity
-            android:configChanges="keyboardHidden|orientation|screenSize|screenLayout"
+            android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|uiMode"
             android:documentLaunchMode="intoExisting"
             android:windowSoftInputMode="adjustResize|stateHidden"
             android:enableOnBackInvokedCallback="true"
@@ -160,7 +160,7 @@
             android:name="com.jesse205.superlua.LuaActivityX" />
 
         <activity
-            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|navigation|screenLayout|fontScale|smallestScreenSize|keyboardHidden|orientation|screenSize"
+            android:configChanges="mcc|mnc|locale|touchscreen|keyboard|navigation|screenLayout|fontScale|smallestScreenSize|keyboardHidden|orientation|screenSize|uiMode"
             android:windowSoftInputMode="adjustResize|stateHidden"
             android:exported="true"
             android:enableOnBackInvokedCallback="true"

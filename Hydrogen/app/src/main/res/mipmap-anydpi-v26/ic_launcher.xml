@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
     <background android:drawable="@color/iconcolor"/>
-    <foreground android:drawable="@mipmap/ic_launcher_foreground"/>
-   <monochrome android:drawable="@drawable/f" />
+    <foreground android:drawable="@drawable/fox">
+        
+    </foreground>
+    <monochrome android:drawable="@drawable/monet_fox"/>
 </adaptive-icon>

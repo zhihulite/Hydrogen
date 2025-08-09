@@ -4,4 +4,12 @@
     <!--增加启动图-->
     <style name="Theme.Jesse205.Welcome" parent="Theme.Jesse205.Default" />
 
+    <!--splash-->
+    <style name="Theme.Jesse205.Splash" parent="Theme.SplashScreen">
+    <item name="windowSplashScreenAnimatedIcon">@xml/avd</item>
+    <item name="windowSplashScreenAnimationDuration">400</item>
+   
+        <item name="postSplashScreenTheme">@style/Theme.Jesse205.Default</item>
+    </style>
+    
 </resources>
