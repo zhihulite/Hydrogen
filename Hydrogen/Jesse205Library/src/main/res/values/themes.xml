@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="AppTheme" parent="Theme.Material3.Light">
+    <style name="AppTheme" parent="Theme.Material3Expressive.Light">
         <item name="android:navigationBarColor">?colorSurface</item>
         <item name="windowLightStatusBar">true</item>
         <item name="windowLightNavigationBar">true</item>
@@ -22,7 +22,7 @@
 
     <style name="Theme.Jesse205.Default" parent="AppTheme.Blue">
     </style>
-   
+       
     <style name="Theme.Jesse205.Monet" parent="AppTheme.Monet">
     </style>
     

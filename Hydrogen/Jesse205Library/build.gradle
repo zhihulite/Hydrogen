@@ -4,7 +4,7 @@ plugins {
 
 android {
     namespace 'com.jesse205'
-    compileSdk 34
+    compileSdk 35
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -45,6 +45,7 @@ dependencies {
     implementation fileTree("libs")
     implementation project(':androlua')
     implementation project(':mdc')
+    implementation libs.androidx.splashscreen
     implementation libs.androidx.appcompat
     implementation libs.androidx.appcompat.resources
     implementation libs.fastscroll

@@ -86,9 +86,9 @@ appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{
 
      else
       --_title.setPadding(0,dp2px(60)*(1-progress),0,0)
-all_root.alpha=progress
+      all_root.alpha=progress
       mainLay.backgroundColor=IArgbEvaluator.evaluate(progress,int(转0x(backgroundc)),int(res.color.attr.colorSurfaceContainer))
-all_root_expand.backgroundColor=IArgbEvaluator.evaluate(progress,int(转0x(backgroundc)),int(res.color.attr.colorSurfaceContainer))
+      all_root_expand.backgroundColor=IArgbEvaluator.evaluate(progress,int(转0x(backgroundc)),int(res.color.attr.colorSurfaceContainer))
 
     end
     local views=数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids
@@ -484,7 +484,7 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，其他�
       --判断页面是否在开头or结尾 是否需要添加
       if pg.adapter.getItemCount()==pos+1 then
         if 回答容器.isright then
-          pg.setCurrentItem(pos-1,false)
+          pg.setCurrentItem(pos-1,true)
           return 提示("前面没有内容啦")
         end
         --在最右添加 防止无法右滑
@@ -492,7 +492,7 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，其他�
         加载页(mviews)
        elseif pos==0 and pg.adapter.getItemCount()>=0
         if 回答容器.isleft then
-          pg.setCurrentItem(1,false)
+          pg.setCurrentItem(1,true)
           return 提示("已经到最左了")
         end
         --在最前面添加fragment 防止无法左滑

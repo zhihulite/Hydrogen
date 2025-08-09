@@ -81,7 +81,6 @@ function 设置视图(t)
   if thisFragment
     thisFragment.setContainerView(loadlayout(t))
     if nOView~=nil
-
       local backward=MaterialContainerTransform(activity,false)
       .setStartView(thisFragment.container)
       .setEndView(nOView)
@@ -90,6 +89,11 @@ function 设置视图(t)
       .addTarget(nOView)
       .setStartShapeAppearanceModel(OldWindowShape)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
+else
+local backward = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+.addTarget(thisFragment.container)
+.addTarget(ff)
+thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
 
     end
    else
@@ -101,8 +105,6 @@ function newActivity(f,b,c)
     return activity.newActivity(f,b)
   end
   b=b or {}
-  backward = MaterialSharedAxis(MaterialSharedAxis.X, false);
-  forward = MaterialSharedAxis(MaterialSharedAxis.X, true);
   local ff=f1
   local nt=tonumber(os.time())
   local t = activity.getSupportFragmentManager().beginTransaction()
@@ -149,7 +151,7 @@ function newActivity(f,b,c)
         WindowShape.setBottomLeftCornerSize(0)
       end
     end
-    fragment=MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,nOView=nTView,OldWindowShape=WindowShape.build()})
+    fragment=MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,nOView=nTView,OldWindowShape=WindowShape.build()} )
     local forward=MaterialContainerTransform(activity,true)
     .setStartView(nTView)
     .setEndView(ff)
@@ -167,8 +169,8 @@ function newActivity(f,b,c)
     fragment.setSharedElementEnterTransition(forward).setSharedElementReturnTransition(backward).setEnterTransition(forward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
     t.add(ff.id,fragment)
    else
-    backward = MaterialSharedAxis(MaterialSharedAxis.X, false);
-    forward = MaterialSharedAxis(MaterialSharedAxis.X, true);
+    backward = MaterialSharedAxis(MaterialSharedAxis.Z, false);
+    forward = MaterialSharedAxis(MaterialSharedAxis.Z, true);
     t.add(ff.id,MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,}).setEnterTransition(forward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward))
 
   end

@@ -2,6 +2,7 @@ package com.jesse205.superlua;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+import androidx.core.splashscreen.SplashScreen;
 
 
 public class Main extends LuaActivity {
@@ -9,6 +10,8 @@ public class Main extends LuaActivity {
 	@SuppressLint("SuspiciousIndentation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
+        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
+        
 	    setCheckUpdate(true);
 		super.onCreate(savedInstanceState);
 		if (getIntent().getBooleanExtra("isVersionChanged", false) && (savedInstanceState == null)) {

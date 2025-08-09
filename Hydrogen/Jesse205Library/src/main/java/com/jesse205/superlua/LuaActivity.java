@@ -9,10 +9,14 @@ import android.content.res.TypedArray;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.window.BackEvent;
 import android.window.OnBackAnimationCallback;
 import android.window.OnBackInvokedDispatcher;
 import androidx.annotation.NonNull;
+import androidx.core.splashscreen.SplashScreen;
+
+
 import com.luajava.LuaObject;
 import com.luajava.LuaState;
 
@@ -29,107 +33,82 @@ public class LuaActivity extends com.androlua.LuaActivity {
   private long lastTime = 0;
   public boolean updating = false;
   private boolean checkUpdate = false;
+  private String TAG = "LuaActivity";
 
   private String luaPath;
   public String luaDir;
   private LuaState L;
   private LuaObject mOnBackPressed;
   private OnBackAnimationCallback OnBackAnimationCallback;
-  
+
   private WeakReference<Context> mOriginalContextRef;
-  
+
   // 获取原始 Context
   public Context getOriginalContext() {
-      return mOriginalContextRef != null ? mOriginalContextRef.get() : null;
+    return mOriginalContextRef != null ? mOriginalContextRef.get() : null;
   }
-  
+
   @Override
   protected void attachBaseContext(Context base) {
-  
+
     mOriginalContextRef = new WeakReference<>(base);
     // 获取字体大小设置
     Object fontSizeObj = this.getSharedData("font_size");
-  
+
     String fontSizeStr;
     if (fontSizeObj instanceof String) {
-        fontSizeStr = (String) fontSizeObj;
+      fontSizeStr = (String) fontSizeObj;
     } else {
-        fontSizeStr = "20.0";  // 默认值
+      fontSizeStr = "20.0"; // 默认值
     }
 
     try {
-        Configuration config = new Configuration(base.getResources().getConfiguration());
-        float fontScale = Float.parseFloat(fontSizeStr) / 20;
-        config.fontScale = fontScale;
+      Configuration config = new Configuration(base.getResources().getConfiguration());
+      float fontScale = Float.parseFloat(fontSizeStr) / 20;
+      config.fontScale = fontScale;
 
-        // 使用base创建新的Context
-        Context updatedContext = base.createConfigurationContext(config);
-        super.attachBaseContext(updatedContext);
+      // 使用base创建新的Context
+      Context updatedContext = base.createConfigurationContext(config);
+      super.attachBaseContext(updatedContext);
     } catch (NumberFormatException e) {
-         super.attachBaseContext(base);  // 使用原始的base context以防出错
+      super.attachBaseContext(base); // 使用原始的base context以防出错
     }
   }
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
-    if (!checkUpdate) checkUpdate = getIntent().getBooleanExtra("checkUpdate", false);
-    if (checkUpdate) {
-      try {
-        PackageInfo packageInfo = getPackageManager().getPackageInfo(this.getPackageName(), 0);
-        lastTime = packageInfo.lastUpdateTime; // 更新时间
-      } catch (PackageManager.NameNotFoundException e) {
-        e.printStackTrace();
+    if (savedInstanceState == null) {
+      if (!checkUpdate) checkUpdate = getIntent().getBooleanExtra("checkUpdate", false);
+      if (checkUpdate) {
+        try {
+          PackageInfo packageInfo = getPackageManager().getPackageInfo(this.getPackageName(), 0);
+          lastTime = packageInfo.lastUpdateTime; // 更新时间
+        } catch (PackageManager.NameNotFoundException e) {
+          e.printStackTrace();
+        }
+        SharedPreferences info = getSharedPreferences("appInfo", 0);
+        oldLastTime = info.getLong("lastUpdateTime", 0);
+        updating = oldLastTime != lastTime;
+        if (updating) setDebug(false);
       }
-      SharedPreferences info = getSharedPreferences("appInfo", 0);
-      oldLastTime = info.getLong("lastUpdateTime", 0);
-      updating = oldLastTime != lastTime;
-      if (updating) setDebug(false);
-    }
+	
+	// Handle the splash screen transition.
+	SplashScreen.installSplashScreen(this);
 
     super.onCreate(savedInstanceState);
 
-    if (checkUpdate && (oldLastTime != lastTime)) {
-      Intent intent = new Intent(this, Welcome.class);
-      intent.putExtra("newIntent", getIntent());
-      intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-      startActivity(intent);
-      finish();
-    }
-    L = getLuaState();
-    mOnBackPressed = L.getLuaObject("onBackPressed");
-    if (mOnBackPressed.isNil()) mOnBackPressed = null;
-
-    if (Build.VERSION.SDK_INT >= 34) {
-      OnBackAnimationCallback =
-          new OnBackAnimationCallback() {
-            @Override
-            public void onBackInvoked() {
-              // 调用返回事件处理方法
-              runFunc("onBackInvoked");
-            }
-
-            @Override
-            public void onBackStarted(@NonNull BackEvent backEvent) {
-              runFunc("onBackStarted", backEvent);
-            }
-
-            @Override
-            public void onBackProgressed(@NonNull BackEvent backEvent) {
-              runFunc("onBackProgressed", backEvent);
-            }
-
-            @Override
-            public void onBackCancelled() {
-              runFunc("onBackCancelled");
-            }
-          };
-
-      // 注册返回回调，优先级为默认值
-      if (this.getSharedData("预见性返回手势") == "true") {
-        getOnBackInvokedDispatcher()
-            .registerOnBackInvokedCallback(
-                OnBackInvokedDispatcher.PRIORITY_OVERLAY, OnBackAnimationCallback);
+      if (checkUpdate && (oldLastTime != lastTime)) {
+        Intent intent = new Intent(this, Welcome.class);
+        intent.putExtra("newIntent", getIntent());
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        startActivity(intent);
+        finish();
       }
+      L = getLuaState();
+      mOnBackPressed = L.getLuaObject("onBackPressed");
+      if (mOnBackPressed.isNil()) mOnBackPressed = null;
+    } else {
+      onRestoreInstanceState(savedInstanceState);
     }
   }
 
@@ -175,13 +154,14 @@ public class LuaActivity extends com.androlua.LuaActivity {
   public void onSaveInstanceState(Bundle outState) {
     // TODO: Implement this method
     super.onSaveInstanceState(outState);
+    Log.i(TAG, "save" + outState.toString());
     runFunc("onSaveInstanceState", outState);
   }
-  
+
   @Override
   protected void onDestroy() {
     super.onDestroy();
-    mOriginalContextRef = null;  // 清理引用
+    mOriginalContextRef = null; // 清理引用
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE
         && OnBackAnimationCallback != null) {
@@ -203,6 +183,7 @@ public class LuaActivity extends com.androlua.LuaActivity {
     // TODO: Implement this method
     try {
       super.onRestoreInstanceState(savedInstanceState);
+      Log.i(TAG, "restore" + savedInstanceState.toString());
     } catch (Exception e) {
       sendError("onRestoreInstanceState", e);
     }
@@ -265,7 +246,9 @@ public class LuaActivity extends com.androlua.LuaActivity {
         this.getTheme().obtainStyledAttributes(new int[] {android.R.attr.colorPrimary});
     taskDescription =
         new ActivityManager.TaskDescription(
-            taskDescription.getLabel(), taskDescription.getIcon(), array.getColor(0, 0xFF0000) | 0xFF000000);
+            taskDescription.getLabel(),
+            taskDescription.getIcon(),
+            array.getColor(0, 0xFF0000) | 0xFF000000);
     array.recycle();
     super.setTaskDescription(taskDescription);
   }

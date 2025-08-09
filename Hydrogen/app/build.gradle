@@ -83,10 +83,7 @@ dependencies {
     annotationProcessor libs.glide.compiler
     implementation libs.webviewup.core
     implementation libs.androidx.activity  
-    // kotlin 标准库 解决kotlin-stdlib-1.8.22 kotlin-stdlib-jdk8:1.6.21 class冲突
-    implementation libs.kotlin.stdlib.jdk7
-    implementation libs.kotlin.stdlib.jdk8
-    implementation 'androidx.core:core-splashscreen:1.0.0-beta02'
+    implementation libs.androidx.splashscreen
     implementation fileTree("libs")
     implementation project(':androlua')
     implementation project(':Jesse205Library')

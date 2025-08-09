@@ -13,10 +13,10 @@ flexbox = "3.0.0"
 glide = "4.16.0"
 webviewup = "0.1.0"
 activity = "1.9.3"
-kotlin = "1.8.22"
 fastscroll = "1.2.0"
 agp = "8.6.0"
 core = "1.16.0"
+splashscreen = "1.2.0-rc01"
 
 [libraries]
 # AndroidX
@@ -32,6 +32,7 @@ androidx-cardview = { group = "androidx.cardview", name = "cardview", version.re
 androidx-coordinatorlayout = { group = "androidx.coordinatorlayout", name = "coordinatorlayout", version.ref = "coordinatorlayout" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-core = { group = "androidx.core", name = "core", version.ref = "core"}
+androidx-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
 
 # Google
 flexbox = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexbox" }
@@ -44,10 +45,6 @@ fastscroll = { group = "me.zhanghai.android.fastscroll", name = "library", versi
 
 # Activity
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
-
-# Kotlin
-kotlin-stdlib-jdk7 = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk7", version.ref = "kotlin" }
-kotlin-stdlib-jdk8 = { group = "org.jetbrains.kotlin", name = "kotlin-stdlib-jdk8", version.ref = "kotlin" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
