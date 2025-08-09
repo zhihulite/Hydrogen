@@ -42,6 +42,8 @@ jobs:
             (cd Hydrogen && ./gradlew app:assembleRelease_unlua)
           elif [ "${{ github.event.inputs.build_type }}" = "build_and_publish" ]; then
             (cd Hydrogen && ./gradlew app:assembleRelease)
+          elif [ "${{ github.event.inputs.build_type }}" = "build_and_nightly_publish" ]; then
+            (cd Hydrogen && ./gradlew app:assembleRelease)
           fi
 
       # 上传 assembleRelease 产物
@@ -66,7 +68,7 @@ jobs:
 
       # 提取版本号
       - name: Extract version from APK filename
-        if: github.event.inputs.build_type == 'build_and_publish'
+        if: github.event.inputs.build_type == 'build_and_publish' || github.event.inputs.build_type == 'build_and_nightly_publish'
         id: extract_version
         run: |
           # 查找 APK 文件
@@ -74,6 +76,7 @@ jobs:
           if [ -n "$APK_FILE" ]; then
             # 获取 APK 文件的创建时间
             BUILD_TIME=$(stat -c '%y' "$APK_FILE" | cut -d'.' -f1)
+            echo "build_time=$BUILD_TIME" >> $GITHUB_OUTPUT
             echo "APK 文件创建时间: $BUILD_TIME"
 
             # 提取版本号
@@ -109,7 +112,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: nightly
-          name: Nightly Build (${{ env.date_today }})
+          name: Nightly Build (${{ steps.extract_version.outputs.build_time }})
           files: |
             ${{ steps.extract_version.outputs.apk_file }}
           prerelease: true
