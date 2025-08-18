@@ -64,7 +64,7 @@ developers={
     name="orz12",
     qq=0,
     avatar="https://avatars.githubusercontent.com/u/17450420?v=4",
-    message="早期布局优化",
+    message="布局优化",
     url="https://gitee.com/orz12" },
   {
     name="0xdeadc0de",
@@ -72,7 +72,13 @@ developers={
     qq=0,
     avatar="https://avatars.githubusercontent.com/u/26507452?v=4",
     url="https://github.com/1582421598" },
-
+  {
+    name="NullCola",
+    message="绘制矢量图标",
+    qq=0,
+    avatar="https://cdn5.telesco.pe/file/dIqKSocvTeoZyC6H62pJklUCeE-CdACKaKdoOnYAh4NEqsN8j3eGPjfIapUf4g12wPfuR436kvf4FpgUd7RWb98pXDO-sIEVo3vjGSn1HpicBdLghGPA8Cojhq4kQ7MfAtYLB1DtNsGygXP2uiAUkY5tMhpK6oTLYM4MhBlQqs0LfuZf3mlShf1Gc4gPCk1AcZ9AOZMVqq9UXy_lObNlfvjvWg32L5Oe5SXOd89xdeoIYZh6CIF3WxWX63AZoybG-Uw3UclcmYNit1FDyc3GHIWVFvlY3Fx8qiFUDH18GIW-6dTDDhPlVhMBRUcjDD-U7Qrlw3FT-H2aSjsouzfhBA.jpg",
+    url="https://t.me/NullCola" },
+    
 }
 
 --启用开源许可
