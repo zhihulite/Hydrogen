@@ -365,6 +365,8 @@ return function(webview)
       提示("查找"..状态.." 已查找第"..activeMatchOrdinal+1 .."个 ".."共有"..numberOfMatches-activeMatchOrdinal-1 .."个待查找")
   end}
 
+  --解决部分机型文字缩放无效的bug
+  webview.getSettings().setTextZoom(100*(tonumber(this. getSharedData("font_size") or 20)/20));
   local child=table.clone(Utils)
   child.webview=webview
 
