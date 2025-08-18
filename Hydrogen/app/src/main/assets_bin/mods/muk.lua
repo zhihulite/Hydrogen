@@ -89,11 +89,11 @@ function 设置视图(t)
       .addTarget(nOView)
       .setStartShapeAppearanceModel(OldWindowShape)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
-else
-local backward = MaterialSharedAxis(MaterialSharedAxis.Z, false)
-.addTarget(thisFragment.container)
-.addTarget(ff)
-thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
+     else
+      local backward = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+      .addTarget(thisFragment.container)
+      .addTarget(ff)
+      thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
 
     end
    else
@@ -278,7 +278,12 @@ function edgeToedge(顶栏,底栏,callback)
       end
     end
     if callback then
-      callback()
+      ViewCompat.setOnApplyWindowInsetsListener(view,OnApplyWindowInsetsListener{
+        onApplyWindowInsets=function(底栏,windowInsets,initPadding)
+          callback()
+          return windowInsets
+        end
+      })
     end
   end
 
@@ -787,7 +792,7 @@ function 主题(str)
     stextc="#424242"
     --backgroundc="#ffffffff"
     backgroundc=dec2hex(res.color.attr.colorSurface)
-    barbackgroundc=android.res.color.attr.colorBackground&0xFFFFFF+0xFF000000*0.8
+    barbackgroundc=android.res.color.attr.colorBackground
     cardbackc="#fff1f1f1"
     barc=dec2hex(res.color.attr.colorSurfaceContainerLow)
     viewshaderc="#00000000"
@@ -814,7 +819,8 @@ function 主题(str)
     stextc="#808080"
     --backgroundc="#ff191919"
     backgroundc=dec2hex(res.color.attr.colorSurface)
-    barbackgroundc=android.res.color.attr.colorBackground&0xFFFFFF+0xFF000000*0.8
+    backgroundc="#ff000000"
+    barbackgroundc=android.res.color.attr.colorBackground
     cardbackc="#ff212121"
     viewshaderc="#80000000"
     grayc="#212121"

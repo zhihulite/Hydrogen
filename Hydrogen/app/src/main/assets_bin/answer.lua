@@ -101,7 +101,12 @@ appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{
   end
 })
 
-
+function onPause()
+数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.setLayerType(View.LAYER_TYPE_SOFTWARE,nil)
+end
+function onResume()
+数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.setLayerType(View.LAYER_TYPE_HARDWARE,nil)
+end
 
 local function 设置滑动跟随(t)
   t.onGenericMotion=function(view,x,y,lx,ly)
@@ -160,6 +165,13 @@ all_root.onClick=function(v)
       end
     end)
   end
+end
+
+all_root_expand.onClick=function()
+  if 问题id==nil or 问题id=="null" then
+    return 提示("加载中")
+  end
+  newActivity("question",{问题id})
 end
 
 all_root.onLongClick=function(view)

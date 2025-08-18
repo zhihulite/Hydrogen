@@ -16,6 +16,13 @@ content.getSettings()
 .setBuiltInZoomControls(true)
 .setSupportZoom(true)
 
+function onPause()
+content.setLayerType(View.LAYER_TYPE_SOFTWARE,nil)
+end
+function onResume()
+content.setLayerType(View.LAYER_TYPE_HARDWARE,nil)
+end
+
 MyWebViewUtils=require "views/WebViewUtils"(content)
 
 MyWebViewUtils

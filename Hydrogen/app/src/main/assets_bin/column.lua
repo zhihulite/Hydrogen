@@ -30,6 +30,13 @@ MyWebViewUtils
 :initDownloadListener()
 :setZhiHuUA()
 
+function onPause()
+content.setLayerType(View.LAYER_TYPE_SOFTWARE,nil)
+end
+function onResume()
+content.setLayerType(View.LAYER_TYPE_HARDWARE,nil)
+end
+
 if 类型=="本地" then
   task(1,function()
     _title.text="本地内容"
