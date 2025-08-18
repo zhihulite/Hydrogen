@@ -30,6 +30,7 @@ data = processTable{
 
   {__type=4,subtitle="夜间模式追随系统",status={Checked=Boolean.valueOf(this.getSharedData("Setting_Auto_Night_Mode"))}},
   {__type=4,subtitle="夜间模式",status={Checked=Boolean.valueOf(this.getSharedData("Setting_Night_Mode"))}},
+  {__type=4,subtitle="OLED纯黑",status={Checked=Boolean.valueOf(this.getSharedData("OLED"))}},
 
   {__type=4,subtitle="不加载图片",status={Checked=Boolean.valueOf(this.getSharedData("不加载图片"))}},
   {__type=4,subtitle="智能无图模式",status={Checked=Boolean.valueOf(this.getSharedData("智能无图模式"))}},

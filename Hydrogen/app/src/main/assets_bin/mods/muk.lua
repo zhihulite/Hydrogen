@@ -819,7 +819,9 @@ function 主题(str)
     stextc="#808080"
     --backgroundc="#ff191919"
     backgroundc=dec2hex(res.color.attr.colorSurface)
-    backgroundc="#ff000000"
+    if Boolean.valueOf(this.getSharedData("OLED") or false)
+      backgroundc="#ff000000"
+    end
     barbackgroundc=android.res.color.attr.colorBackground
     cardbackc="#ff212121"
     viewshaderc="#80000000"
