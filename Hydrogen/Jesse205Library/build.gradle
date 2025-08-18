@@ -44,7 +44,7 @@ android {
 dependencies {
     implementation fileTree("libs")
     implementation project(':androlua')
-    implementation project(':mdc')
+    implementation libs.material
     implementation libs.androidx.splashscreen
     implementation libs.androidx.appcompat
     implementation libs.androidx.appcompat.resources

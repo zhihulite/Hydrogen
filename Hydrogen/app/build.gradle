@@ -13,7 +13,7 @@ android {
         versionCode 1
         versionName "new"
     }
-    
+
     signingConfigs {
         release {
             storeFile file("${project.rootDir}${File.separator}hydrogen.jks")
@@ -52,8 +52,8 @@ android {
             ndk.abiFilters 'armeabi-v7a', 'x86', 'arm64-v8a'
         }
     }
-    
-    
+
+
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_17
@@ -82,12 +82,15 @@ dependencies {
     implementation libs.glide
     annotationProcessor libs.glide.compiler
     implementation libs.webviewup.core
-    implementation libs.androidx.activity  
+    implementation libs.androidx.activity
     implementation libs.androidx.splashscreen
+    //implementation 'com.github.ZL114514:material-components-android:hydrogen-SNAPSHOT'
+    
+
     implementation fileTree("libs")
     implementation project(':androlua')
     implementation project(':Jesse205Library')
-    implementation project(':mdc')
+    implementation libs.material
 }
 
 // 保存原始的 assets 和 resources 目录路径
@@ -108,7 +111,7 @@ project.afterEvaluate { project ->
     tasks.register("mergeAssetsBin", Copy) {
         group = "自定义构建"
         description = "合并所有模块的 assets_bin 到临时目录"
-        
+
         doFirst {
             logger.lifecycle("Preparing to merge assets...")
             if (mergedAssetsDir.exists()) {
@@ -125,11 +128,11 @@ project.afterEvaluate { project ->
                 logger.lifecycle("Adding assets from: ${sub.name}")
             }
         }
-        
+
         into mergedAssetsDir
         includeEmptyDirs = false
         duplicatesStrategy = DuplicatesStrategy.WARN
-        
+
         enabled = isLuaBuild  // 只有Lua构建才启用
     }
 
@@ -137,7 +140,7 @@ project.afterEvaluate { project ->
     tasks.register("mergeLuaLibs", Copy) {
         group = "自定义构建"
         description = "合并所有模块的 luaLibs 到临时目录"
-        
+
         doFirst {
             logger.lifecycle("Preparing to merge Lua resources...")
             if (mergedLuaDir.exists()) {
@@ -154,11 +157,11 @@ project.afterEvaluate { project ->
                 logger.lifecycle("Adding Lua from: ${sub.name}")
             }
         }
-        
+
         into file("${mergedLuaDir}${File.separator}lua")
         includeEmptyDirs = false
         duplicatesStrategy = DuplicatesStrategy.WARN
-        
+
         enabled = isLuaBuild  // 只有Lua构建才启用
     }
 
@@ -166,10 +169,10 @@ project.afterEvaluate { project ->
     tasks.register("modifyAssetsAndResources") {
         group = "自定义构建"
         description = "修改源集目录配置"
-        
+
         dependsOn mergeAssetsBin
         dependsOn mergeLuaLibs
-        
+
         doFirst {
             if (isLuaBuild) {
                 // 保存原始目录配置
@@ -178,13 +181,13 @@ project.afterEvaluate { project ->
                     originalResourcesDirs = android.sourceSets.main.resources.srcDirs.collect()
                     logger.lifecycle("Original assets dirs saved")
                 }
-                
+
                 // 添加临时目录到源集
                 android.sourceSets.main.assets.srcDirs += mergedAssetsDir
                 android.sourceSets.main.resources.srcDirs += mergedLuaDir
-                
+
                 logger.lifecycle("Modified source sets for Lua build")
-                
+
                 logger.lifecycle("Adding Lua from: ${android.sourceSets.main.resources.srcDirs}")
             } else {
                 logger.lifecycle("Skipping source set modification for non-Lua build")
@@ -196,14 +199,14 @@ project.afterEvaluate { project ->
     tasks.register("restoreAssetsAndResources") {
         group = "自定义构建"
         description = "恢复原始源集配置"
-        
-        
+
+
         doLast {
             if (isLuaBuild && originalAssetsDirs != null) {
                 android.sourceSets.main.assets.setSrcDirs(originalAssetsDirs)
                 android.sourceSets.main.resources.setSrcDirs(originalResourcesDirs)
                 logger.lifecycle("Restored original source sets")
-                
+
                 // 清理临时目录
                 mergedAssetsDir.deleteDir()
                 mergedLuaDir.deleteDir()
@@ -216,12 +219,12 @@ project.afterEvaluate { project ->
     tasks.named('assembleRelease') {
         group = "自定义构建"
         description = "带Lua资源合并的发布构建"
-        
+
         // 必须要清理 否则概率无法打包
         dependsOn cleanDynamicIntermediates
         dependsOn modifyAssetsAndResources
         finalizedBy restoreAssetsAndResources
-        
+
 
         doLast {
             if (isLuaBuild) {
@@ -234,11 +237,11 @@ project.afterEvaluate { project ->
     tasks.register("assembleRelease_unlua") {
         group = "自定义构建"
         description = "标准发布构建(不带Lua资源合并)"
-        
+
         dependsOn 'assembleRelease'
-        
+
     }
-    
+
     // 配置任务依赖关系
     tasks.named('mergeReleaseAssets') {
         mustRunAfter 'mergeAssetsBin'
@@ -249,7 +252,7 @@ project.afterEvaluate { project ->
         mustRunAfter 'modifyAssetsAndResources'
     }
 
-    
+
     tasks.register('cleanDynamicIntermediates', Delete) {
         group = "构建"
         description = "彻底删除指定的intermediates目录"
@@ -257,11 +260,11 @@ project.afterEvaluate { project ->
         doFirst {
             // 直接删除整个文件夹（如果存在）
             def dirsToDelete = [
-                "${buildDir}${File.separator}intermediates${File.separator}java_res${File.separator}release${File.separator}out${File.separator}lua",
-                "${buildDir}${File.separator}intermediates${File.separator}assets${File.separator}release",
-                "${buildDir}${File.separator}intermediates${File.separator}merged_java_res",
-                "${buildDir}${File.separator}temp-assets",
-                "${buildDir}${File.separator}temp-luaresources"
+                    "${buildDir}${File.separator}intermediates${File.separator}java_res${File.separator}release${File.separator}out${File.separator}lua",
+                    "${buildDir}${File.separator}intermediates${File.separator}assets${File.separator}release",
+                    "${buildDir}${File.separator}intermediates${File.separator}merged_java_res",
+                    "${buildDir}${File.separator}temp-assets",
+                    "${buildDir}${File.separator}temp-luaresources"
             ]
 
             dirsToDelete.each { dirPath ->
@@ -273,11 +276,11 @@ project.afterEvaluate { project ->
                         logger.error("Failed to delete: ${dirPath}")
                     }
                 } else {
-                logger.lifecycle("Directory not found (skipped): ${dirPath}")
+                    logger.lifecycle("Directory not found (skipped): ${dirPath}")
                 }
             }
         }
-    
+
         enabled = isLuaBuild  // 只有Lua构建才启用
     }
 
@@ -313,11 +316,11 @@ def renameApkWithMukVersion() {
     // 重命名APK
     def apkDir = new File(project.buildDir, "outputs${File.separator}apk${File.separator}release")
     def latestApk = apkDir.listFiles()?.findAll { it.name.endsWith('.apk') }?.sort { -it.lastModified() }?.first()
-    
+
     if (latestApk) {
         def newName = "${appName}_${appVersionName}_${mukVersion}${suffix}.apk"
         def newApkPath = new File(apkDir, newName)
-        
+
         if (latestApk.renameTo(newApkPath)) {
             logger.lifecycle("APK renamed to: ${newName}")
         } else {

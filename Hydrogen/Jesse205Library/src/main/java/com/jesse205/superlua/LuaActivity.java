@@ -77,6 +77,8 @@ public class LuaActivity extends com.androlua.LuaActivity {
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
+      super.onCreate(savedInstanceState);
+      
     if (savedInstanceState == null) {
       if (!checkUpdate) checkUpdate = getIntent().getBooleanExtra("checkUpdate", false);
       if (checkUpdate) {
@@ -94,8 +96,6 @@ public class LuaActivity extends com.androlua.LuaActivity {
 	
 	// Handle the splash screen transition.
 	SplashScreen.installSplashScreen(this);
-
-    super.onCreate(savedInstanceState);
 
       if (checkUpdate && (oldLastTime != lastTime)) {
         Intent intent = new Intent(this, Welcome.class);

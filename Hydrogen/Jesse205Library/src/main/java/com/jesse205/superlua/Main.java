@@ -10,10 +10,8 @@ public class Main extends LuaActivity {
 	@SuppressLint("SuspiciousIndentation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
-        
+        super.onCreate(savedInstanceState);
 	    setCheckUpdate(true);
-		super.onCreate(savedInstanceState);
 		if (getIntent().getBooleanExtra("isVersionChanged", false) && (savedInstanceState == null)) {
 			onVersionChanged(getIntent().getStringExtra("newVersionName"), getIntent().getStringExtra("oldVersionName"));
 		}
