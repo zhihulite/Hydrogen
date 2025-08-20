@@ -1143,6 +1143,8 @@ adp=luajava.override(BaseAdapter,{
         if data[position+2].__type==1
           holder.card.shapeAppearanceModel=bottomcard
         end
+       else
+        holder.card.shapeAppearanceModel=bottomcard
       end
     end
     return convertView
@@ -1153,6 +1155,7 @@ settings_list.setAdapter(adp)
 settab=processTable{
   ["夜间模式"]="Setting_Night_Mode",
   ["夜间模式追随系统"]="Setting_Auto_Night_Mode",
+  ["OLED纯黑"]="OLED",
   ["禁用大部分缓存"]="禁用缓存",
   ["暗色工具栏主题"]="theme_darkactionbar",
   ["显示报错信息"]="调式模式",
