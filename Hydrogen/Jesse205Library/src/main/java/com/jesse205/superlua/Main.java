@@ -10,11 +10,12 @@ public class Main extends LuaActivity {
 	@SuppressLint("SuspiciousIndentation")
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-	    setCheckUpdate(true);
+        setCheckUpdate(true);
 		if (getIntent().getBooleanExtra("isVersionChanged", false) && (savedInstanceState == null)) {
 			onVersionChanged(getIntent().getStringExtra("newVersionName"), getIntent().getStringExtra("oldVersionName"));
 		}
+		super.onCreate(savedInstanceState);
+	    
 	}
 
 	private void onVersionChanged(String newVersionName, String oldVersionName) {
