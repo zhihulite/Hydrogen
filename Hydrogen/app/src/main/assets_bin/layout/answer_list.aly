@@ -4,58 +4,10 @@
   layout_height="fill";
   id="root";
   orientation="vertical",
- 
-  {
-    MaterialCardView;
-    Visibility=8,
-    layout_gravity="center";
-    layout_height="wrap";
-    CardBackgroundColor=cardedge,
-    Elevation="0";
-    layout_width="-1";
-    layout_margin="16dp";
-    layout_marginTop="4dp";
-    layout_marginBottom="4dp";
-    radius=cardradius;
-    StrokeColor=cardedge;
-    StrokeWidth=0,
-    id="userinfo",
-    {
-      CircleImageView,
-      layout_marginLeft="8dp";
-      layout_width="45dp",
-      layout_height="45dp",
-      layout_gravity="left|center",
-      id="usericon",
-    },
-    {
-      TextView,
-      Typeface=字体("product-Bold");
-      layout_marginTop="15dp",
-      layout_marginLeft="60dp",
-      gravity="left|center",
-      textColor=textc,
-      id="username",
-      textSize=标题文字大小,
-      lineHeight=标题行高;
-    },
-    {
-      TextView,
-      Typeface=字体("product");
-      layout_marginLeft="60dp",
-      layout_marginRight="5dp",
-      layout_marginTop="40dp",
-      layout_marginBottom="10dp",
-      gravity="left|bottom",
-      textColor="#FF767676",
-      id="userheadline",
-      textSize=内容文字大小,
-      lineHeight=内容行高;
-    },
-  };
-
+  --layout_behavior="@string/appbar_scrolling_view_behavior";
   {
     NestedLuaWebView,
+    layout_behavior="@string/appbar_scrolling_view_behavior";
     id="content",
     layout_width="-1";
     layout_height="-1";

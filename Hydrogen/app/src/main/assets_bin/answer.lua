@@ -15,6 +15,7 @@ import "android.graphics.PathMeasure"
 import "android.webkit.ValueCallback"
 import "com.google.android.material.progressindicator.LinearProgressIndicator"
 import "androidx.core.view.ViewCompat"
+import "com.google.android.material.appbar.AppBarLayout"
 问题id,回答id=...
 
 --new 0.46 删除滑动监听
@@ -43,7 +44,7 @@ end
 
 
 设置视图("layout/answer")
-
+--设置toolbar(toolbar)
 
 edgeToedge(nil,nil,function()
   --[[task(10,function()pg.setPadding(
@@ -52,12 +53,14 @@ edgeToedge(nil,nil,function()
   pg.getPaddingRight(),
   dtl.height);
 print(dtl.height)]]
-  mainLay.setPadding(
-  mainLay.getPaddingLeft(),
-  状态栏高度,
-  mainLay.getPaddingRight(),
-  mainLay.getPaddingBottom()
-  );
+  --root_card.layoutParams= root_card.layoutParams.setMargins(0,状态栏高度,0,0)
+  root_card.setPadding(0,状态栏高度,0,0)
+  title_bar_expand.layoutParams= title_bar_expand.layoutParams.setMargins(0,状态栏高度+dp2px(64),0,0)
+  local safeStatus=safeStatusView.layoutParams
+  safeStatus.height=状态栏高度
+  safeStatusView.setLayoutParams(safeStatus)
+  静态渐变(转0x(backgroundc),0x00000000,safeStatusView,"竖")
+
 end)
 
 local recyclerViewField = ViewPager2.getDeclaredField("mRecyclerView");
@@ -74,38 +77,28 @@ local AppBarLayoutBehavior=luajava.bindClass "com.hydrogen.AppBarLayoutBehavior"
 IArgbEvaluator=ArgbEvaluator.newInstance()
 波纹({fh,_more,mark,comment,thank,voteup},"圆主题")
 波纹({all_root},"方自适应")
-
+设置toolbar(root_card)
 import "model.answer"
 
 appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{
   onOffsetChanged = function(appBarLayout, verticalOffset)
-    local progress = Math.abs(verticalOffset)/appBarLayout.getTotalScrollRange()
+    local progress = (-verticalOffset)/(all_root_expand.height)
     if progress==1
       isAppBarLaunch=true
-      mainLay.backgroundColor=res.color.attr.colorSurfaceContainer
+      --mainLay.backgroundColor=res.color.attr.colorSurfaceContainer
 
      else
       --_title.setPadding(0,dp2px(60)*(1-progress),0,0)
-      all_root.alpha=progress
-      mainLay.backgroundColor=IArgbEvaluator.evaluate(progress,int(转0x(backgroundc)),int(res.color.attr.colorSurfaceContainer))
-      all_root_expand.backgroundColor=IArgbEvaluator.evaluate(progress,int(转0x(backgroundc)),int(res.color.attr.colorSurfaceContainer))
-
-    end
-    local views=数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids
-    --root_card.cardBackgroundColor=ArgbEvaluator.evaluate(progress,tointeger(转0x(backgroundc)),tointeger(res.color.attr.colorSurfaceContainer))
-    --expand_title.setPadding(dp2px(60)*(progress),0,0,0)
-    --_title.textSize=(14+10*(1-progress))
-    -- expand_title.textSize=(14+10*(1-progress))
-    --all_root_expand.setPadding(0,dp2px(6+(16)*(1-progress)),dp2px(6),dp2px(16))
-    --appbar.Elevation=dp2px(6)*(1-progress)
+      all_root.alpha=progress 
+    end 
   end
 })
 
 function onPause()
-数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.setLayerType(View.LAYER_TYPE_SOFTWARE,nil)
+  数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.setLayerType(1,nil)
 end
 function onResume()
-数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.setLayerType(View.LAYER_TYPE_HARDWARE,nil)
+  数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.setLayerType(View.LAYER_TYPE_NONE,nil)
 end
 
 local function 设置滑动跟随(t)
@@ -117,9 +110,6 @@ local function 设置滑动跟随(t)
     end
   end
 end
-
-username={Text=""}
-userheadline={Text=""}
 
 comment.onClick=function()
   local pos=pg.getCurrentItem()
@@ -143,7 +133,7 @@ end
 
 local detector=GestureDetector(this,{a=lambda _:_})
 local isDoubleTap=false
-local timeOut=200
+local timeOut=500
 detector.setOnDoubleTapListener {
   onDoubleTap=function()
     local pos=pg.getCurrentItem()
@@ -216,25 +206,6 @@ function 数据添加(t,b)
 
   设置滑动跟随(t.content)
 
-  t.userinfo.onClick=function()
-    local pos=pg.getCurrentItem()
-    local mview=数据表[pg.adapter.getItem(pos).id]
-    local id=mview.data.author.id
-    if id~="0" then
-      nTView=t.usericon
-      newActivity("people",{id})
-     else
-      提示("回答作者已设置匿名")
-    end
-  end
-
-  if b.author.headline=="" then
-    t.userheadline.Text="Ta还没有签名哦~"
-   else
-    t.userheadline.Text=b.author.headline
-  end
-  t.username.Text=b.author.name
-  loadglide(t.usericon,b.author.avatar_url)
 
   --[[print(t.content.parent)
   t.content.parent.setPadding(
@@ -261,7 +232,7 @@ function 数据添加(t,b)
       t.content.setVisibility(8)
       if t.progress~=nil then
         t.progress.setVisibility(0)
-        t.userinfo.visibility=0
+        userinfo.visibility=0
       end
 
       if 全局主题值=="Night" then
@@ -299,7 +270,7 @@ function 数据添加(t,b)
               "window.scrollRestorerPos",
               {onReceiveValue=function(b)
                   local 保存滑动位置 = tonumber(b) or 0
-                  if 保存滑动位置>t.userinfo.height then
+                  if 保存滑动位置>userinfo.height then
                     appbar.setExpanded(false);
                     dtl.layoutParams.getBehavior().slideDown(dtl);
                     提示("已恢复到上次滑动位置")
@@ -399,6 +370,7 @@ function 初始化页(mviews)
       userheadline.Text=mviews.data.author.headline
     end
     username.Text=mviews.data.author.name
+loadglide(usericon,mviews.data.author.avatar_url)
     local 回答id=mviews.data.id
 
     设置底栏内容(mviews.data.点赞状态,vote_icon,vote_count,"vote_up")
@@ -433,6 +405,25 @@ function 加载页(data,isleftadd)
           点赞状态=cb.relationship.voting==1,
           感谢状态=cb.relationship.is_thanked
         }
+        userinfo.onClick=function()
+          local pos=pg.getCurrentItem()
+          local mview=数据表[pg.adapter.getItem(pos).id]
+          local id=mview.data.author.id
+          if id~="0" then
+            nTView=usericon
+            newActivity("people",{id})
+           else
+            提示("回答作者已设置匿名")
+          end
+        end
+
+        if cb.author.headline=="" then
+          userheadline.Text="Ta还没有签名哦~"
+         else
+          userheadline.Text=cb.author.headline
+        end
+        username.Text=cb.author.name
+        loadglide(usericon,cb.author.avatar_url)
         数据添加(data.ids,cb) --添加数据
         data.load=true
         初始化页(data)
@@ -486,7 +477,7 @@ pg.setCurrentItem(1,false)--设置正确的列
 pg.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，其他和PageView差不多
   onPageScrolled=function(pos,positionOffset,positionOffsetPixels)
     if positionOffsetPixels==0 then
-      appbar.setExpanded(true);
+      --appbar.setExpanded(true);
       dtl.layoutParams.getBehavior().slideUp(dtl)
       --获取当前mviews
       local index=pg.getCurrentItem()
@@ -716,7 +707,20 @@ task(1,function()
           import "com.nwdxlgzs.view.photoview.PhotoView"
 
 
-
+          function webviewToBitmap(webView, func) --由于存在延迟，后续操作使用function(bitmap)传入
+            webView.evaluateJavascript("captureScreenshot()",
+            {onReceiveValue=function(b)
+                --偷懒 因为onReceiveValue回调不能直接处理异步
+                --应该使用js接口的 不过1秒似乎应该可以处理吧(
+                task(1000,function()
+                  webView.evaluateJavascript(
+                  "getScreenshot()",
+                  {onReceiveValue=function(b)
+                      func(base64ToBitmap(b))
+                  end})
+                end)
+            end});
+          end
           webviewToBitmap(webView, function(bitmap)
             local ids={}
             AlertDialog.Builder(this)

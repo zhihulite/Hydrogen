@@ -1,103 +1,11 @@
 {
-  LinearLayout;
+  FrameLayout;
   layout_width="-1";
   layout_height="-1";
   elevation="0";
   background=backgroundc;
   orientation="vertical";
   id="mainLay";
-  {MaterialCardView;
-    id="root_card",
-    radius=0;
-    elevation="0dp";
-    layout_width="fill",
-    layout_height="64dp",
-    cardBackgroundColor=0x00000000,
-    StrokeWidth=0,
-    {
-      LinearLayout;
-      layout_width="-1";
-      layout_height="64dp";
-      gravity="center|left";
-      {
-        LinearLayout;
-        orientation="horizontal";
-        layout_height="56dp";
-        layout_width="56dp";
-        gravity="center";
-        onClick=function()
-          关闭页面()
-        end;
-        {
-          ImageView;
-          ColorFilter=primaryc;
-          src=图标("arrow_back");
-          layout_height="32dp";
-          layout_width="32dp";
-          padding="4dp";
-          id="fh";
-        };
-      };
-
-      {
-        MaterialCardView;
-        radius=0;
-        CardBackgroundColor=0x00000000;
-        elevation="0dp";
-        layout_width="-1",
-        layout_weight="1",
-        StrokeWidth=0,
-        {
-          LinearLayout;
-          id="all_root",
-          layout_width="-1",
-          padding="2dp";
-          orientation="vertical";
-          {
-            TextView;
-            textColor=primaryc;
-            textSize="14sp";
-            id="_title";
-            maxLines=2;
-            ellipsize='end',
-            Selected=true,
-            gravity="center|left";
-            Typeface=字体("product-Bold");
-          };
-          {
-            TextView;
-            textColor=textc;
-            textSize="10sp";
-            text="点击查看全部0个回答 >",
-            id="all_answer";
-            gravity="center|left";
-            Typeface=字体("product-Bold");
-          };
-        };
-      };
-      {
-        ImageView;
-        src=图标("more_vert");
-        ColorFilter=primaryc;
-        layout_width="32dp",
-        layout_height="32dp",
-        padding="4dp";
-        id="_more";
-        tooltip="更多",
-        layout_margin="8dp";
-        onClick=function()
-          showpop(_more_lay,a.pop)
-        end;
-      };
-      {
-        TextView;
-        id="_more_lay";
-        layout_width="0",
-        layout_height="0",
-        layout_gravity="top";
-      };
-    };
-  },
 
   {
     CoordinatorLayout;
@@ -110,47 +18,235 @@
       id="appbar",
       layout_height="wrap";
       layout_width="fill";
+      --layout_scrollFlags="scroll|enterAlways|snap|exitUntilCollapsed",
+      --layout_scrollEffect="compress",
+      liftable=false,
       TargetElevation=0;
+      backgroundColor=0x00000000,
+      {
+        CollapsingToolbarLayout,
+        minHeight="64dp",
+        layout_scrollFlags="scroll|snap|enterAlways|enterAlwaysCollapsed";
+        --layout_scrollEffect="compress",
+        backgroundColor=0x00000000,
+        {
+          LinearLayout;
+          id="title_bar_expand",
+          layout_width="fill",
+          layout_height="wrap",
+          layout_marginTop="64dp",
+          orientation="vertical";
+          {
+            LinearLayout;
+            id="all_root_expand",
+            layout_width="fill",
+            layout_height="wrap",
+            orientation="vertical";
+            paddingTop=0,
+            paddingLeft="16dp",
+            paddingRight="8dp",
+            paddingBottom="16dp",
+            LayoutTransition=LayoutTransition().enableTransitionType(LayoutTransition.CHANGING);
 
+            {
+              TextView;
+              textColor=primaryc;
+              textSize="24sp";
+              id="expand_title";
+              ellipsize='end',
+              Selected=true,
+              gravity="center|left";
+              layout_mariginLeft="8dp",
+              Typeface=字体("product-Bold");
+            };
+
+            {
+              TextView;
+              textColor=textc;
+              textSize="14sp";
+              layout_mariginLeft="8dp",
+              layout_marginTop="6dp",
+              text="点击查看全部0个回答 >",
+              id="all_answer_expand";
+              gravity="center|left";
+              Typeface=字体("product");
+            };
+
+            --[=[
       {
         LinearLayout;
-        id="all_root_expand",
-        layout_width="fill",
-        layout_height="wrap",
-        orientation="vertical";
-        paddingTop=0,
-        paddingLeft="16dp",
-        paddingRight="8dp",
-        paddingBottom="16dp",
-        LayoutTransition=LayoutTransition().enableTransitionType(LayoutTransition.CHANGING);
+        layout_height="2dp";
+        id="titleline";
+        --[[layout_marginLeft="24dp",
+        layout_marginRight="24dp",]]
+        layout_width="fill";
+        backgroundColor=res.color.attr.colorSurfaceVariant;
+      };]=]
+          },
+          {
+            MaterialCardView;
+            gravity="left|center",
+            layout_height="64dp";
+            layout_width="wrap",
+            CardBackgroundColor=res.color.attr.colorSurfaceContainerHigh,
+            CardBackgroundColor=0x00000000,
+            Elevation="0";
+            layout_margin="16dp";
+            layout_marginTop="4dp";
+            layout_marginLeft="8dp",
+            layout_marginBottom="0dp";
+            radius="32dp";
+            StrokeColor="42dp";
+            StrokeWidth="1dp",
+            id="userinfo",
 
+            {
+              LinearLayout,
+              layout_width="wrap";
+              layout_height="fill";
+              {
+                CircleImageView,
+                layout_margin="8dp";
+                layout_width="48dp",
+                layout_height="48dp",
+                layout_gravity="left|center",
+                id="usericon",
+              },
+              {
+                LinearLayout,
+                layout_width="wrap";
+                layout_height="wrap";
+                orientation="vertical",
+
+                {
+                  TextView,
+                  layout_width="wrap",
+                  Typeface=字体("product-Bold");
+                  layout_marginTop="8dp",
+                  layout_marginRight="21dp",
+                  gravity="left|center",
+                  textColor=textc,
+                  id="username",
+                  textSize="16sp",
+                  lineHeight=标题行高;
+                },
+                {
+                  TextView,
+                  Typeface=字体("product");
+                  layout_width="wrap",
+                  layout_marginRight="21dp",
+                  layout_marginTop="4dp",
+                  layout_marginBottom="10dp",
+                  gravity="left|bottom",
+                  maxLines=1,
+                  textColor=textc,
+                  id="userheadline",
+                  textSize="12sp",
+                  lineHeight=内容行高;
+                },
+              },
+            };
+          },
+        },
         {
-          TextView;
-          textColor=primaryc;
-          textSize="24sp";
-          id="expand_title";
-          maxLines=3;
-          ellipsize='end',
-          Selected=true,
-          gravity="center|left";
-          layout_mariginLeft="8dp",
-          Typeface=字体("product-Bold");
-        };
+          MaterialToolbar;
+          id="toolbar";
+          title="qwq",
+          layout_scrollFlags="scroll|snap|enterAlways";
+          layout_collapseMode="pin",
+          id="root_card",
+          elevation="0dp";
+          layout_width="fill",
+          layout_height="wrap",
+          backgroundColor=backgroundc,
+          {
+            LinearLayout;
+            layout_width="-1";
+            layout_height="64dp";
+            gravity="center|left";
+            {
+              LinearLayout;
+              orientation="horizontal";
+              layout_height="56dp";
+              layout_width="56dp";
+              gravity="center";
+              onClick=function()
+                关闭页面()
+              end;
+              {
+                ImageView;
+                ColorFilter=primaryc;
+                src=图标("arrow_back");
+                layout_height="32dp";
+                layout_width="32dp";
+                padding="4dp";
+                id="fh";
+              };
+            };
 
-        {
-          TextView;
-          textColor=textc;
-          textSize="14sp";
-          layout_mariginLeft="8dp",
-          layout_marginTop="6dp",
-          text="点击查看全部0个回答 >",
-          id="all_answer_expand";
-          gravity="center|left";
-          Typeface=字体("product");
-        };
-
-      };
-    };
+            {
+              MaterialCardView;
+              radius=0;
+              CardBackgroundColor=0x00000000;
+              elevation="0dp";
+              layout_width="-1",
+              --layout_height="fill",
+              layout_weight="1",
+              StrokeWidth=0,
+              {
+                LinearLayout;
+                id="all_root",
+                layout_width="-1",
+                --layout_height="fill",
+                padding="2dp";
+                orientation="vertical";
+                {
+                  TextView;
+                  textColor=primaryc;
+                  textSize="18sp";
+                  id="_title";
+                  maxLines=1;
+                  ellipsize='end',
+                  Selected=true,
+                  gravity="center|left|top";
+                  Typeface=字体("product-Bold");
+                };
+                {
+                  TextView;
+                  textColor=textc;
+                  textSize="10sp";
+                  text="点击查看全部0个回答 >",
+                  id="all_answer";
+                  gravity="center|left";
+                  Typeface=字体("product-Bold");
+                };
+              };
+            };
+            {
+              ImageView;
+              src=图标("more_vert");
+              ColorFilter=primaryc;
+              layout_width="32dp",
+              layout_height="32dp",
+              padding="4dp";
+              id="_more";
+              tooltip="更多",
+              layout_margin="8dp";
+              onClick=function()
+                showpop(_more_lay,a.pop)
+              end;
+            };
+            {
+              TextView;
+              id="_more_lay";
+              layout_width="0",
+              layout_height="0",
+              layout_gravity="top";
+            };
+          };
+        },
+      },
+    },
 
 
     {
@@ -168,6 +264,7 @@
       --backgroundColor=0x441f1e33,
       layout_width="wrap";
       layout_height="wrap";
+      layout_marginBottom="6dp",
       layout_gravity="bottom|center";
       layout_behavior=luajava.bindClass "com.google.android.material.behavior.HideBottomViewOnScrollBehavior"(this,nil),
       id="dtl";
@@ -357,4 +454,9 @@
 
 
   };
+  {LinearLayout,
+    id="safeStatusView",
+    layout_width="fill",
+
+  }
 };

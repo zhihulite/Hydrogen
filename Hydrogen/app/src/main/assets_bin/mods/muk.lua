@@ -23,7 +23,7 @@ SwipeRefreshLayout = luajava.bindClass "com.hydrogen.view.CustomSwipeRefresh"
 --重写BottomSheetDialog到自定义view 解决横屏显示不全问题
 BottomSheetDialog = luajava.bindClass "com.hydrogen.view.BaseBottomSheetDialog"
 
-versionCode=0.611
+versionCode=0.612
 layout_dir="layout/item_layout/"
 无图模式=Boolean.valueOf(activity.getSharedData("不加载图片"))
 
@@ -89,10 +89,12 @@ function 设置视图(t)
       .addTarget(nOView)
       .setStartShapeAppearanceModel(OldWindowShape)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
+--thisFragment.startPostponedEnterTransition()
      else
       local backward = MaterialSharedAxis(MaterialSharedAxis.Z, false)
       .addTarget(thisFragment.container)
-      .addTarget(ff)
+      .addTarget(thisFragment.container)
+      --.addTarget(ff)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
 
     end
@@ -152,6 +154,7 @@ function newActivity(f,b,c)
       end
     end
     fragment=MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,nOView=nTView,OldWindowShape=WindowShape.build()} )
+--.postponeEnterTransition()
     local forward=MaterialContainerTransform(activity,true)
     .setStartView(nTView)
     .setEndView(ff)
@@ -323,20 +326,7 @@ function base64ToBitmap(encodedImage)
   return BitmapFactory.decodeByteArray(decodedImage, 0, #decodedImage)
 end
 
-function webviewToBitmap(webView, func) --由于存在延迟，后续操作使用function(bitmap)传入
-  webView.evaluateJavascript("captureScreenshot()",
-  {onReceiveValue=function(b)
-      --偷懒 因为onReceiveValue回调不能直接处理异步
-      --应该使用js接口的 不过1秒似乎应该可以处理吧(
-      task(1000,function()
-        webView.evaluateJavascript(
-        "getScreenshot()",
-        {onReceiveValue=function(b)
-            func(base64ToBitmap(b))
-        end})
-      end)
-  end});
-end
+
 
 function findDirectoryUpward(startPath)
   local path = startPath
@@ -792,7 +782,7 @@ function 主题(str)
     stextc="#424242"
     --backgroundc="#ffffffff"
     backgroundc=dec2hex(res.color.attr.colorSurface)
-    barbackgroundc=android.res.color.attr.colorBackground
+    barbackgroundc=res.color.attr.colorSurfaceContainerHigh
     cardbackc="#fff1f1f1"
     barc=dec2hex(res.color.attr.colorSurfaceContainerLow)
     viewshaderc="#00000000"
@@ -822,7 +812,7 @@ function 主题(str)
     if Boolean.valueOf(this.getSharedData("OLED") or false)
       backgroundc="#ff000000"
     end
-    barbackgroundc=android.res.color.attr.colorBackground
+    barbackgroundc=res.color.attr.colorSurfaceContainerHigh
     cardbackc="#ff212121"
     viewshaderc="#80000000"
     grayc="#212121"
