@@ -31,11 +31,12 @@ MyWebViewUtils
 :setZhiHuUA()
 
 function onPause()
-content.setLayerType(View.LAYER_TYPE_SOFTWARE,nil)
+  content.setLayerType(2,nil)
 end
 function onResume()
-content.setLayerType(View.LAYER_TYPE_HARDWARE,nil)
+content.setLayerType(View.LAYER_TYPE_NONE,nil)
 end
+
 
 if 类型=="本地" then
   task(1,function()
@@ -140,7 +141,7 @@ MyWebViewUtils:initWebViewClient{
     --加载js(view,获取js("eruda"))
     if 全局主题值=="Night" then
       夜间模式主题(view)
-      else
+     else
       初始化背景(view)
     end
     if url:find("https://www.zhihu.com/appview/pin/"..id) then

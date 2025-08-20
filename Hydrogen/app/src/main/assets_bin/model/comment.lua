@@ -420,7 +420,7 @@ function base.getAdapter(comment_pagetool,pos)
       views.评论.onTouch=function(v,e)
         local action = e.action
         if action == MotionEvent.ACTION_DOWN then
-views.评论.tag="t"
+          views.评论.tag="t"
           评论set=AnimatorSet()
           评论set.setInterpolator(AnticipateOvershootInterpolator(0.1))
           评论set.setDuration(200)
@@ -432,21 +432,21 @@ views.评论.tag="t"
 
           评论set.start()
          else
-if views.评论.tag=="t"
-views.评论.tag="off"
-task(200,function()
-          评论set=AnimatorSet()
-          评论set.setInterpolator(AnticipateOvershootInterpolator(0.1))
-          评论set.setDuration(200)
-          评论set.play(ObjectAnimator.ofFloat(views.评论, "ChipCornerRadius", {views.评论.ChipCornerRadius, dp2px(16)}))
-          .with(ObjectAnimator.ofFloat(views.评论, "ChipStartPadding", {views.评论.ChipStartPadding, dp2px(8)}))
-          .with(ObjectAnimator.ofFloat(views.评论, "ChipEndPadding", {views.评论.ChipEndPadding, dp2px(8)}))
-          .with(ObjectAnimator.ofFloat(views.赞, "ChipStartPadding", {views.赞.ChipStartPadding, dp2px(8)}))
-          .with(ObjectAnimator.ofFloat(views.赞, "ChipEndPadding", {views.赞.ChipEndPadding, dp2px(8)}))
+          if views.评论.tag=="t"
+            views.评论.tag="off"
+            task(200,function()
+              评论set=AnimatorSet()
+              评论set.setInterpolator(AnticipateOvershootInterpolator(0.1))
+              评论set.setDuration(200)
+              评论set.play(ObjectAnimator.ofFloat(views.评论, "ChipCornerRadius", {views.评论.ChipCornerRadius, dp2px(16)}))
+              .with(ObjectAnimator.ofFloat(views.评论, "ChipStartPadding", {views.评论.ChipStartPadding, dp2px(8)}))
+              .with(ObjectAnimator.ofFloat(views.评论, "ChipEndPadding", {views.评论.ChipEndPadding, dp2px(8)}))
+              .with(ObjectAnimator.ofFloat(views.赞, "ChipStartPadding", {views.赞.ChipStartPadding, dp2px(8)}))
+              .with(ObjectAnimator.ofFloat(views.赞, "ChipEndPadding", {views.赞.ChipEndPadding, dp2px(8)}))
 
-          评论set.start()
-end)
-end
+              评论set.start()
+            end)
+          end
         end
         return false
       end
