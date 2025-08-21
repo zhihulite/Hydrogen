@@ -224,6 +224,9 @@ local toint={
   --layout_collapseMode
   pin=1,
   parallax=2,
+  
+  --layout_scrollEffect
+  compress=1,
 }
 
 local scaleType={
@@ -574,6 +577,10 @@ local function setattribute(root,view,params,k,v,ids)
 
     params.setScrollFlags(checkValue(v))
 
+   elseif k=="layout_scrollEffect" then
+   
+    params.setScrollEffect(checkValue(v))
+    
    elseif k=="layout_collapseMode" then
 
     params.setCollapseMode(checkValue(v))
