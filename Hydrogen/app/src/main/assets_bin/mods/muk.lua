@@ -89,7 +89,7 @@ function 设置视图(t)
       .addTarget(nOView)
       .setStartShapeAppearanceModel(OldWindowShape)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
---thisFragment.startPostponedEnterTransition()
+      --thisFragment.startPostponedEnterTransition()
      else
       local backward = MaterialSharedAxis(MaterialSharedAxis.Z, false)
       .addTarget(thisFragment.container)
@@ -137,12 +137,12 @@ function newActivity(f,b,c)
     .setBottomRightCornerSize(0)
     .setTopLeftCornerSize(0)
     .setTopRightCornerSize(0)
-    xpcall(function()
+    pcall(function()
       WindowShape.setBottomLeftCornerSize(window.getDecorView().getRootWindowInsets().getRoundedCorner(3).getRadius())
       WindowShape.setBottomRightCornerSize(window.getDecorView().getRootWindowInsets().getRoundedCorner(2).getRadius())
       WindowShape.setTopLeftCornerSize(window.getDecorView().getRootWindowInsets().getRoundedCorner(0).getRadius())
       WindowShape.setTopRightCornerSize(window.getDecorView().getRootWindowInsets().getRoundedCorner(1).getRadius())
-    end, function() end)
+    end)
 
     if inSekai
       if ff==f1 then
@@ -154,7 +154,7 @@ function newActivity(f,b,c)
       end
     end
     fragment=MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,nOView=nTView,OldWindowShape=WindowShape.build()} )
---.postponeEnterTransition()
+    --.postponeEnterTransition()
     local forward=MaterialContainerTransform(activity,true)
     .setStartView(nTView)
     .setEndView(ff)
@@ -177,7 +177,6 @@ function newActivity(f,b,c)
     t.add(ff.id,MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,}).setEnterTransition(forward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward))
 
   end
-
   t.addToBackStack(nil)
   t.commit()
   --print(activity.findViewById(fragment.getContainerId()))

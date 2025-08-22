@@ -89,18 +89,18 @@ appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{
 
      else
       --_title.setPadding(0,dp2px(60)*(1-progress),0,0)
-      all_root.alpha=progress 
-    end 
+      all_root.alpha=progress
+    end
   end
 })
 
 function onPause()
-  数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.setLayerType(1,nil)
+  mainLay.setLayerType(View.LAYER_TYPE_SOFTWARE,nil)
 end
 function onResume()
-  数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.setLayerType(View.LAYER_TYPE_NONE,nil)
+数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.resumeTimers()
+  mainLay.setLayerType(View.LAYER_TYPE_NONE,nil)
 end
-
 local function 设置滑动跟随(t)
   t.onGenericMotion=function(view,x,y,lx,ly)
     if t.getScrollY()<=0 then
@@ -370,7 +370,7 @@ function 初始化页(mviews)
       userheadline.Text=mviews.data.author.headline
     end
     username.Text=mviews.data.author.name
-loadglide(usericon,mviews.data.author.avatar_url)
+    loadglide(usericon,mviews.data.author.avatar_url)
     local 回答id=mviews.data.id
 
     设置底栏内容(mviews.data.点赞状态,vote_icon,vote_count,"vote_up")
@@ -477,7 +477,7 @@ pg.setCurrentItem(1,false)--设置正确的列
 pg.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，其他和PageView差不多
   onPageScrolled=function(pos,positionOffset,positionOffsetPixels)
     if positionOffsetPixels==0 then
-      --appbar.setExpanded(true);
+
       dtl.layoutParams.getBehavior().slideUp(dtl)
       --获取当前mviews
       local index=pg.getCurrentItem()
@@ -506,6 +506,8 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，其他�
         if mviews.load==true then
           回答容器.getid=mviews.data.id
           初始化页(mviews)
+         else
+          appbar.setExpanded(true);
         end
       end
     end

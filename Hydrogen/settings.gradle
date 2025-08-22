@@ -15,9 +15,14 @@ pluginManagement {
     }
 }
 dependencyResolutionManagement {
-
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        maven {
+            url uri(".${File.separator}mdc-repo")
+            content {
+                includeGroup("com.google.android.material")
+            }
+        }
         google()
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/google' }

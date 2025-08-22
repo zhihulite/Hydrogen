@@ -4,8 +4,7 @@
   layout_height="-1";
   elevation="0";
   background=backgroundc;
-  orientation="vertical";
-  id="mainLay";
+     id="mainLay";
 
   {
     CoordinatorLayout;
@@ -26,6 +25,7 @@
       {
         CollapsingToolbarLayout,
         minHeight="64dp",
+layout_width="fill";
         layout_scrollFlags="scroll|snap|enterAlways|enterAlwaysCollapsed";
         --layout_scrollEffect="compress",
         backgroundColor=0x00000000,
@@ -85,10 +85,9 @@
           },
           {
             MaterialCardView;
-            gravity="left|center",
             layout_height="64dp";
             layout_width="wrap",
-            CardBackgroundColor=res.color.attr.colorSurfaceContainerHigh,
+            --CardBackgroundColor=res.color.attr.colorSurfaceContainerHigh,
             CardBackgroundColor=0x00000000,
             Elevation="0";
             layout_margin="16dp";
@@ -152,7 +151,7 @@
           MaterialToolbar;
           id="toolbar";
           title="qwq",
-          layout_scrollFlags="scroll|snap|enterAlways";
+          --layout_scrollFlags="scroll|snap|enterAlways";
           layout_collapseMode="pin",
           id="root_card",
           elevation="0dp";
@@ -254,10 +253,11 @@
       layout_width="fill";
       layout_height="fill";
       clipToPadding=false,
+      layout_behavior="@string/appbar_scrolling_view_behavior";
+
       --layout_marginBottom=dp2px(56);
       id="pg",
-      layout_behavior="@string/appbar_scrolling_view_behavior";
-    };
+     };
 
     {luajava.bindClass "com.google.android.material.floatingtoolbar.FloatingToolbarLayout";
       --FrameLayout,

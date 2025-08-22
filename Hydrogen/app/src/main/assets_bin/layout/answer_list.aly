@@ -4,10 +4,8 @@
   layout_height="fill";
   id="root";
   orientation="vertical",
-  --layout_behavior="@string/appbar_scrolling_view_behavior";
   {
     NestedLuaWebView,
-    layout_behavior="@string/appbar_scrolling_view_behavior";
     id="content",
     layout_width="-1";
     layout_height="-1";

@@ -31,10 +31,10 @@ MyWebViewUtils
 :setZhiHuUA()
 
 function onPause()
-  content.setLayerType(2,nil)
+  content.setLayerType(View.LAYER_TYPE_SOFTWARE,nil)
 end
 function onResume()
-content.setLayerType(View.LAYER_TYPE_NONE,nil)
+  content.setLayerType(View.LAYER_TYPE_NONE,nil)
 end
 
 

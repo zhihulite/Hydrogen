@@ -17,8 +17,10 @@ content.getSettings()
 .setSupportZoom(true)
 
 function onPause()
-  content.invalidateParentCaches();
-  content.invalidate(true);
+  content.setLayerType(View.LAYER_TYPE_SOFTWARE,nil)
+end
+function onResume()
+  content.setLayerType(View.LAYER_TYPE_NONE,nil)
 end
 
 MyWebViewUtils=require "views/WebViewUtils"(content)

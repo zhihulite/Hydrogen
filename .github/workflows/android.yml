@@ -111,7 +111,7 @@ jobs:
         id: nightly_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: nightly
+          tag_name: nightly v0.${{ steps.extract_version.outputs.version }}
           name: Nightly Build (${{ steps.extract_version.outputs.build_time }})
           files: |
             ${{ steps.extract_version.outputs.apk_file }}

@@ -4,12 +4,12 @@ transition = "1.5.1"
 fragment = "1.8.6"
 viewpager2 = "1.1.0"
 swiperefresh = "1.1.0"
+material = "1.14.0-alpha03"
 flexbox = "3.0.0"
 glide = "4.16.0"
 webviewup = "0.1.0"
 activity = "1.9.3"
 fastscroll = "1.2.0"
-material = "fa75dd1175"
 agp = "8.6.0"
 core = "1.16.0"
 splashscreen = "1.2.0-rc01"
@@ -27,7 +27,7 @@ androidx-splashscreen = { group = "androidx.core", name = "core-splashscreen", v
 
 
 # Google
-material = { group = "com.github.ZL114514", name = "material-components-android", version.ref = "material" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 flexbox = { group = "com.google.android.flexbox", name = "flexbox", version.ref = "flexbox" }
 
 # Third-party

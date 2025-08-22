@@ -34,9 +34,6 @@ edgeToedge(mainLay,{send,comment_recy})
 
 波纹({fh,_more},"圆主题")
 
-
-
-
 if comment_typel=="local_chat" then
   internetnet.setVisibility(8)
   localcomment.setVisibility(0)

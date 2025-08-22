@@ -101,9 +101,10 @@ function base.resolvedata(v,data)
 
 
   --25.1.5 评论区表情 （参考于小白马）
-
-  for i,d in pairs(zemoji) do
-    Spannable_Image(myspan, "\\["..i.."\\]",d)
+  if 内容:find("%[.-%]") then
+    for i,d in pairs(zemoji) do
+      Spannable_Image(myspan, "\\["..i.."\\]",d)
+    end
   end
 
   local 评论=""..tostring(v.child_comment_count or 0)
@@ -119,7 +120,6 @@ function base.resolvedata(v,data)
     赞 = Spannable_Image(Html.fromHtml(赞),"赞",like_drawable)
   end]]
   if tostring(评论)=="0"
-
     评论 = "false"
   end
   local isme=(v.is_author==true and "true" or "false")
@@ -516,9 +516,6 @@ function base.getAdapter(comment_pagetool,pos)
 
 
 
-      views.预览内容.onLongClick=function()
-
-      end
 
       views.author_lay.onClick=function()
         nTView=views.图像
@@ -541,15 +538,7 @@ function base.getAdapter(comment_pagetool,pos)
         newActivity("comment",{data.id内容,"comments",保存路径,comment_id})
       end
       views.预览内容.onClick=function()
-        if 评论=="false" then
-          return
-         else
-          if comment_type=="comments" then
-            return 提示("当前已在该对话列表内")
-          end
-        end
-        nTView=views.card
-        newActivity("comment",{data.id内容,"comments",保存路径,comment_id})
+        views.card.performClick()
       end
       views.card.onLongClick=function(view)
         多选菜单(data,view)

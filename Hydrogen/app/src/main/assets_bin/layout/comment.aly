@@ -1,152 +1,146 @@
 {
-  RelativeLayout;
+  LinearLayout;
   layout_width="-1";
-  background=backgroundc;
   layout_height="-1";
+  orientation="vertical";
   {
     LinearLayout;
     layout_width="-1";
-    layout_height="-1";
+    layout_height="-2";
+    id="mainLay";
+    elevation="0";
+    background=backgroundc;
     orientation="vertical";
     {
       LinearLayout;
       layout_width="-1";
-      layout_height="-2";
-      id="mainLay";
-      elevation="0";
-      background=backgroundc;
-      orientation="vertical";
+      layout_height="64dp";
+      gravity="center|left";
+
       {
         LinearLayout;
-        layout_width="-1";
-        layout_height="64dp"; 
-        gravity="center|left"; 
-           
-          {
-            LinearLayout;
-            orientation="horizontal";
-            layout_height="64dp";
-            layout_width="64dp";
-            gravity="center";
-            onClick=function()关闭页面()end;
-            {
-              ImageView;
-              ColorFilter=primaryc;
-              src=图标("arrow_back");
-              layout_height="32dp";
-              layout_width="32dp";
-              padding="4dp";
-              id="fh";
-            };
-          };
-          {
-            TextView;
-            text="评论";
-            textColor=primaryc;
-            textSize="20sp";
-            id="_title";
-            SingleLine=true;
-            ellipsize='end',
-            layout_width="-1",
-            gravity="center|left";
-            paddingLeft="16dp";
-            layout_weight="1",
-            Typeface=字体("product-Bold");
-          };
-          {
-            ImageView;
-            src=图标("more_vert");
-            ColorFilter=primaryc;
-            layout_width="32dp",
-            layout_height="32dp",
-            padding="4dp";
-            id="_more";
-            tooltip="更多",
-            layout_margin="8dp";
-            onClick=function()
-              showpop(_more_lay,a.pop)
-            end;
-          };
-          {
-            TextView;
-            id="_more_lay";
-            layout_width="0",
-            layout_height="0",
-            layout_gravity="top";
-          };
+        orientation="horizontal";
+        layout_height="64dp";
+        layout_width="64dp";
+        gravity="center";
+        onClick=function()关闭页面()end;
+        {
+          ImageView;
+          ColorFilter=primaryc;
+          src=图标("arrow_back");
+          layout_height="32dp";
+          layout_width="32dp";
+          padding="4dp";
+          id="fh";
         };
-      
+      };
+      {
+        TextView;
+        text="评论";
+        textColor=primaryc;
+        textSize="20sp";
+        id="_title";
+        SingleLine=true;
+        ellipsize='end',
+        layout_width="-1",
+        gravity="center|left";
+        paddingLeft="16dp";
+        layout_weight="1",
+        Typeface=字体("product-Bold");
+      };
+      {
+        ImageView;
+        src=图标("more_vert");
+        ColorFilter=primaryc;
+        layout_width="32dp",
+        layout_height="32dp",
+        padding="4dp";
+        id="_more";
+        tooltip="更多",
+        layout_margin="8dp";
+        onClick=function()
+          showpop(_more_lay,a.pop)
+        end;
+      };
+      {
+        TextView;
+        id="_more_lay";
+        layout_width="0",
+        layout_height="0",
+        layout_gravity="top";
+      };
     };
+
+  };
+  {
+    LinearLayout,
+    id="internetnet",
+    orientation="vertical",
+    layout_width="fill",
+    layout_height="fill",
+    background=backgroundc,
     {
-      LinearLayout,
-      id="internetnet",
-      orientation="vertical",
+      CoordinatorLayout,
       layout_width="fill",
       layout_height="fill",
       background=backgroundc,
       {
-        CoordinatorLayout,
-        layout_width="fill",
-        layout_height="fill",
+        SwipeRefreshLayout;
+        id="commentsr";
+        layout_height="fill";
+        layout_width="fill";
+        {
+          RecyclerView;
+          id="comment_recy";
+          clipToPadding=false,
+          layout_width="-1";
+          layout_height="-1";
+        };
+      };
+
+      {
+        FloatingActionButton,
+        id="send",
+        CustomSize="56dp";
+        MaxImageSize="24dp";
+        layout_gravity="bottom|end",
+        layout_marginBottom="48dp",
+        layout_marginEnd="16dp",
+        ImageBitmap=loadbitmap(图标("reply")),
+        ShapeAppearanceModel=(function()
+          import "com.google.android.material.shape.CornerFamily";
+          import "com.google.android.material.shape.ShapeAppearanceModel"
+          return ShapeAppearanceModel()
+          .toBuilder()
+          .setAllCorners(CornerFamily.ROUNDED, dp2px(12))
+          .build();
+        end)()
+      },
+
+    };
+  };
+  {
+    LinearLayout,
+    id="localcomment",
+    orientation="vertical",
+    layout_width="fill",
+    layout_height="fill",
+    background=backgroundc,
+    {
+      ScrollView,
+      layout_width="fill",
+      layout_height="fill",
+      {
+        LinearLayout,
+        orientation="vertical",
         background=backgroundc,
         {
-          SwipeRefreshLayout;
-          id="commentsr";
-          layout_height="fill";
-          layout_width="fill";
-          {
-            RecyclerView;
-            id="comment_recy";
-clipToPadding=false,
-            layout_width="-1";
-            layout_height="-1";
-          };
-        };
-
-        {
-          FloatingActionButton,
-          id="send",
-          CustomSize="56dp";
-          MaxImageSize="24dp";
-          layout_gravity="bottom|end",
-          layout_marginBottom="48dp",
-          layout_marginEnd="16dp",
-          ImageBitmap=loadbitmap(图标("reply")),
-          ShapeAppearanceModel=(function()
-            import "com.google.android.material.shape.CornerFamily";
-            import "com.google.android.material.shape.ShapeAppearanceModel"
-            return ShapeAppearanceModel()
-            .toBuilder()
-            .setAllCorners(CornerFamily.ROUNDED, dp2px(12))
-            .build();
-          end)()
-        },
-
-      };
-    };
-    {
-      LinearLayout,
-      id="localcomment",
-      orientation="vertical",
-      layout_width="fill",
-      layout_height="fill",
-      background=backgroundc,
-      {
-        ScrollView,
-        layout_width="fill",
-        layout_height="fill",
-        {
-          LinearLayout,
-          orientation="vertical",
-          background=backgroundc,
-          {
-            NoScrollListView;
-            layout_width="-1",
-            DividerHeight=0;
-            id="local_comment_list";
-          };
+          NoScrollListView;
+          layout_width="-1",
+          DividerHeight=0;
+          id="local_comment_list";
         };
       };
     };
-  },
-};
+  };
+}
