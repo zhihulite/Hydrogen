@@ -13,9 +13,7 @@ on:
       steps:
         - name: Checkout code
           uses: actions/checkout@v4
-          with:
-            fetch-depth: 0  # 拉取完整历史记录（重要，否则 git log 可能不完整）
-  
+            
         - name: Check for new commits in last 24 hours
           id: check  # 设置 ID 以输出变量
           run: |
