@@ -55,7 +55,7 @@ edgeToedge(nil,nil,function()
 print(dtl.height)]]
   --root_card.layoutParams= root_card.layoutParams.setMargins(0,状态栏高度,0,0)
   root_card.setPadding(0,状态栏高度,0,0)
-  title_bar_expand.layoutParams= title_bar_expand.layoutParams.setMargins(0,状态栏高度+dp2px(64),0,0)
+  title_bar_expand.layoutParams= title_bar_expand.layoutParams.setMargins(0,状态栏高度+dp2px(64,true),0,0)
   local safeStatus=safeStatusView.layoutParams
   safeStatus.height=状态栏高度
   safeStatusView.setLayoutParams(safeStatus)
@@ -493,6 +493,7 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，其他�
         --在最右添加 防止无法右滑
         addAnswer()
         加载页(mviews)
+        appbar.setExpanded(true);
        elseif pos==0 and pg.adapter.getItemCount()>=0
         if 回答容器.isleft then
           pg.setCurrentItem(1,true)
@@ -501,13 +502,13 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，其他�
         --在最前面添加fragment 防止无法左滑
         addAnswer(0)
         加载页(mviews,true)
+        appbar.setExpanded(true);
         --判断是否加载过
        elseif pg.adapter.getItemCount()>=0 then
         if mviews.load==true then
           回答容器.getid=mviews.data.id
           初始化页(mviews)
-         else
-          appbar.setExpanded(true);
+        
         end
       end
     end

@@ -4,7 +4,7 @@
   layout_height="-1";
   elevation="0";
   background=backgroundc;
-     id="mainLay";
+  id="mainLay";
 
   {
     CoordinatorLayout;
@@ -25,7 +25,7 @@
       {
         CollapsingToolbarLayout,
         minHeight="64dp",
-layout_width="fill";
+        layout_width="fill";
         layout_scrollFlags="scroll|snap|enterAlways|enterAlwaysCollapsed";
         --layout_scrollEffect="compress",
         backgroundColor=0x00000000,
@@ -50,6 +50,7 @@ layout_width="fill";
 
             {
               TextView;
+              layout_width="fill",
               textColor=primaryc;
               textSize="24sp";
               id="expand_title";
@@ -85,7 +86,7 @@ layout_width="fill";
           },
           {
             MaterialCardView;
-            layout_height="64dp";
+            layout_height="wrap";
             layout_width="wrap",
             --CardBackgroundColor=res.color.attr.colorSurfaceContainerHigh,
             CardBackgroundColor=0x00000000,
@@ -106,8 +107,8 @@ layout_width="fill";
               {
                 CircleImageView,
                 layout_margin="8dp";
-                layout_width="48dp",
-                layout_height="48dp",
+                layout_width="42sp",
+                layout_height="42sp",
                 layout_gravity="left|center",
                 id="usericon",
               },
@@ -128,6 +129,7 @@ layout_width="fill";
                   id="username",
                   textSize="16sp",
                   lineHeight=标题行高;
+
                 },
                 {
                   TextView,
@@ -257,7 +259,7 @@ layout_width="fill";
 
       --layout_marginBottom=dp2px(56);
       id="pg",
-     };
+    };
 
     {luajava.bindClass "com.google.android.material.floatingtoolbar.FloatingToolbarLayout";
       --FrameLayout,

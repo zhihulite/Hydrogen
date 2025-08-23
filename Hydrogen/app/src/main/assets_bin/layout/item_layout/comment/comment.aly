@@ -34,8 +34,8 @@
             CircleImageView;
             id="图像",
             layout_gravity="top|right";
-            layout_width="36dp",
-            layout_height="36dp",
+            layout_width="42sp",
+            layout_height="42sp",
           };
           {
             LinearLayout;
@@ -49,6 +49,7 @@
               gravity="center|bottom";
               textSize=标题文字大小;
               lineHeight=标题行高;
+              ellipsize='end',
             };
             {
               TextView;

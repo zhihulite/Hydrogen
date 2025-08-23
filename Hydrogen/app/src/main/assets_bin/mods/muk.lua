@@ -78,6 +78,10 @@ function MyLuaFileFragment(a,b,c)
 end
 
 function 设置视图(t)
+  if tostring(this.getSharedData("预见性返回手势"))=="false"
+    this.getSupportFragmentManager().enablePredictiveBack(false)
+  end
+
   if thisFragment
     thisFragment.setContainerView(loadlayout(t))
     if nOView~=nil
