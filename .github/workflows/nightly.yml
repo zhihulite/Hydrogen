@@ -1,39 +1,40 @@
 name: Android Build Workflow
 
 on:
+  workflow_dispatch:
   schedule:
     - cron: '0 9 * * *'  # 每天 UTC +8 时间凌晨 1 点运行
 
-jobs:
-  check-commits:  # 第一个 job：检查最近 24 小时是否有新提交
-    runs-on: ubuntu-latest
-    outputs:
-      has_new_commits: ${{ steps.check.outputs.has_new }}  # 输出变量，用于后续 job 判断
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0  # 拉取完整历史记录（重要，否则 git log 可能不完整）
-
-      - name: Check for new commits in last 24 hours
-        id: check  # 设置 ID 以输出变量
-        run: |
-          # 查询最近 24 小时的提交（--oneline 简化输出）
-          commits=$(git log --since="24 hours ago" --oneline)
-          
-          if [ -n "$commits" ]; then
-            echo "最近 24 小时有新提交："
-            echo "$commits"
-            echo "has_new=true" >> $GITHUB_OUTPUT  # 有新提交，设置 true
-          else
-            echo "最近 24 小时无新提交。"
-            echo "has_new=false" >> $GITHUB_OUTPUT  # 无新提交，设置 false
-          fi
-
+  jobs:
+    check-commits:  # 第一个 job：检查最近 24 小时是否有新提交
+      runs-on: ubuntu-latest
+      outputs:
+        has_new_commits: ${{ steps.check.outputs.has_new }}  # 输出变量，用于后续 job 判断
+      steps:
+        - name: Checkout code
+          uses: actions/checkout@v4
+          with:
+            fetch-depth: 0  # 拉取完整历史记录（重要，否则 git log 可能不完整）
+  
+        - name: Check for new commits in last 24 hours
+          id: check  # 设置 ID 以输出变量
+          run: |
+            # 查询最近 24 小时的提交（--oneline 简化输出）
+            commits=$(git log --since="24 hours ago" --oneline)
+            
+            if [ -n "$commits" ]; then
+              echo "最近 24 小时有新提交："
+              echo "$commits"
+              echo "has_new=true" >> $GITHUB_OUTPUT  # 有新提交，设置 true
+            else
+              echo "最近 24 小时无新提交。"
+              echo "has_new=false" >> $GITHUB_OUTPUT  # 无新提交，设置 false
+            fi
+  
   build:
     runs-on: ubuntu-latest
     needs: check-commits  # 依赖于检查 job
-    if: ${{ needs.check-commits.outputs.has_new_commits == 'false' }}  # 只有无新提交（false）时执行
+    if: ${{ needs.check-commits.outputs.has_new_commits == 'true' }}  # 只有有新提交时执行
     permissions:
       contents: write
       packages: write
@@ -54,26 +55,6 @@ jobs:
       - name: Execute Gradle Command in Hydrogen Directory
         run: |
           (cd Hydrogen && ./gradlew app:assembleRelease)
-
-      # 上传 assembleRelease 产物
-      - name: Upload Release APK
-        if: github.event.inputs.build_type == 'assembleRelease'
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-apk
-          path: |
-            Hydrogen/app/build/outputs/apk/release/*.apk
-            Hydrogen/app/build/outputs/mapping/release/mapping.txt
-
-      # 上传 assembleRelease_unlua 产物
-      - name: Upload Rebuilt APK
-        if: github.event.inputs.build_type == 'assembleRelease_unlua'
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-unlua-apk
-          path: |
-            Hydrogen/app/build/outputs/apk/release/*.apk
-            Hydrogen/app/build/outputs/mapping/release/mapping.txt
 
       # 提取版本号
       - name: Extract version from APK filename
