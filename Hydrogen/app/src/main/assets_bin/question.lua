@@ -24,82 +24,78 @@ function 问题详情(code)
 
   import "com.google.android.material.bottomsheet.*"
 
-  local dann={
+  local dann=
+  {
     LinearLayout;
+    orientation="vertical";
     layout_width=-1;
+    layout_height=-2;
+    Elevation="4dp";
+    BackgroundColor=转0x(backgroundc);
+    id="ztbj";
+    {
+      CardView;
+      layout_gravity="center",
+      CardBackgroundColor=转0x(cardedge);
+      radius="3dp",
+      Elevation="0dp";
+      layout_height="6dp",
+      layout_width="56dp",
+      layout_marginTop="12dp";
+    };
+
     {
       LinearLayout;
-      orientation="vertical";
+      orientation="horizontal";
       layout_width=-1;
-      layout_height=-2;
-      Elevation="4dp";
-      BackgroundColor=转0x(backgroundc);
-      id="ztbj";
+      layout_height=-1;
+
       {
-        CardView;
-        layout_gravity="center",
-        CardBackgroundColor=转0x(cardedge);
-        radius="3dp",
-        Elevation="0dp";
-        layout_height="6dp",
-        layout_width="56dp",
+        TextView;
+        textSize="20sp";
         layout_marginTop="12dp";
+        layout_marginLeft="12dp";
+        layout_marginRight="12dp";
+        Text="问题详情";
+        Typeface=字体("product-Bold");
+        textColor=转0x(primaryc);
       };
 
       {
         LinearLayout;
         orientation="horizontal";
         layout_width=-1;
-        layout_height=-1;
-
+        layout_height="wrap";
+        gravity="right|center";
         {
-          TextView;
-          textSize="20sp";
-          layout_marginTop="12dp";
+          MaterialButton_OutlinedButton;
           layout_marginLeft="12dp";
           layout_marginRight="12dp";
-          Text="问题详情";
+          textColor=转0x(stextc);
+          text="关闭";
           Typeface=字体("product-Bold");
-          textColor=转0x(primaryc);
+          id="close_button"
         };
-
-        {
-          LinearLayout;
-          orientation="horizontal";
-          layout_width=-1;
-          layout_height="wrap";
-          gravity="right|center";
-          {
-            MaterialButton_OutlinedButton;
-            layout_marginLeft="12dp";
-            layout_marginRight="12dp";
-            textColor=转0x(stextc);
-            text="关闭";
-            Typeface=字体("product-Bold");
-            id="close_button"
-          };
-        };
-
       };
 
+    };
 
-      {
-        LuaWebView;
-        id="show",
-        layout_width=-1;
-        layout_height=-1;
 
-      };
+    {
+      LuaWebView;
+      id="show",
+      layout_width=-1;
+      layout_height=-1;
+
     };
   };
 
+
   local tmpview={}
   bottomSheetDialog = BottomSheetDialog(this)
-  pcall(function() 
-bottomSheetDialog.getWindow().setDecorFitsSystemWindows(false)
-    bottomSheetDialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
-  end)
-bottomSheetDialog.setContentView(loadlayout2(dann,tmpview))
+bottomSheetDialog.window
+  print(bottomSheetDialog.edgeToEdgeEnabled)
+  bottomSheetDialog.setContentView(loadlayout2(dann,tmpview))
 
   bottomSheetDialog.setCancelable(true);
   bottomSheetDialog.behavior.setState(BottomSheetBehavior.STATE_EXPANDED);

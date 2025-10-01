@@ -8,7 +8,7 @@
         const match = window.location.pathname.match(/\/appview\/(.*?)\//);
         const AppViewType = match ? match[1] : null;
 
-        function getImgs() {
+        function getImgs() { 
             return document.querySelectorAll("img")
         }
 
@@ -57,7 +57,8 @@
 
         function getSrc(doc) {
             if (isLocalPage) return doc.src
-            return doc.dataset && (doc.dataset.original || doc.dataset.src) || doc.src;
+            return doc.getAttribute("data-original-token") || doc.src;
+
         }
 
         function replaceSrcWithGif(src) {
@@ -65,6 +66,7 @@
         }
 
         function getImageIndexAndSrc(eleSrc) {
+            console.log("getting img");
             const images = Array.from(getImgs()).filter(function (element) {
                 return element.style.display !== 'none';
             });

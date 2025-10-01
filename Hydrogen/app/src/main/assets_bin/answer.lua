@@ -98,7 +98,7 @@ function onPause()
   mainLay.setLayerType(View.LAYER_TYPE_SOFTWARE,nil)
 end
 function onResume()
-数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.resumeTimers()
+  数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.resumeTimers()
   mainLay.setLayerType(View.LAYER_TYPE_NONE,nil)
 end
 local function 设置滑动跟随(t)
@@ -257,7 +257,9 @@ function 数据添加(t,b)
         初始化背景(view)
       end
 
-      --加载js(view,获取js("eruda"))
+      if this.getSharedData("eruda")
+        加载js(view,获取js("eruda"))
+      end
       屏蔽元素(view,{".AnswerReward",".AppViewRecommendedReading"})
 
       task(1000,function()
@@ -508,7 +510,7 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，其他�
         if mviews.load==true then
           回答容器.getid=mviews.data.id
           初始化页(mviews)
-        
+
         end
       end
     end

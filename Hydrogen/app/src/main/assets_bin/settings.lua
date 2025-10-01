@@ -88,6 +88,7 @@ data = processTable{
   {__type=4,subtitle="显示虚拟滑动按键",status={Checked=Boolean.valueOf(this.getSharedData("显示虚拟滑动按键"))}},
   {__type=4,subtitle="显示报错信息",status={Checked=Boolean.valueOf(this.getSharedData("调式模式"))}},
   {__type=4,subtitle="允许加载代码",status={Checked=Boolean.valueOf(this.getSharedData("允许加载代码"))}},
+  {__type=4,subtitle="启用内部 WebView eruda 调试",status={Checked=Boolean.valueOf(this.getSharedData("eruda"))}},
   {__type=4,subtitle="自动检测更新",status={Checked=Boolean.valueOf(this.getSharedData("自动检测更新"))}},
 
 }
@@ -1156,6 +1157,7 @@ settab=processTable{
   ["夜间模式"]="Setting_Night_Mode",
   ["夜间模式追随系统"]="Setting_Auto_Night_Mode",
   ["OLED纯黑"]="OLED",
+  ["启用内部 WebView eruda 调试"]="eruda",
   ["禁用大部分缓存"]="禁用缓存",
   ["暗色工具栏主题"]="theme_darkactionbar",
   ["显示报错信息"]="调式模式",

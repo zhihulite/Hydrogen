@@ -20,8 +20,9 @@ activity.setContentView(loadlayout("layout/image"))
 全屏()
 
 local ls= this.getSharedData("imagedata")
- 
-this.setSharedData("imagedata",nil)
+function onDestroy()
+  this.setSharedData("imagedata",nil)
+end
 local views={}
 
 mls=luajson.decode(ls)
@@ -60,7 +61,6 @@ local base=
       ProgressBarBackground=转0x(primaryc),
     },
   },
-
 }
 
 for i=0,table.size(mls)-2 do
@@ -86,13 +86,17 @@ picpage.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，�
       if url:find("zhimg.com") then
         if url:find("%.webp?") then
           url=url:gsub("%.webp%?", ".jpg?")
-          mls[tostring(i)]=url
          elseif url:find("%.png?") then
           url=url:gsub("%.png%?", ".jpg?")
-          mls[tostring(i)]=url
         end
+        url=url:gsub("qhd", "r")
+        url=url:gsub("fhd", "r")
+        url=url:gsub("720w", "r")
       end
-
+      if url:sub(1,3)=="v2-"
+        url="https://pic1.zhimg.com/100/"..url.."_r.jpg"
+      end
+      mls[tostring(i)]=url
       Glide
       .with(activity)
       .asDrawable()--强制gif支持

@@ -27,12 +27,11 @@ end
 local function MyClickableSpan(url)
   local myspan=ClickableSpan{
     onClick=function(v)
-      print(v)
       if v.Text:find("图片") or v.Text:find("动图") then
         local data={["0"]=url,["1"]=1}
         this.setSharedData("imagedata",luajson.encode(data))
         activity.newActivity("image")
-        return
+        return true
       end
       检查链接(url)
     end,
@@ -394,8 +393,8 @@ function base.getAdapter(comment_pagetool,pos)
           赞set.play(ObjectAnimator.ofFloat(views.赞, "ChipCornerRadius", {views.赞.ChipCornerRadius, dp2px(4)}))
           .with(ObjectAnimator.ofFloat(views.赞, "ChipStartPadding", {views.赞.ChipStartPadding, dp2px(16)}))
           .with(ObjectAnimator.ofFloat(views.赞, "ChipEndPadding", {views.赞.ChipEndPadding, dp2px(16)}))
-          .with(ObjectAnimator.ofFloat(views.评论, "ChipStartPadding", {views.评论.ChipStartPadding, dp2px(2)}))
-          .with(ObjectAnimator.ofFloat(views.评论, "ChipEndPadding", {views.评论.ChipEndPadding, dp2px(2)}))
+          .with(ObjectAnimator.ofFloat(views.评论, "ChipStartPadding", {views.评论.ChipStartPadding, dp2px(6)}))
+          .with(ObjectAnimator.ofFloat(views.评论, "ChipEndPadding", {views.评论.ChipEndPadding, dp2px(6)}))
           views.赞.tag="t"
           赞set.start()
          else
@@ -427,8 +426,8 @@ function base.getAdapter(comment_pagetool,pos)
           评论set.play(ObjectAnimator.ofFloat(views.评论, "ChipCornerRadius", {views.评论.ChipCornerRadius, dp2px(4)}))
           .with(ObjectAnimator.ofFloat(views.评论, "ChipStartPadding", {views.评论.ChipStartPadding, dp2px(16)}))
           .with(ObjectAnimator.ofFloat(views.评论, "ChipEndPadding", {views.评论.ChipEndPadding, dp2px(16)}))
-          .with(ObjectAnimator.ofFloat(views.赞, "ChipStartPadding", {views.赞.ChipStartPadding, dp2px(2)}))
-          .with(ObjectAnimator.ofFloat(views.赞, "ChipEndPadding", {views.赞.ChipEndPadding, dp2px(2)}))
+          .with(ObjectAnimator.ofFloat(views.赞, "ChipStartPadding", {views.赞.ChipStartPadding, dp2px(6)}))
+          .with(ObjectAnimator.ofFloat(views.赞, "ChipEndPadding", {views.赞.ChipEndPadding, dp2px(6)}))
 
           评论set.start()
          else

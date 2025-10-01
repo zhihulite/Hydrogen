@@ -46,8 +46,7 @@
             paddingLeft="16dp",
             paddingRight="8dp",
             paddingBottom="16dp",
-            LayoutTransition=LayoutTransition().enableTransitionType(LayoutTransition.CHANGING);
-
+            
             {
               TextView;
               layout_width="fill",

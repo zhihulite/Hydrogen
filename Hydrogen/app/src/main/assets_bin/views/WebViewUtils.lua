@@ -177,6 +177,7 @@ function Utils:initWebViewClient(callback)
       "utf-8",
       fis)
     end
+    
   end
 
   local mycallback={
