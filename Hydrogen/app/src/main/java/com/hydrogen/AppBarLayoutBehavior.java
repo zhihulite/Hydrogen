@@ -136,9 +136,6 @@ public class AppBarLayoutBehavior extends AppBarLayout.Behavior {
         }
         if (!shouldBlockNestedScroll) {
             super.onNestedPreScroll(coordinatorLayout, child, target, dx, dy, consumed, type);
-        } else if (TYPE_FLING == type) {
-            if (null == consumed) consumed = new int[2];
-            consumed[1] = dy;
         }
     }
 
@@ -161,5 +158,6 @@ public class AppBarLayoutBehavior extends AppBarLayout.Behavior {
         isFlinging = false;
         shouldBlockNestedScroll = false;
     }
+
 
 }
