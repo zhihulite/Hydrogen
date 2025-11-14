@@ -11,7 +11,7 @@ on:
           - 'assembleRelease'
           - 'assembleRelease_unlua'
           - 'build_and_publish'
-          - 'build_and_nightly_publish'
+          - 'build_and_beta_publish'
         default: 'assembleRelease'
 
 jobs:
@@ -42,7 +42,7 @@ jobs:
             (cd Hydrogen && ./gradlew app:assembleRelease_unlua)
           elif [ "${{ github.event.inputs.build_type }}" = "build_and_publish" ]; then
             (cd Hydrogen && ./gradlew app:assembleRelease)
-          elif [ "${{ github.event.inputs.build_type }}" = "build_and_nightly_publish" ]; then
+          elif [ "${{ github.event.inputs.build_type }}" = "build_and_beta_publish" ]; then
             (cd Hydrogen && ./gradlew app:assembleRelease)
           fi
 
@@ -68,29 +68,42 @@ jobs:
 
       # 提取版本号
       - name: Extract version from APK filename
-        if: github.event.inputs.build_type == 'build_and_publish' || github.event.inputs.build_type == 'build_and_nightly_publish'
+        if: github.event.inputs.build_type == 'build_and_publish' || github.event.inputs.build_type == 'build_and_beta_publish'
         id: extract_version
         run: |
           # 查找 APK 文件
-          APK_FILE=$(find Hydrogen/app/build/outputs/apk/release/ -name "Hydrogen_new_*.apk" | head -1)
+          APK_FILE=$(find Hydrogen/app/build/outputs/apk/release/ -name "*.apk" | head -1)
           if [ -n "$APK_FILE" ]; then
             # 获取 APK 文件的创建时间
             BUILD_TIME=$(stat -c '%y' "$APK_FILE" | cut -d'.' -f1)
-            echo "build_time=$BUILD_TIME" >> $GITHUB_OUTPUT
+            echo "build_time=$BUILD_TIME" >> "$GITHUB_OUTPUT"
             echo "APK 文件创建时间: $BUILD_TIME"
 
-            # 提取版本号
-            VERSION=$(basename "$APK_FILE" | grep -o 'Hydrogen_new_0\.\([0-9]\{3\}\)\.apk' | sed 's/Hydrogen_new_0\.\([0-9]\{3\}\)\.apk/\1/')
-            if [ -n "$VERSION" ]; then
-              echo "提取到版本号: $VERSION"
-
+            # 提取文件名中的版本信息
+            FILENAME=$(basename "$APK_FILE")
+            echo "APK 文件名: $FILENAME"
+            
+            # 按照 _ 分割文件名
+            IFS='_' read -ra PARTS <<< "$FILENAME"
+            
+            if [ ${#PARTS[@]} -ge 3 ]; then
+              APK_NAME="${PARTS[0]}"
+              VERSION_NAME="${PARTS[1]}"
+              VERSION_CODE="${PARTS[2]%.apk}"
+              
+              echo "APK 名称: $APK_NAME"
+              echo "版本名称: $VERSION_NAME"
+              echo "版本代码: $VERSION_CODE"
+              
               # 设置输出变量
-              echo "version=$VERSION" >> $GITHUB_OUTPUT
-              echo "build_time=$BUILD_TIME" >> $GITHUB_OUTPUT
-              echo "apk_file=$APK_FILE" >> $GITHUB_OUTPUT
+              echo "version=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+              echo "build_time=$BUILD_TIME" >> "$GITHUB_OUTPUT"
+              echo "apk_file=$APK_FILE" >> "$GITHUB_OUTPUT"
+              echo "apk_name=$APK_NAME" >> "$GITHUB_OUTPUT"
+              echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
             else
-              echo "无法从文件名提取版本号"
-              echo "APK 文件: $APK_FILE"
+              echo "文件名格式不符合预期: $FILENAME"
+              echo "期望格式: apkname_versionname_versioncode.apk"
               exit 1
             fi
           else
@@ -102,17 +115,18 @@ jobs:
         if: github.event.inputs.build_type == 'build_and_publish'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.${{ steps.extract_version.outputs.version }}
+          tag_name: v${{ steps.extract_version.outputs.version }}
+          name: Release v${{ steps.extract_version.outputs.version }}
           files: |
             ${{ steps.extract_version.outputs.apk_file }}
             
-      - name: Publish Release APK to GitHub Nightly Releases
-        if: github.event.inputs.build_type == 'build_and_nightly_publish'
-        id: nightly_release
+      - name: Publish Release APK to GitHub Beta Build Releases
+        if: github.event.inputs.build_type == 'build_and_beta_publish'
+        id: beta_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: nightly v0.${{ steps.extract_version.outputs.version }}
-          name: Nightly Build (${{ steps.extract_version.outputs.build_time }})
+          tag_name: beta-v${{ steps.extract_version.outputs.version }}-${{ github.run_number }}
+          name: Beta Build v${{ steps.extract_version.outputs.version }} (${{ steps.extract_version.outputs.build_time }})
           files: |
             ${{ steps.extract_version.outputs.apk_file }}
           prerelease: true
