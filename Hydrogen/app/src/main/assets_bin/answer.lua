@@ -193,7 +193,6 @@ all_root.onTouch=function(v,e)
 end
 
 WebViewUtils=require "views/WebViewUtils"
-
 function 数据添加(t,b)
 
   local 回答id=b.id
@@ -265,21 +264,24 @@ function 数据添加(t,b)
       task(1000,function()
         加载js(view,获取js("answer_code"))
         加载js(view,获取js("scrollRestorer"))
-        view.evaluateJavascript("window.scrollRestorer.restoreScrollPosition()",
-        {onReceiveValue=function(b)
-            task(50,function()
-              view.evaluateJavascript(
-              "window.scrollRestorerPos",
-              {onReceiveValue=function(b)
-                  local 保存滑动位置 = tonumber(b) or 0
-                  if 保存滑动位置>userinfo.height then
-                    appbar.setExpanded(false);
-                    dtl.layoutParams.getBehavior().slideDown(dtl);
-                    提示("已恢复到上次滑动位置")
-                  end
-              end})
-            end)
-        end});
+        --添加延迟 防止scrollRestorer未初始化
+        task(50,function()
+          view.evaluateJavascript("window.scrollRestorer.restoreScrollPosition()",
+          {onReceiveValue=function(b)
+              task(50,function()
+                view.evaluateJavascript(
+                "window.scrollRestorerPos",
+                {onReceiveValue=function(b)
+                    local 保存滑动位置 = tonumber(b) or 0
+                    if 保存滑动位置>userinfo.height then
+                      appbar.setExpanded(false);
+                      dtl.layoutParams.getBehavior().slideDown(dtl);
+                      提示("已恢复到上次滑动位置")
+                    end
+                end})
+              end)
+          end});
+        end)
       end)
 
       if this.getSharedData("代码块自动换行")=="true" then
@@ -321,6 +323,7 @@ function 数据添加(t,b)
   MyWebViewUtils:initChromeClient({
     onConsoleMessage=function(consoleMessage)
       --打印控制台信息
+      if consoleMessage.message():find("滑动") and activity.getSharedData("回答单页模式")=="true" then return end
       if consoleMessage.message():find("开始滑动") then
         t.content.requestDisallowInterceptTouchEvent(true)
         pg.setUserInputEnabled(false);

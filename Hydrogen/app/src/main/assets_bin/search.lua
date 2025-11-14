@@ -37,7 +37,7 @@ function 搜索(text)
     end
     search_eg=this.getSharedData("搜索引擎")
     newActivity("browser",{search_eg..urlEncode(search_text)})
-    保存搜索历史记录(text)
+    保存搜索历史记录(search_text)
   end
 end
 

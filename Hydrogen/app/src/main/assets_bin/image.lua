@@ -137,8 +137,12 @@ ripple.onClick=function()
   local url=mls[""..picpage.getCurrentItem()]
   import "android.webkit.URLUtil"
   local 文件名=URLUtil.guessFileName(url,nil,nil)
-  Http.download(url,Environment.getExternalStorageDirectory().toString().."/Pictures/Hydrogen/"..文件名,function(code,msg)
+  local filepath = Environment.getExternalStorageDirectory().toString().."/Pictures/Hydrogen/"..文件名
+  Http.download(url,filepath,function(code,msg)
     if code==200 then
+      local File = luajava.bindClass "java.io.File"
+      local MediaScannerConnection = luajava.bindClass "android.media.MediaScannerConnection"
+      MediaScannerConnection.scanFile(activity, {File(filepath).getAbsolutePath()}, nil, nil)
       提示("已保存到"..msg)
      else
       提示("保存失败")
@@ -151,20 +155,20 @@ ripple.onLongClick=function()
   -- 获取当前显示的图片View
   local currentIndex = picpage.getCurrentItem()
   local currentView = views[currentIndex].ids.ph
-  
+
   -- 检查是否有图片
   if currentView.getDrawable() == nil then
     提示("图片尚未加载完成")
     return true
   end
-  
+
   -- 将图片转换为Bitmap
   local bitmap = currentView.getDrawable().getBitmap()
   if bitmap == nil then
     提示("无法获取图片数据")
     return true
   end
-  
+
   -- 分享图片
   shareImage(bitmap)
   return true
@@ -176,24 +180,24 @@ function shareImage(bitmap)
   local dir = this.getExternalCacheDir().toString()
   local fileName = "shared_image_" .. System.currentTimeMillis() .. ".jpg"
   local file = File(dir, fileName)
-  
+
   -- 保存Bitmap到文件
   local fos = FileOutputStream(file)
   bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
   fos.flush()
   fos.close()
-  
+
   -- 获取文件的Uri（使用FileProvider）
   local authority = this.getPackageName() .. ".FileProvider"
   local contentUri = FileProvider.getUriForFile(this, authority, file)
-  
+
   -- 创建分享Intent
   local shareIntent = Intent()
   shareIntent.setAction(Intent.ACTION_SEND)
   shareIntent.putExtra(Intent.EXTRA_STREAM, contentUri)
   shareIntent.setType("image/jpeg")
   shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-  
+
   -- 启动分享选择器
   this.startActivity(Intent.createChooser(shareIntent, "分享图片"))
 end

@@ -243,7 +243,7 @@ function base:getUrls()
   local people_id = self.id
   local url_token=self.url_token
   return {
-    activities = "https://api.zhihu.com/people/" .. people_id .. "/activities?limit=20",
+    activities = "https://www.zhihu.com/api/v3/moments/" .. people_id .. "/activities?limit=20",
     zvideo = "https://www.zhihu.com/api/v4/members/" .. url_token .. "/zvideos?offset=0&limit=20",
     answer = "https://www.zhihu.com/api/v4/members/" .. people_id .. "/answers?order_by=created&offset=0&limit=20",
     vote = "https://api.zhihu.com/moments/" .. people_id .. "/vote?limit=20",
@@ -361,15 +361,7 @@ function base:initpage(view,tabview)
     needlogin=false,
     head="apphead",
     adapters_func=self.getAdapter,
-    func=self.resolvedata,
-    urlfunc=function(geturl,head)
-      local pos = geturl:find("activities?")
-      if pos then
-        local data=geturl:sub(pos)
-        geturl="https://api.zhihu.com/people/"..self.id.."/"..data
-      end
-      return geturl,head
-    end
+    func=self.resolvedata
   })
 
 end

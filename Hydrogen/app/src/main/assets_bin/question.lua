@@ -93,8 +93,11 @@ function 问题详情(code)
 
   local tmpview={}
   bottomSheetDialog = BottomSheetDialog(this)
-bottomSheetDialog.window
-  print(bottomSheetDialog.edgeToEdgeEnabled)
+  pcall(function()
+    bottomSheetDialog.getWindow().setDecorFitsSystemWindows(false)
+    bottomSheetDialog.getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS)
+  end)
+  --print(bottomSheetDialog.edgeToEdgeEnabled)
   bottomSheetDialog.setContentView(loadlayout2(dann,tmpview))
 
   bottomSheetDialog.setCancelable(true);
