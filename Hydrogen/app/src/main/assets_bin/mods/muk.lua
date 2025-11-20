@@ -2,6 +2,7 @@ require "import"
 import "mods.imports"
 import "model.zHttp"
 import "model.zhihu_url"
+import "androidx.appcompat.widget.PopupMenu"
 luajson=require "json"
 
 initApp=true

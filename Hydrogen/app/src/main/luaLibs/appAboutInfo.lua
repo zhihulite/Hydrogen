@@ -2,7 +2,7 @@ appInfo={
   name=R.string.app_name,
   message="一个基于androlua+开发的第三方安卓知乎客户端",
   iconResource=R.mipmap.ic_launcher,
-  browserUrl="https://huajiqaq.github.io/myhydrogen/",
+  browserUrl="https://zhihulite.github.io/",
   clickable=true,
 }
 
@@ -89,7 +89,7 @@ moreItem={
     SettingsLayUtil.ITEM_NOSUMMARY;
     title="更新日志";
     icon=R.drawable.ic_information_outline;
-    browserUrl="https://huajiqaq.github.io/myhydrogen/update.html"
+    browserUrl="https://zhihulite.github.io/update.html"
   },
   {
     SettingsLayUtil.ITEM_NOSUMMARY;
