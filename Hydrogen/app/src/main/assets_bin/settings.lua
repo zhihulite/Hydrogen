@@ -100,7 +100,7 @@ addTitle("主页设置")
 addToggle("热榜关闭图片", "热榜关闭图片")
 addToggle("热榜关闭热度", "热榜关闭热度")
 addToggle("关闭推荐全站", "关闭全站")
-addCard("修改推荐地点")
+addCard("修改主页推荐地点tab")
 addCard("设置关注默认选中栏")
 addCard("设置主页底栏排列")
 
@@ -421,7 +421,7 @@ clickfunc["主题设置"] = function()
   newActivity("sub/ThemePicker/main")
 end
 
-clickfunc["修改推荐地点"] = function()
+clickfunc["修改主页推荐地点tab"] = function()
   zHttp.get("https://api.zhihu.com/feed-root/sections/cityList", head, function(code, content)
     if code == 200 then
       local show_content = ""
