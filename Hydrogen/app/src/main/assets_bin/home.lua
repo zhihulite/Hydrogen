@@ -512,8 +512,7 @@ bnv.setLabelVisibilityMode(1)
 page_home.setAdapter(pagadp)
 local startindex=pageinfo_keys[starthome]
 page_home.setCurrentItem(startindex,false)
-
-
+_title.text=(bnv.getMenu().getItem(startindex).getTitle())
 bnv.getMenu().getItem(startindex).setChecked(true)
 
 

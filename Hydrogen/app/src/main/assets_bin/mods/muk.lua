@@ -2755,11 +2755,6 @@ task(1,function()
   function onActivityResult(a,b,c)
     if b==100 then
       setHead()
-      if mytip_dia and mytip_dia.isShowing() then
-        mytip_dia.dismiss()
-        mytip_dia=nil
-        canload=true
-      end
     end
     activity.setResult(b)
     --由于可能有setHead 所以必须写在前面

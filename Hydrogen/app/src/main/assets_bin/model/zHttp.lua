@@ -11,12 +11,11 @@ function zHttp.setcallback(code,content,raw,headers,url,head,callback,func,data)
         mytip_dia=AlertDialog.Builder(this)
         .setTitle("提示")
         .setMessage(decoded_content.error.message)
-        .setCancelable(false)
-        .setPositiveButton("立即跳转",nil)
+        .setPositiveButton("立即跳转",{onClick = function()
+            newActivity("browser",{decoded_content.error.redirect})
+            提示("已跳转 成功后请自行退出")
+        end})
         .show()
-        mytip_dia.getButton(mytip_dia.BUTTON_POSITIVE).onClick=function()
-          newActivity("browser",{decoded_content.error.redirect})
-          提示("已跳转 成功后请自行退出")
         end
       end
      elseif decoded_content.error and decoded_content.error.message then
