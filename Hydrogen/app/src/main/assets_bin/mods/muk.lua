@@ -2319,9 +2319,7 @@ function 新建收藏夹(callback)
   .setView(loadlayout(InputLayout))
   .setPositiveButton("确定",nil)
   .setNegativeButton("返回",{onClick=function()
-      collection_webview.clearCache(true)
-      collection_webview.clearFormData()
-      collection_webview.clearHistory()
+      collection_webview.destroy()
   end})
   .setCancelable(false)
   .show()
@@ -2385,14 +2383,6 @@ function 新建收藏夹(callback)
   .setTitle("提示")
   .setMessage("内容加载中 请耐心等待 如若想停止加载 请点击下方取消")
   .setNeutralButton("取消",{onClick=function()
-      --加载一个空白页
-      collection_webview.loadUrl("about:blank");
-      collection_webview.clearCache(true)
-      collection_webview.clearFormData()
-      collection_webview.clearHistory()
-      --移除webview
-      collection_webview.removeAllViews();
-      --销毁webview自身
       collection_webview.destroy();
       collection_dialog.dismiss()
   end})

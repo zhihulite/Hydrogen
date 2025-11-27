@@ -243,11 +243,3 @@ pop={
 task(1,function()
   a=MUKPopu(pop)
 end)
-
-
-function onDestroy()
-  content.clearCache(true)
-  content.clearFormData()
-  content.clearHistory()
-  content.destroy()
-end

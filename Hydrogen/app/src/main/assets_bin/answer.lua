@@ -69,7 +69,7 @@ local recyclerView = recyclerViewField.get(pg);
 local touchSlopField = RecyclerView.getDeclaredField("mTouchSlop");
 touchSlopField.setAccessible(true);
 local touchSlop = touchSlopField.get(recyclerView);
-touchSlopField.set(recyclerView, int(touchSlop*2.5));--通过获取原有的最小滑动距离 *n来增加此值
+touchSlopField.set(recyclerView, int(touchSlop*tonumber(activity.getSharedData("scroll_sense"))));--通过获取原有的最小滑动距离 *n来增加此值
 
 --解决快速滑动出现的bug 点击停止滑动
 local AppBarLayoutBehavior=luajava.bindClass "com.hydrogen.AppBarLayoutBehavior"
@@ -261,7 +261,7 @@ function 数据添加(t,b)
       end
       屏蔽元素(view,{".AnswerReward",".AppViewRecommendedReading"})
 
-      task(1000,function()
+      task(2000,function()
         加载js(view,获取js("answer_code"))
         加载js(view,获取js("scrollRestorer"))
         --添加延迟 防止scrollRestorer未初始化

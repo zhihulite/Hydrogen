@@ -222,15 +222,6 @@ end})
 刷新()
 
 
---退出时去除webview的内存
-function onDestroy()
-  content.clearCache(true)
-  content.clearFormData()
-  content.clearHistory()
-  content.destroy()
-end
-
-
 import "androidx.activity.result.ActivityResultCallback"
 import "androidx.activity.result.contract.ActivityResultContracts"
 createDocumentLauncher = thisFragment.registerForActivityResult(ActivityResultContracts.CreateDocument("text/markdown"),

@@ -259,14 +259,6 @@ function onDestroy()
   show.destroy()
 end
 
-if this.getSharedData("禁用缓存")=="true" then
-  function onStop()
-    show.clearCache(true)
-    show.clearFormData()
-    show.clearHistory()
-  end
-end
-
 task(1,function()
   a=MUKPopu({
     tittle="问题",

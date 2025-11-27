@@ -28,9 +28,6 @@ function base.resolvedata(v,data)
   local 评论数=tostring(v.comment_count)
   local 作者=v.author.name
   local 预览内容=作者.." : "..(v.excerpt or v.excerpt_title)
-  if activity.getSharedData("feed_cache")==nil
-    activity.setSharedData("feed_cache",100)
-  end
   if tointeger(activity.getSharedData("feed_cache"))>1
     if File(tostring(activity.getExternalCacheDir()).."/rc.json").exists()
       pcall(function()recommend_history=luajson.decode(io.open(tostring(activity.getExternalCacheDir()).."/rc.json"):read("*a"))end)
@@ -39,7 +36,7 @@ function base.resolvedata(v,data)
     end
     if table.find(recommend_history,预览内容)
       --开启无障碍后不提示找到重复内容
-      if not accessibilityManager.isTouchExplorationEnabled() then
+      if activity.getSharedData("feed_cache_tip") == "true" and not accessibilityManager.isTouchExplorationEnabled() then
         提示("找到重复内容")
       end
       local postdata=luajson.encode(readdata)

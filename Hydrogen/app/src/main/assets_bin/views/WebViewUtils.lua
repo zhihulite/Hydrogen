@@ -79,27 +79,14 @@ local function mergeTables(table1, table2, names)
 end
 
 function Utils:initSettings()
-
-  if activity.getSharedData("禁用缓存")=="true" then
-    self.webview
-    .getSettings()
-    .setAppCacheEnabled(false)
-    .setCacheMode(WebSettings.LOAD_NO_CACHE)
-    --关闭 DOM 存储功能
-    .setDomStorageEnabled(false)
-    --关闭 数据库 存储功能
-    .setDatabaseEnabled(false)
-   else
-    self.webview
-    .getSettings()
-    .setAppCacheEnabled(true)
-    .setCacheMode(WebSettings.LOAD_DEFAULT)
-    --开启 DOM 存储功能
-    .setDomStorageEnabled(true)
-    --开启 数据库 存储功能
-    .setDatabaseEnabled(true)
-  end
-
+  self.webview
+  .getSettings()
+  .setAppCacheEnabled(true)
+  .setCacheMode(WebSettings.LOAD_DEFAULT)
+  --开启 DOM 存储功能
+  .setDomStorageEnabled(true)
+  --开启 数据库 存储功能
+  .setDatabaseEnabled(true)
   self.webview.BackgroundColor=转0x("#00000000",true);
 
   return self
@@ -177,7 +164,7 @@ function Utils:initWebViewClient(callback)
       "utf-8",
       fis)
     end
-    
+
   end
 
   local mycallback={

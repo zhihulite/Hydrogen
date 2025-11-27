@@ -359,6 +359,14 @@ if this.getSharedData("Setting_Auto_Night_Mode")==nil then
   activity.setSharedData("Setting_Auto_Night_Mode","true")
 end
 
+if activity.getSharedData("feed_cache")==nil
+  activity.setSharedData("feed_cache","100")
+end
+
+if activity.getSharedData("scroll_sense")==nil
+  activity.setSharedData("scroll_sense","2.5")
+end
+
 pagadp=SWKLuaPagerAdapter()
 
 local home_layout_table=require("layout/home_layout/page_home")
@@ -1459,8 +1467,8 @@ function setupDrawerEdge(drawerLayout)
   touchSlopField.setAccessible(true)
 
   local originalTouchSlop = touchSlopField.getInt(viewDragHelper)
-  -- 将滑动阈值调整为2倍避免滑动过于灵敏
-  touchSlopField.setInt(viewDragHelper, originalTouchSlop * 2)
+  -- 将滑动阈值调整为4倍避免滑动过于灵敏
+  touchSlopField.setInt(viewDragHelper, originalTouchSlop * 4)
 
   -- 禁用长按唤出抽屉 替换 mPeekRunnable 为空实现
   local leftCallbackField = drawerLayoutClass.getDeclaredField("mLeftCallback")
