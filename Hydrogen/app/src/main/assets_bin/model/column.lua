@@ -80,7 +80,7 @@ function base:getData(cb)
     local datatype = self.type
 
     switch datatype
-     case "文章", "想法"
+     case "文章", "想法", "视频"
       local title = data.title
       if datatype == "想法" then
         title = 获取想法标题(data.content[1].title or "")
