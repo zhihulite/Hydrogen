@@ -52,7 +52,6 @@ MyWebViewUtils:initWebViewClient{
   shouldOverrideUrlLoading=function(view,url)--回调参数，v控件，url网址
     if url:find("zhihu.com") and url:find("https://www.zhihu.com/account/unhuman") then
       view.stopLoading()
-      activity.setResult(100)
 
       if url:find("zhihu.com/signin") then
         activity.newActivity("login")

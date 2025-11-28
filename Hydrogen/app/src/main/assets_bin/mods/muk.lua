@@ -15,8 +15,6 @@ import "jesse205"
 内容行高="18sp"
 
 
-oldTheme=ThemeUtil.getAppTheme()
-oldDarkActionBar=getSharedData("theme_darkactionbar")
 MyPageTool2 = require "views/MyPageTool2"
 
 --重写SwipeRefreshLayout到自定义view 原SwipeRefreshLayout和滑动组件有bug
@@ -2710,61 +2708,6 @@ function getDirSize(path)
 end
 
 import "androidx.core.content.ContextCompat"
---1毫秒后添加 防止加载失败
-task(1,function()
-  local old_onDestroy=onDestroy
-  function onDestroy()
-    if old_onDestroy~=nil then
-      old_onDestroy()
-    end
-    old_onDestroy=nil
-
-    --判断是否为主线程
-    if Looper.myLooper() == Looper.getMainLooper() then
-      --清理内存缓存
-      Glide.get(this).clearMemory();
-    end
-
-    --[[
-    thread(function(glide,context)
-      glide.get(context).clearDiskCache()
-    end,Glide,this)
-]]
-    collectgarbage("collect")
-    System.gc()
-  end
-
-  islogin=getLogin()
-
-  local old_onResume=onResume
-  function onResume()
-    if old_onResume~=nil then
-      old_onResume()
-    end
-    if (oldTheme~=ThemeUtil.getAppTheme()) or (oldDarkActionBar~=getSharedData("theme_darkactionbar")) then
-      activity.recreate()
-      return
-    end
-    if islogin~=getLogin() then
-      islogin=getLogin()
-      onActivityResult(nil,100,nil)
-    end
-  end
-
-  local old_onActivityResult=onActivityResult
-  function onActivityResult(a,b,c)
-    if b==100 then
-      setHead()
-    end
-    activity.setResult(b)
-    --由于可能有setHead 所以必须写在前面
-    if old_onActivityResult~=nil then
-      old_onActivityResult(a,b,c)
-    end
-
-  end
-
-end)
 
 function 获取适配器项目布局(name)
   local dir="layout/item_layout/"
@@ -3074,7 +3017,6 @@ function loadglide(view,url,ischeck,size)
     glid_manage
     .asBitmap()
     .load(url)
-    .diskCacheStrategy(DiskCacheStrategy.NONE)
     .override(size.width,size.height)
     .listener(RequestListener{
       onLoadFailed=function(e,model,target,isFirstResource)
@@ -3086,7 +3028,6 @@ function loadglide(view,url,ischeck,size)
     glid_manage
     .asBitmap()
     .load(url)
-    .diskCacheStrategy(DiskCacheStrategy.NONE)
     .listener(RequestListener{
       onLoadFailed=function(e,model,target,isFirstResource)
         return false;

@@ -224,12 +224,3 @@ if comment_typel:find("local") then
     })
   end)
 end
-
-function onActivityResult(a,b,c)
-  if b==100 then
-    if comment_typel~="local" then
-      comment_base:clear()
-      comment_listl.Adapter.clear()
-    end
-  end
-end

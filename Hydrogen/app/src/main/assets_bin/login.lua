@@ -82,7 +82,6 @@ MyWebViewUtils:initWebViewClient{
           activity.setSharedData("idx",uid)
           --
           加载js(view,"document.cookie = document.cookie")
-          activity.setResult(100)
           activity.finish()
           --[=[AlertDialog.Builder(this)
           .setTitle("提示")

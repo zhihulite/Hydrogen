@@ -890,12 +890,6 @@ if activity.getSharedData("回答提示0.04")==nil
 end
 
 
-function onActivityResult(a,b,c)
-  if b==100 then
-    activity.recreate()
-  end
-end
-
 if this.getSharedData("显示虚拟滑动按键")=="true" then
   bottom_parent.Visibility=0
   up_button.onClick=function()

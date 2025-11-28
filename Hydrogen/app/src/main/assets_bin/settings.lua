@@ -169,8 +169,8 @@ end
 
 -- 夜间模式相关
 clickfunc["夜间模式"] = function()
-  提示("返回主页面生效")
   设置主题()
+  activity.recreate()
 end
 
 clickfunc["夜间模式追随系统"] = function()
@@ -496,7 +496,6 @@ clickfunc["修改主页推荐地点tab"] = function()
         if checkstr ~= "" and show_content:find(checkstr) then
           zHttp.post("https://api.zhihu.com/feed-root/sections/saveUserCity", '{"city":"'..checkstr..'"}', posthead, function(code, content)
             if code == 200 then
-              activity.setResult(100, nil)
               提示("修改成功 你可能需要刷新页面才能看到更改")
              else
               提示("失败 请检查输入内容或联系作者修复")

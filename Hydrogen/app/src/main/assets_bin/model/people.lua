@@ -245,13 +245,14 @@ function base:getUrls()
   return {
     activities = "https://www.zhihu.com/api/v3/moments/" .. people_id .. "/activities?limit=20",
     zvideo = "https://www.zhihu.com/api/v4/members/" .. url_token .. "/zvideos?offset=0&limit=20",
-    answer = "https://www.zhihu.com/api/v4/members/" .. people_id .. "/answers?order_by=created&offset=0&limit=20",
-    vote = "https://api.zhihu.com/moments/" .. people_id .. "/vote?limit=20",
+    answer = "https://www.zhihu.com/api/v4/members/" .. url_token .. "/answers?order_by=created&offset=0&limit=20",
+    --暂未找到相关网页api
+    --vote = "https://www.zhihu.com/api/v4/members/" .. url_token .. "/vote?limit=20",
     more = "https://api.zhihu.com/people/" .. people_id .. "/profile/tab/more?tab_type=1",
     article = "https://www.zhihu.com/api/v4/members/" .. url_token .. "/articles?offset=0&limit=20",
     column = "https://www.zhihu.com/api/v4/members/"..url_token.."/column-contributions?offset=0&limit=20",
     pin = "https://api.zhihu.com/v2/pins/" .. people_id .. "/moments",
-    question = "https://api.zhihu.com/people/" .. people_id .. "/questions?offset=0&limit=20",
+    question = "https://www.zhihu.com/api/v4/members/" .. url_token .. "/questions?offset=0&limit=20",
   }
 end
 
