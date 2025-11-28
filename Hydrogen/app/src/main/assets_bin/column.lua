@@ -83,12 +83,14 @@ _title.Text="加载中"
 
 function 刷新()
 
-  --第二个为issave 为true代表记录历史记录
-  base_column:getData(function(data)
+  base_column:getData(function(data,code)
     if data==false then
-      提示("加载页面失败")
-      _title.Text="加载失败"
-      return
+      if code == 404 then
+        _title.Text="页面不存在"
+       else
+        _title.Text="加载失败"
+      end
+      return 提示("加载页面失败")
     end
     --针对没有通过请求直接回调的内容的处理
     if type(data)=="table" then
@@ -113,7 +115,9 @@ function 刷新()
       content.loadUrl(base_column.weburl)
     end
 
-  end,true)
+    保存历史记录(base_column.id, data.title, data.excerpt_title or data.excerpt or "", base_column.type)
+  end)
+
 
   if 类型=="直播" then
     followdoc='document.querySelector(".TheaterRoomHeader-actor").childNodes[2]'

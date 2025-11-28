@@ -62,41 +62,38 @@ function base:getinfo()
   return self
 end
 
-
-function base:getData(cb,issave)
-  local url=self.geturl
+function base:getData(cb)
+  local url = self.geturl
   if not url then
     if self.weburl then
       return cb(true)
     end
     return
   end
-  zHttp.get(url,head,function(a,b)
-    if a==200 then
-      local b=luajson.decode(b)
-      local type1=self.type
 
-      if issave then
-        switch type1
-         case "文章","想法","视频"
-          local title=b.title
-          if type1=="想法" then
-            title=获取想法标题(b.content[1].title or "")
-          end
-          if title=="" then
-            title="一个"..type1
-          end
-          --修复想法标题获取异常的问题
-          b.title=title
-          保存历史记录(self.id,title,b.excerpt_title or b.excerpt or "",type1)
-          local username=b.author.name
-          b.savepath=内置存储文件("Download/"..title.."/"..username)
-        end
-      end
-      cb(b)
-     else
-      cb(false)
+  zHttp.get(url, head, function(code, content)
+    if code ~= 200 then
+      return cb(false, code)
     end
+
+    local data = luajson.decode(content)
+    local datatype = self.type
+
+    switch datatype
+     case "文章", "想法"
+      local title = data.title
+      if datatype == "想法" then
+        title = 获取想法标题(data.content[1].title or "")
+      end
+      if title == "" then
+        title = "一个" .. datatype
+      end
+      data.title = title
+      local username = data.author.name
+      data.savepath = 内置存储文件("Download/" .. title .. "/" .. username)
+    end
+
+    cb(data)
   end)
 end
 
