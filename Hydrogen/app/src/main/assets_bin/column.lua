@@ -102,6 +102,7 @@ function 刷新()
         _title.text=page_title
         --软件自己拼接成的保存路径
         保存路径=data.savepath
+        保存历史记录(base_column.id, data.title, data.excerpt_title or data.excerpt or "", base_column.type)
        else
         author_id=data.theater.actor.id
       end
@@ -115,7 +116,6 @@ function 刷新()
       content.loadUrl(base_column.weburl)
     end
 
-    保存历史记录(base_column.id, data.title, data.excerpt_title or data.excerpt or "", base_column.type)
   end)
 
 
