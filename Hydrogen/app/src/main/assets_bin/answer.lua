@@ -256,7 +256,7 @@ function 数据添加(t,b)
         初始化背景(view)
       end
 
-      if this.getSharedData("eruda")
+      if this.getSharedData("eruda") == "true" then
         加载js(view,获取js("eruda"))
       end
       屏蔽元素(view,{".AnswerReward",".AppViewRecommendedReading"})
