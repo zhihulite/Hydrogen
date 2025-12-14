@@ -88,21 +88,23 @@
           --顶栏图标
           {
             ImageView;
-            src=图标("add");
+            src=图标("scan");
             ColorFilter=primaryc;
             layout_width="32dp",
             layout_height="32dp",
             padding="4dp";
             id="_ask";
-            tooltip="提问",
+            tooltip="扫描",
             layout_margin="8dp";
             onClick=function()
-              if not(getLogin()) then
-                return 提示("请登录后使用本功能")
+              camera = {"android.permission.CAMERA"}
+              if PermissionUtil.check(camera)== true
+                newActivity("scan")
+               else
+                提示("为执行扫码，请授予相机权限")
+                local ActivityCompat = luajava.bindClass "androidx.core.app.ActivityCompat"
+                ActivityCompat.requestPermissions(activity, camera, 114514);
               end
-              task(20,function()
-                newActivity("browser",{"https://www.zhihu.com/messages","提问"})
-              end)
             end;
           };
           {

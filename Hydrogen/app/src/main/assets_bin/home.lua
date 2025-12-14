@@ -590,6 +590,7 @@ function 切换布局(layoutName)
   local specialConfig = {
     收藏 = {
       tooltip = "新建收藏夹",
+src=图标("add"),
       onClick = function()
         if not getLogin() then
           return 提示("你可能需要登录")
@@ -638,14 +639,15 @@ function 切换布局(layoutName)
       }
     },
     其他 = {
-      tooltip = "提问",
+      tooltip = "扫描",
+src=图标("scan"),
       onClick = function()
         if not getLogin() then
           return 提示("你可能需要登录")
         end
         nTView = _ask
         task(20, function()
-          newActivity("browser", {"https://www.zhihu.com/messages", "提问"})
+          newActivity("scan", {"https://www.zhihu.com/messages", "提问"})
         end)
       end,
       menuItems = {
@@ -654,10 +656,10 @@ function 切换布局(layoutName)
       }
     }
   }
-
   local config = specialConfig[layoutName] or specialConfig.其他
   setmyToolip(_ask, config.tooltip)
   _ask.onClick = config.onClick
+  _ask.setImageDrawable(Drawable.createFromPath(config.src))
 
   if isstart == "true" and layoutName == "收藏" then
     MUKPopu({

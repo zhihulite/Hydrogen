@@ -13,6 +13,9 @@ fastscroll = "1.2.0"
 agp = "8.6.0"
 core = "1.16.0"
 splashscreen = "1.2.0-rc01"
+webkit = "1.14.0"
+zxing-embedded = "4.3.0"
+zxing-core = "3.5.3"
 
 [libraries]
 # AndroidX
@@ -24,6 +27,7 @@ androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", vers
 androidx-swiperefresh = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefresh" }
 androidx-core = { group = "androidx.core", name = "core", version.ref = "core"}
 androidx-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
+androidx-webkit = { group = "androidx.webkit", name = "webkit", version.ref = "webkit"}
 
 
 # Google
@@ -35,6 +39,8 @@ glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "gl
 glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
 webviewup-core = { group = "io.github.jonanorman.android.webviewup", name = "core", version.ref = "webviewup" }
 fastscroll = { group = "me.zhanghai.android.fastscroll", name = "library", version.ref = "fastscroll" }
+zxing-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxing-embedded" }
+zxing-core = { module = "com.google.zxing:core", version.ref = "zxing-core" }
 
 # Activity
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }

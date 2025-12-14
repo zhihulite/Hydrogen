@@ -2,19 +2,20 @@ require "import"
 import "mods.imports"
 import "model.zHttp"
 import "model.zhihu_url"
-import "androidx.appcompat.widget.PopupMenu"
 luajson=require "json"
 
 initApp=true
 useCustomAppToolbar=true
 import "jesse205"
 
-标题文字大小="16sp"
+标题文字大小="18sp"
 内容文字大小="14sp"
 标题行高="20sp"
 内容行高="18sp"
 
 
+oldTheme=ThemeUtil.getAppTheme()
+oldDarkActionBar=getSharedData("theme_darkactionbar")
 MyPageTool2 = require "views/MyPageTool2"
 
 --重写SwipeRefreshLayout到自定义view 原SwipeRefreshLayout和滑动组件有bug
@@ -220,15 +221,12 @@ function edgeToedge(顶栏,底栏,callback)
 
   local function init()
     local windowInsets = ViewCompat.getRootWindowInsets(view);
-    local top = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
-    local bottom = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).bottom;
-    local height = Math.abs(bottom - top);
-    状态栏高度=height
-    local top = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars()).top;
-    local bottom = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
-    local height = Math.abs(bottom - top);
+    状态栏高度=windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
+    | WindowInsetsCompat.Type.displayCutout()
+    | WindowInsetsCompat.Type.ime()).top;
+    导航栏高度=windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
+    | WindowInsetsCompat.Type.displayCutout()).bottom;
 
-    导航栏高度=height
 
     if 顶栏 then
       if type(顶栏)~=type({})
@@ -241,11 +239,8 @@ function edgeToedge(顶栏,底栏,callback)
         end
         ViewCompat.setOnApplyWindowInsetsListener(顶栏,OnApplyWindowInsetsListener{
           onApplyWindowInsets=function(顶栏,windowInsets,initPadding)
-            local top = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).top;
-            local bottom = windowInsets.getInsets(WindowInsetsCompat.Type.statusBars()).bottom;
-            local height = Math.abs(bottom - top);
-
-            状态栏高度=height
+            状态栏高度=windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
+            | WindowInsetsCompat.Type.displayCutout()).top;
 
             顶栏.setPadding(
             顶栏.getPaddingLeft(),
@@ -266,11 +261,8 @@ function edgeToedge(顶栏,底栏,callback)
       for i,底栏 in pairs(底栏)
         ViewCompat.setOnApplyWindowInsetsListener(底栏,OnApplyWindowInsetsListener{
           onApplyWindowInsets=function(底栏,windowInsets,initPadding)
-            local top = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars()).top;
-            local bottom = windowInsets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom;
-            local height = Math.abs(bottom - top);
-
-            导航栏高度=height
+            导航栏高度=windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
+            | WindowInsetsCompat.Type.displayCutout()).bottom;
             底栏.setPadding(
             底栏.getPaddingLeft(),
             底栏.getPaddingTop(),
@@ -785,7 +777,7 @@ function 主题(str)
     --backgroundc="#ffffffff"
     backgroundc=dec2hex(res.color.attr.colorSurface)
     barbackgroundc=res.color.attr.colorSurfaceContainerHigh
-    cardbackc="#fff1f1f1"
+    cardbackc=dec2hex(res.color.attr.colorSurfaceContainerLow)
     barc=dec2hex(res.color.attr.colorSurfaceContainerLow)
     viewshaderc="#00000000"
     grayc="#ECEDF1"

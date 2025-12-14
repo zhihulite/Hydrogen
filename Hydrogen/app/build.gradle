@@ -84,6 +84,9 @@ dependencies {
     implementation libs.webviewup.core
     implementation libs.androidx.activity
     implementation libs.androidx.splashscreen
+    implementation libs.androidx.webkit
+    implementation libs.zxing.embedded
+    implementation libs.zxing.core
     //implementation 'com.github.ZL114514:material-components-android:hydrogen-SNAPSHOT'
     
 
@@ -105,7 +108,7 @@ project.afterEvaluate { project ->
 
 
     // 判断当前是否是带Lua的构建
-    def isLuaBuild = gradle.startParameter.taskNames.any { it.contains('assembleRelease') && !it.contains('unlua') }
+    def isLuaBuild = gradle.startParameter.taskNames.any { it.contains('assemble') && !it.contains('unlua') }
 
     // 任务1: 合并所有子模块的 assets_bin 到临时目录
     tasks.register("mergeAssetsBin", Copy) {
