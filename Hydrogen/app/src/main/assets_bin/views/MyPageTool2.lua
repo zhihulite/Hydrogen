@@ -312,6 +312,9 @@ function Page_Tool:createfunc()
   local needlogin=self.needlogin
 
   self.referfunc=function (pos,isprev)
+    local thispage,thissr=self:getItem(pos)
+    if thissr.isRefreshing() then return end
+
     local pagedata=self.pagedata
 
     if pos==nil then
@@ -323,7 +326,6 @@ function Page_Tool:createfunc()
     end
 
     local isprev=pagedata[pos]["isprev"]
-    local thispage,thissr=self:getItem(pos)
 
     if pagedata[pos].isend then
       return 提示("已经到底了")

@@ -805,7 +805,7 @@ function 加载主页tab()
           end)
         end
 
-        url = url .. "&start_type=warm&refresh_scene=0"
+        --url = url .. "&start_type=warm&refresh_scene=0"
         return url, head
       end
 

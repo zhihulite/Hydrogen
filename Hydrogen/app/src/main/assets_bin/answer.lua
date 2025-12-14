@@ -720,13 +720,20 @@ task(1,function()
             {onReceiveValue=function(b)
                 --偷懒 因为onReceiveValue回调不能直接处理异步
                 --应该使用js接口的 不过1秒似乎应该可以处理吧(
-                task(1000,function()
+                local process
+                process=function()
                   webView.evaluateJavascript(
                   "getScreenshot()",
                   {onReceiveValue=function(b)
-                      func(base64ToBitmap(b))
+                      if string.find(b,"process")~=nil
+                        task(200,process)
+
+                       else
+                        func(base64ToBitmap(b))
+                      end
                   end})
-                end)
+                end
+                task(300,process)
             end});
           end
           webviewToBitmap(webView, function(bitmap)
