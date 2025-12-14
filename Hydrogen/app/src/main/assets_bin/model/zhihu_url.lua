@@ -155,7 +155,15 @@ function 检查链接(url, needExecute)
     return newActivity("comment", {id, commentType .. "s"})
   end
 
+  local encoded = url:match("target=([^&]+)")
+  if encoded then 
+    return newActivity("browser", {encoded:gsub("%%(%x%x)", function(h)
+        return string.char(tonumber(h, 16))
+    end)})
+  end
+
   if needExecute then return false end
+  
   return Toast.makeText(activity, "暂不支持的知乎链接" .. url, Toast.LENGTH_SHORT).show()
 end
 
@@ -241,6 +249,13 @@ function 检查意图(url, needExecute)
     end
   end
 
+  if base:find("webviewform") then
+    local res = query:match("(%d+)")
+    if res then
+      if needExecute then return true end
+      return 提示(res)
+    end
+  end
   if needExecute then return false end
   return Toast.makeText(activity, "暂不支持的知乎意图" .. url, Toast.LENGTH_SHORT).show()
 
