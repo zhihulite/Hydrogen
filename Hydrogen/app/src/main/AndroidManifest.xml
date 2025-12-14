@@ -178,6 +178,12 @@
         </provider>
 
         <provider
+            android:authorities="${applicationId}.DropDataProvider"
+            android:name="androidx.webkit.DropDataContentProvider"
+            android:exported="false"
+            android:grantUriPermissions="true"/>
+
+        <provider
             android:name="com.hydrogen.provider.mDocumentsProvider"
             android:authorities="${applicationId}.documents"
             android:exported="true"
