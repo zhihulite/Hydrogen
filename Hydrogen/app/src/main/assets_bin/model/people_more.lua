@@ -7,8 +7,8 @@ function base:new(id,type)
   _peoplemore={}
 
   local type1=child.type
-  if type1:find("视频") then
-    if type1:find("合集") then
+  if type1:find("视频合集") then
+    if type1:find("详情") then
       _peoplemore.resolvedata=function(v)
         local 标题=v.title
         local 预览内容=v.description
@@ -20,7 +20,7 @@ function base:new(id,type)
       _peoplemore.resolvedata=function(v)
         local 标题=v.name
         local 预览内容=v.description
-        local id内容="视频合集分割"..v.id
+        local id内容="视频合集详情分割"..v.id
         local 底部内容=v.zvideo_count.."个视频 · "..v.voteup_count.."个赞同"
         return {标题=标题,预览内容=预览内容,底部内容=底部内容,id内容=id内容}
       end
@@ -62,8 +62,8 @@ end
 function base:getUrl()
   local type1=self.type
 
-  if type1:find("视频")
-    if type1:find("合集") then
+  if type1:find("视频合集")
+    if type1:find("详情") then
       return "https://api.zhihu.com/zvideo-collections/collections/"..self.id.."/include?offset=0&limit=10&include=answer"
      else
       return "https://api.zhihu.com/zvideo-collections/members/"..self.id.."/collections?offset=0&limit=10"

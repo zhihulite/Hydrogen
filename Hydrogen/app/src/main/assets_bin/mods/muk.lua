@@ -426,8 +426,8 @@ function 点击事件判断(myid,title)
     newActivity("column",{tostring(myid):match("圆桌分割(.+)"),"圆桌"})
    elseif tostring(myid):find("专题分割") then
     newActivity("column",{tostring(myid):match("专题分割(.+)"),"专题"})
-   elseif tostring(myid):find("视频合集分割") then
-    newActivity("people_more",{tostring(myid):match("视频合集分割(.+)"),"视频合集"})
+   elseif tostring(myid):find("视频合集详情分割") then
+    newActivity("people_more",{tostring(myid):match("视频合集详情分割(.+)"),"视频合集详情"})
    elseif tostring(myid):find("话题分割") then
     newActivity("topic",{tostring(myid):match("话题分割(.+)")})
    elseif tostring(myid):find("用户分割") then

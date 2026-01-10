@@ -55,39 +55,17 @@ function base.resolvedata(v,data)
   local 预览内容=v.excerpt
   local 活动,id内容,标题
   if v.type=="answer" then
-    活动="添加了问题"
+    活动="添加了回答"
     id内容=v.question.id or "null"
     id内容=id内容.."分割"..v.id
     标题=v.question.title
-   elseif v.type=="topic" then
-    活动="添加了话题";
-    活动=活动
-    id内容="话题分割"..v.id
-    标题=v.name
-   elseif v.type=="question" then
-    活动="添加了问题"
-    id内容=v.id.."问题分割"
-    标题=v.title
-   elseif v.type=="column" then
-    活动="添加了专栏"
-    id内容="文章分割"..v.id
-    评论数=v.items_count
-    标题=v.title
-
-   elseif v.type=="collection" then
-    return
-   elseif v.type=="pin" then
-    活动="添加了想法"
-    标题=v.author.name.."发布了想法"
-    id内容="想法分割"..v.id
     预览内容=v.content[1].content
    elseif v.type=="zvideo" then
-    --视频并未直接暴露在接口内 需自己根据api获取视频链接
     活动="添加了视频"
     id内容="视频分割"..v.id
     标题=v.title
     预览内容="[视频]"
-   else
+   elseif v.type=="article" then
     活动="添加了文章"
     id内容="文章分割"..v.id
     标题=v.title
