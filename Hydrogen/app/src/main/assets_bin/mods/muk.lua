@@ -427,7 +427,7 @@ function 点击事件判断(myid,title)
    elseif tostring(myid):find("专题分割") then
     newActivity("column",{tostring(myid):match("专题分割(.+)"),"专题"})
    elseif tostring(myid):find("视频合集分割") then
-    newActivity("browser",{tostring(myid):match("视频分割(.+)"),"视频"})
+    newActivity("people_more",{tostring(myid):match("视频合集分割(.+)"),"视频合集"})
    elseif tostring(myid):find("话题分割") then
     newActivity("topic",{tostring(myid):match("话题分割(.+)")})
    elseif tostring(myid):find("用户分割") then
@@ -2358,7 +2358,7 @@ function 新建收藏夹(callback)
       end
   end}))
 
-  zHttp.get("https://api.zhihu.com/people/"..activity.getSharedData("idx").."/profile?profile_new_version=1",head,function(code,content)
+  zHttp.get("https://www.zhihu.com/api/v4/members/"..activity.getSharedData("idx"),head,function(code,content)
     if code==200 then
       if luajson.decode(content).url_token then
         collection_webview.loadUrl("https://www.zhihu.com/people/"..luajson.decode(content).url_token.."/collections/")

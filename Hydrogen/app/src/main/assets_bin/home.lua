@@ -590,7 +590,7 @@ function 切换布局(layoutName)
   local specialConfig = {
     收藏 = {
       tooltip = "新建收藏夹",
-src=图标("add"),
+      src=图标("add"),
       onClick = function()
         if not getLogin() then
           return 提示("你可能需要登录")
@@ -640,7 +640,7 @@ src=图标("add"),
     },
     其他 = {
       tooltip = "扫描",
-src=图标("scan"),
+      src=图标("scan"),
       onClick = function()
         if not getLogin() then
           return 提示("你可能需要登录")
@@ -661,12 +661,10 @@ src=图标("scan"),
   _ask.onClick = config.onClick
   _ask.setImageDrawable(Drawable.createFromPath(config.src))
 
-  if isstart == "true" and layoutName == "收藏" then
-    MUKPopu({
-      tittle = "菜单",
-      list = config.menuItems
-    })
-  end
+  a=MUKPopu({
+    tittle = "菜单",
+    list = config.menuItems
+  })
 
   for pageName, views in pairs(pageConfig) do
     for _, view in ipairs(views) do
@@ -735,6 +733,7 @@ function 加载主页tab()
 
       if HometabLayout.getTabCount() > 0 then
         HometabLayout.removeAllTabs()
+        HometabLayout.clearOnTabSelectedListeners()
       end
 
       hometab = {}
@@ -929,6 +928,7 @@ end
 
 oldTheme=ThemeUtil.getAppTheme()
 _全局主题值 = 全局主题值
+islogin = getLogin()
 function onResume()
   if islogin~=getLogin() then
     islogin=getLogin()

@@ -8,7 +8,7 @@ function base:new(id,type)
 
   local type1=child.type
   if type1:find("视频") then
-    if type1:find("sub") then
+    if type1:find("合集") then
       _peoplemore.resolvedata=function(v)
         local 标题=v.title
         local 预览内容=v.description
@@ -63,7 +63,7 @@ function base:getUrl()
   local type1=self.type
 
   if type1:find("视频")
-    if type1:find("sub") then
+    if type1:find("合集") then
       return "https://api.zhihu.com/zvideo-collections/collections/"..self.id.."/include?offset=0&limit=10&include=answer"
      else
       return "https://api.zhihu.com/zvideo-collections/members/"..self.id.."/collections?offset=0&limit=10"

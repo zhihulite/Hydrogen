@@ -313,7 +313,6 @@ function Page_Tool:createfunc()
 
   self.referfunc=function (pos,isprev)
     local thispage,thissr=self:getItem(pos)
-    if thissr.isRefreshing() then return end
 
     local pagedata=self.pagedata
 
