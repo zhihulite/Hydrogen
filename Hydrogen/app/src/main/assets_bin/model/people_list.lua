@@ -15,9 +15,10 @@ function base:new(id,type)
     end
 
     _peoplelist.onbind=function(views,data)
+      local peopleid = data.id内容
       views.following.onClick=function()
         if views.following.Text=="关注"
-          zHttp.post("https://api.zhihu.com/people/"..self.id.."/followers","",posthead,function(a,b)
+          zHttp.post("https://api.zhihu.com/people/"..peopleid.."/followers","",posthead,function(a,b)
             if a==200 then
               views.following.Text="取关";
              elseif a==500 then
@@ -25,7 +26,7 @@ function base:new(id,type)
             end
           end)
          elseif views.following.Text=="取关"
-          zHttp.delete("https://api.zhihu.com/people/"..self.id.."/followers/"..activity.getSharedData("idx"),posthead,function(a,b)
+          zHttp.delete("https://api.zhihu.com/people/"..peopleid.."/followers/"..activity.getSharedData("idx"),posthead,function(a,b)
             if a==200 then
               views.following.Text="关注";
             end
@@ -41,15 +42,16 @@ function base:new(id,type)
       return "取消屏蔽"
     end
     _peoplelist.onbind=function(views,data)
+      local peopleid = data.id内容
       views.following.onClick=function()
         if views.following.Text=="屏蔽" then
-          zHttp.post("https://api.zhihu.com/settings/blocked_users","people_id="..self.id,apphead,function(code,json)
+          zHttp.post("https://api.zhihu.com/settings/blocked_users","people_id="..peopleid,apphead,function(code,json)
             if code==200 or code==201 then
               views.following.Text="取消屏蔽";
             end
           end)
          elseif views.following.Text=="取消屏蔽" then
-          zHttp.delete("https://api.zhihu.com/settings/blocked_users/"..self.id,posthead,function(code,json)
+          zHttp.delete("https://api.zhihu.com/settings/blocked_users/"..peopleid,posthead,function(code,json)
             if code==200 then
               views.following.Text="屏蔽";
             end

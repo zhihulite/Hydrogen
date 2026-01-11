@@ -78,8 +78,6 @@ function base.resolvedata(v,data)
     活动="添加了专栏"
     id内容="专栏分割"..v.id
     评论数=v.items_count
-   elseif v.type=="collection" then
-    return
    elseif v.type=="pin" or v.type=="pin_general" then
     活动="添加了想法"
     id内容="想法分割"..v.id
