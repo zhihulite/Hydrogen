@@ -17,6 +17,27 @@ import "com.google.android.material.floatingactionbutton.FloatingActionButton"
 
 comment_id,comment_type,保存路径,父回复id=...
 设置视图("layout/comment")
+
+if not(comment_type:find("local")) then
+  --评论
+  comment_base=require "model.comment"
+  :new(comment_id,comment_type)
+  comment_pagetool=comment_base
+  :initpage(comment_recy,commentsr)
+  
+  send.onClick=function()
+    if comment_type=="comments"
+      发送评论(comment_id,"回复该子评论")
+     else
+      发送评论("")
+    end
+  end
+  踩tab={}
+  comment_item=获取适配器项目布局("comment/comment")
+  --楼中楼
+  _title.text="对话列表"
+end
+
 addAutoHideListener({comment_recy},{send})
 comment_recy.addOnScrollListener(RecyclerView.OnScrollListener{
   onScrolled=function(v,s,j) 
@@ -171,26 +192,6 @@ if comment_typel=="local_chat" then
         newActivity("comment",{保存路径.."/fold/"..v.Tag.id内容.text,"local_chat"})
       end
   end})
-end
-
-if not(comment_typel:find("local")) then
-  send.onClick=function()
-    if comment_type=="comments"
-      发送评论(comment_idl,"回复该子评论")
-     else
-      发送评论("")
-    end
-  end
-  踩tab={}
-  comment_item=获取适配器项目布局("comment/comment")
-  --楼中楼
-  _title.text="对话列表"
-
-  --评论
-  comment_base=require "model.comment"
-  :new(comment_idl,comment_typel)
-  comment_pagetool=comment_base
-  :initpage(comment_recy,commentsr)
 end
 
 
