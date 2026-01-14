@@ -312,13 +312,17 @@ function Page_Tool:createfunc()
   local needlogin=self.needlogin
 
   self.referfunc=function (pos,isprev)
-    local thispage,thissr=self:getItem(pos)
-
     local pagedata=self.pagedata
 
     if pos==nil then
       pos=1
     end
+
+    if not pagedata[pos].canload then
+      return
+    end
+
+    local thispage,thissr=self:getItem(pos)
 
     if isprev then
       pagedata[pos]["isprev"]=true

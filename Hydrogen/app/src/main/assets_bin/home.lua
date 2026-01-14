@@ -713,6 +713,9 @@ function 加载主页tab()
     return
   end
 
+  -- 并行加载推荐流
+  home_pagetool:refer(nil, nil, true)
+
   zHttp.get("https://api.zhihu.com/feed-root/sections/query/v2", head, function(code, content)
     if code == 200 then
       HometabLayout.setVisibility(0)
@@ -759,17 +762,24 @@ function 加载主页tab()
           local section_id = item.section_id
           local sub_page_id = item.sub_page_id
 
+          local new_url
           if section_id == nil then
-            home_pagetool:setUrlItem("https://api.zhihu.com/topstory/recommend?tsp_ad_cardredesign=0&feed_card_exp=card_corner|1&v_serial=1&isDoubleFlow=0&action=down&refresh_scene=0&scroll=up&limit=10&start_type=cold&device=phone&short_container_setting_value=0&include_guide_relation=false")
+            new_url = "https://api.zhihu.com/topstory/recommend?tsp_ad_cardredesign=0&feed_card_exp=card_corner|1&v_serial=1&isDoubleFlow=0&action=down&refresh_scene=0&scroll=up&limit=10&start_type=cold&device=phone&short_container_setting_value=0&include_guide_relation=false"
            else
             if sub_page_id then
-              home_pagetool:setUrlItem("https://api.zhihu.com/feed-root/section/" .. section_id .. "?sub_page_id=" .. sub_page_id .. "&channelStyle=0")
+              new_url = "https://api.zhihu.com/feed-root/section/" .. section_id .. "?sub_page_id=" .. sub_page_id .. "&channelStyle=0"
              else
-              home_pagetool:setUrlItem("https://api.zhihu.com/feed-root/section/" .. section_id .. "?channelStyle=0")
+              new_url = "https://api.zhihu.com/feed-root/section/" .. section_id .. "?channelStyle=0"
             end
           end
-          home_pagetool:clearItem()
-          home_pagetool:refer()
+
+          if home_pagetool.urls[1] ~= new_url then
+            home_pagetool:setUrlItem(new_url)
+            home_pagetool:clearItem()
+            home_pagetool:refer()
+           else
+            home_pagetool:refer(nil, nil, true)
+          end
         end,
 
         onTabUnselected = function(tab) end,
