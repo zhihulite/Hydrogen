@@ -377,19 +377,18 @@ function 初始化页(mviews)
   end
 end
 
-function 加载页(data,isleftadd)
+function 加载页(data,isleftadd,pos)
 
   if not(data.load) then --判断是否加载过没有
-    data.load=true
-    local next_id = 回答容器:getNextId(isleftadd)
-    数据添加(data.ids, next_id)
 
-    回答容器:getOneData(function(cb,r)--获取1条数据
+    local target_id = 回答容器:getOneData(function(cb,r)--获取1条数据
       if cb==false then
         data.load=nil
         提示("已经没有更多数据了")
-        pg.adapter.remove(pos)
-        pg.setCurrentItem(pos-1,false)
+        if pos then
+          pg.adapter.remove(pos)
+          pg.setCurrentItem(pos-1,false)
+        end
        else
 
         data.data={
@@ -397,12 +396,12 @@ function 加载页(data,isleftadd)
           thanks_count=cb.thanks_count,
           favlists_count=cb.favlists_count,
           comment_count=cb.comment_count,
-          id=cb.id,
+          id=tostring(cb.id),
           author={
             avatar_url=cb.author.avatar_url,
             headline=cb.author.headline,
             name=cb.author.name,
-            id=cb.author.id
+            id=tostring(cb.author.id)
           },
           点赞状态=cb.relationship.voting==1,
           感谢状态=cb.relationship.is_thanked
@@ -438,6 +437,9 @@ function 加载页(data,isleftadd)
 
       end
     end,isleftadd)
+
+    data.load=true
+    数据添加(data.ids, tostring(target_id))
   end
 end
 
@@ -471,7 +473,7 @@ function addAnswer(index)
   if index then
     pg.adapter.insert(加入view,index)
    else
-    pg.adapter.add(加入view)
+    pg.adapter.insert(加入view,pg.adapter.getItemCount())
   end
 end
 
@@ -480,48 +482,65 @@ for i=1,2 do
   addAnswer()
 end
 
-pg.setCurrentItem(1,false)--设置正确的列
-
 pg.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，其他和PageView差不多
+  onPageSelected=function(pos)
+    --获取当前mviews
+    local mviews=数据表[pg.adapter.getItem(pos).id]
+
+    回答容器:updateLR()
+    --判断页面是否在开头or结尾 是否需要添加
+    if pg.adapter.getItemCount()==pos+1 then
+      if not 回答容器.isright then
+        --在最右添加 防止无法右滑
+        addAnswer()
+        加载页(mviews, false, pos)
+        appbar.setExpanded(true);
+      end
+     elseif pos==0 and pg.adapter.getItemCount()>=0
+      if not 回答容器.isleft then
+        --在最前面添加fragment 防止无法左滑
+        addAnswer(0)
+        加载页(mviews, true, pos)
+        appbar.setExpanded(true);
+      end
+      --判断是否加载过
+     elseif pg.adapter.getItemCount()>=0 then
+      if mviews.load==true then
+        回答容器.getid=mviews.data.id
+        初始化页(mviews)
+      end
+    end
+  end,
   onPageScrolled=function(pos,positionOffset,positionOffsetPixels)
     if positionOffsetPixels==0 then
 
       dtl.layoutParams.getBehavior().slideUp(dtl)
-      --获取当前mviews
-      local index=pg.getCurrentItem()
-      local mviews=数据表[pg.adapter.getItem(pos).id]
 
       回答容器:updateLR()
-      --判断页面是否在开头or结尾 是否需要添加
+      --判断越界回弹
       if pg.adapter.getItemCount()==pos+1 then
         if 回答容器.isright then
           pg.setCurrentItem(pos-1,true)
           return 提示("前面没有内容啦")
         end
-        --在最右添加 防止无法右滑
-        addAnswer()
-        加载页(mviews)
-        appbar.setExpanded(true);
        elseif pos==0 and pg.adapter.getItemCount()>=0
         if 回答容器.isleft then
           pg.setCurrentItem(1,true)
           return 提示("已经到最左了")
         end
-        --在最前面添加fragment 防止无法左滑
-        addAnswer(0)
-        加载页(mviews,true)
-        appbar.setExpanded(true);
-        --判断是否加载过
-       elseif pg.adapter.getItemCount()>=0 then
-        if mviews.load==true then
-          回答容器.getid=mviews.data.id
-          初始化页(mviews)
-
-        end
       end
     end
   end
 })
+
+pg.setCurrentItem(1,false)--设置正确的列
+-- 如果 setCurrentItem 没有触发回调（某些情况下），则手动触发第一次加载
+local current_pos = pg.getCurrentItem()
+local current_mviews = 数据表[pg.adapter.getItem(current_pos).id]
+if current_mviews and not current_mviews.load then
+  加载页(current_mviews, false, current_pos)
+end
+
 
 defer local question_base=answer
 :getinfo(回答id,function(tab)
