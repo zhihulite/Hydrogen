@@ -150,11 +150,10 @@ function 问题详情(code)
   show.Visibility=0
 end
 
+question_base=require "model.question":new(question_id)
+question_pagetool=question_base:initpage(question_recy,questionsr)
 
-question_base=require "model.question":new(question_id):getData(function(tab)
-
-  question_pagetool=question_base:initpage(question_recy,questionsr)
-
+question_base:getData(function(tab)
 
   if tab==false then
     return
