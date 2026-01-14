@@ -193,26 +193,10 @@ all_root.onTouch=function(v,e)
 end
 
 WebViewUtils=require "views/WebViewUtils"
-function 数据添加(t,b)
-
-  local 回答id=b.id
-
-  if not(已记录) then
-    初始化历史记录数据(true)
-    保存历史记录(回答id,b.question.title,b.excerpt,"回答")
-    已记录=true
-  end
+function 数据添加(t,回答id)
 
   设置滑动跟随(t.content)
 
-
-  --[[print(t.content.parent)
-  t.content.parent.setPadding(
-  t.content.parent.getPaddingLeft(),
-  t.content.parent.getPaddingTop(),
-  t.content.parent.getPaddingRight(),
-  dtl.height+t.content.parent.getPaddingBottom()
-  );]]
   local MyWebViewUtils=WebViewUtils(t.content)
   MyWebViewUtils:initSettings()
   :initSettings()
@@ -222,7 +206,7 @@ function 数据添加(t,b)
 
   MyWebViewUtils:initWebViewClient{
     shouldOverrideUrlLoading=function(view,url)
-      if url~=("https://www.zhihu.com/appview/answer/"..(b.id).."") then
+      if url~=("https://www.zhihu.com/appview/answer/"..回答id.."") then
         检查链接(url)
         return true
       end
@@ -261,7 +245,7 @@ function 数据添加(t,b)
       end
       屏蔽元素(view,{".AnswerReward",".AppViewRecommendedReading"})
 
-      task(2000,function()
+      task(200,function()
         加载js(view,获取js("answer_code"))
         加载js(view,获取js("scrollRestorer"))
         --添加延迟 防止scrollRestorer未初始化
@@ -288,34 +272,43 @@ function 数据添加(t,b)
         加载js(t.content,'document.querySelectorAll(".ztext pre").forEach(p => { p.style.whiteSpace = "pre-wrap"; p.style.wordWrap = "break-word"; });')
       end
 
-      if b.content:find("video%-box") then
-        加载js(view,"document.cookie='"..获取Cookie("https://www.zhihu.com/").."'")
-        加载js(view,获取js("videoload"))
-        if not(getLogin()) then
-          提示("该回答含有视频 不登录可能无法显示视频 建议登录")
+      local function 处理数据逻辑()
+        local b = t.data
+        if not b then
+          task(100, 处理数据逻辑)
+          return
         end
 
-       elseif b.attachment then
-        local 视频链接
-        xpcall(function()
-          视频链接=b.attachment.video.video_info.playlist.sd.url
-          end,function()
-          视频链接=b.attachment.video.video_info.playlist.ld.url
-          end,function()
-          视频链接=b.attachment.video.video_info.playlist.hd.url
-        end)
-        if 视频链接 then
-          加载js(view,'var myvideourl="'..视频链接..'"')
-          加载js(view,获取js('videoanswer'))
-         else
-          AlertDialog.Builder(this)
-          .setTitle("提示")
-          .setMessage("该回答为视频回答 不登录无法显示视频 如想查看本视频回答中的视频请登录")
-          .setCancelable(false)
-          .setPositiveButton("我知道了",nil)
-          .show()
+        if b.content:find("video%-box") then
+          加载js(view,"document.cookie='"..获取Cookie("https://www.zhihu.com/").."'")
+          加载js(view,获取js("videoload"))
+          if not(getLogin()) then
+            提示("该回答含有视频 不登录可能无法显示视频 建议登录")
+          end
+
+         elseif b.attachment then
+          local 视频链接
+          xpcall(function()
+            视频链接=b.attachment.video.video_info.playlist.sd.url
+            end,function()
+            视频链接=b.attachment.video.video_info.playlist.ld.url
+            end,function()
+            视频链接=b.attachment.video.video_info.playlist.hd.url
+          end)
+          if 视频链接 then
+            加载js(view,'var myvideourl="'..视频链接..'"')
+            加载js(view,获取js('videoanswer'))
+           else
+            AlertDialog.Builder(this)
+            .setTitle("提示")
+            .setMessage("该回答为视频回答 不登录无法显示视频 如想查看本视频回答中的视频请登录")
+            .setCancelable(false)
+            .setPositiveButton("我知道了",nil)
+            .show()
+          end
         end
       end
+      处理数据逻辑()
 
     end,
   }
@@ -340,7 +333,7 @@ function 数据添加(t,b)
   })
 
 
-  t.content.loadUrl("https://www.zhihu.com/appview/answer/"..(b.id).."")
+  t.content.loadUrl("https://www.zhihu.com/appview/answer/"..回答id)
   t.content.setVisibility(0)
 
 end
@@ -360,7 +353,7 @@ function 初始化页(mviews)
   this.getLuaState().pushObjectValue(thisFragment);
   this.getLuaState().setGlobal("currentFragment");
 
-  if mviews.load==true then
+  if mviews.load==true and mviews.data.author then
     vote_count.Text=(mviews.data.voteup_count)..""
     thanks_count.Text=(mviews.data.thanks_count)..""
     favlists_count.Text=(mviews.data.favlists_count)..""
@@ -387,6 +380,10 @@ end
 function 加载页(data,isleftadd)
 
   if not(data.load) then --判断是否加载过没有
+    data.load=true
+    local next_id = 回答容器:getNextId(isleftadd)
+    数据添加(data.ids, next_id)
+
     回答容器:getOneData(function(cb,r)--获取1条数据
       if cb==false then
         data.load=nil
@@ -410,6 +407,14 @@ function 加载页(data,isleftadd)
           点赞状态=cb.relationship.voting==1,
           感谢状态=cb.relationship.is_thanked
         }
+        data.ids.data = cb -- 给onPageFinished使用
+
+        if not(已记录) then
+          初始化历史记录数据(true)
+          保存历史记录(cb.id,cb.question.title,cb.excerpt,"回答")
+          已记录=true
+        end
+
         userinfo.onClick=function()
           local pos=pg.getCurrentItem()
           local mview=数据表[pg.adapter.getItem(pos).id]
@@ -429,8 +434,6 @@ function 加载页(data,isleftadd)
         end
         username.Text=cb.author.name
         loadglide(usericon,cb.author.avatar_url)
-        数据添加(data.ids,cb) --添加数据
-        data.load=true
         初始化页(data)
 
       end

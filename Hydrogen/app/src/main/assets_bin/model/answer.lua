@@ -71,6 +71,22 @@ function base:updateLR()
   end
 end
 
+function base:getNextId(z)
+  local getid=self.getid..""
+  local pageinfo=self.pageinfo
+
+  if pageinfo[getid] then
+    if z then
+      local prev_ids=pageinfo[getid].prev_ids
+      getid=prev_ids[#prev_ids]
+     else
+      local next_ids=pageinfo[getid].next_ids
+      getid=next_ids[1]
+    end
+  end
+  return getid
+end
+
 function base:getOneData(cb,z) --获取一条数据
   local getid=self.getid..""
   local pageinfo=self.pageinfo
