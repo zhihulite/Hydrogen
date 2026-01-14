@@ -21,6 +21,7 @@ function base:getData(isclear,isinit)
   end
 
   zHttp.get("https://www.zhihu.com/api/v3/feed/topstory/hot-lists/total?limit=50&mobile=true",head,function(code,content)
+    self.sr.setRefreshing(false)
     if code==200 then--判断网站状态
       local data=luajson.decode(content).data
 
@@ -119,12 +120,6 @@ function base:initpage(view,sr)
   sr.setOnRefreshListener({
     onRefresh=function()
       self:getData(true)
-      Handler().postDelayed(Runnable({
-        run=function()
-          sr.setRefreshing(false);
-        end,
-      }),1000)
-
     end,
   });
 

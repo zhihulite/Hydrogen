@@ -60,6 +60,7 @@ function base:getData(isclear,isinit)
   end
   self.可以加载日报=false
   zHttp.get(self.链接,head,function(code,content)
+    self.sr.setRefreshing(false);
     if code==200 then
       self.可以加载日报=true
 
@@ -102,13 +103,6 @@ function base:getData(isclear,isinit)
     日报adp.notifyItemRangeInserted(old_size,add_count)
   end)
 
-  self.sr.setRefreshing(true);
-  Handler().postDelayed(Runnable({
-    run=function()
-      self.sr.setRefreshing(false);
-    end,
-  }),1000)
-
 end
 
 function base:getAdapter(home_pagetool,pos)
@@ -145,12 +139,6 @@ function base:initpage(view,sr)
   sr.setOnRefreshListener({
     onRefresh=function()
       self:getData(true)
-      Handler().postDelayed(Runnable({
-        run=function()
-          sr.setRefreshing(false);
-        end,
-      }),1000)
-
     end,
   });
 

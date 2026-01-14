@@ -359,6 +359,7 @@ function Page_Tool:createfunc()
     end
 
     zHttp.get(posturl,head,function(code,content)
+      thissr.setRefreshing(false);
       if code==200 then
         pagedata[pos]["isprev"]=false
         local data=luajson.decode(content)
@@ -421,12 +422,6 @@ function Page_Tool:createfunc()
 
     thissr.setRefreshing(true)
     pagedata[pos]["canload"]=false
-
-    Handler().postDelayed(Runnable({
-      run=function()
-        thissr.setRefreshing(false);
-      end,
-    }),1000)
 
   end
 
