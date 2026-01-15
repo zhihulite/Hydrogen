@@ -25,356 +25,171 @@ local function setSetting(key, value)
 end
 
 local function getNumberSetting(key, default_value)
-  local v = tonumber(this.getSharedData(key))
-  return v and v or default_value
+  return tonumber(this.getSharedData(key)) or default_value
 end
 
 local data = {}
-local function addTitle(title)
-  table.insert(data, {type = 1, title = title})
+local function addItem(item)
+  table.insert(data, item)
 end
 
-local function addCard(subtitle, rightIcon_Visibility)
-  if rightIcon_Visibility then
-    rightIcon_Visibility = 0
-   else
-    rightIcon_Visibility = 8
-  end
-  table.insert(data, {type = 2, subtitle = subtitle, rightIcon = {Visibility = rightIcon_Visibility }})
-end
+local settings_config = {
+  { type="title", title="浏览设置" },
+  { type="card", subtitle="搜索设置" },
+  { type="toggle", subtitle="自动打开剪贴板上的知乎链接", key="自动打开剪贴板上的知乎链接" },
+  { type="toggle", subtitle="夜间模式追随系统", key="Setting_Auto_Night_Mode" },
+  { type="toggle", subtitle="夜间模式", key="Setting_Night_Mode" },
+  { type="toggle", subtitle="OLED纯黑", key="OLED" },
+  { type="toggle", subtitle="不加载图片", key="不加载图片" },
+  { type="toggle", subtitle="智能无图模式", key="智能无图模式" },
+  { type="slider", subtitle="字体大小", key="font_size", from=10, to=30, format="%.0f sp" },
+  { type="slider", subtitle="推荐缓存", key="feed_cache", from=0, to=180, format="%.0f 条" },
+  { type="toggle", subtitle="回答单页模式", key="回答单页模式" },
+  { type="toggle", subtitle="关闭热门搜索", key="关闭热门搜索" },
+  { type="toggle", subtitle="代码块自动换行", key="代码块自动换行" },
+  { type="slider", subtitle="左右滑动倍数阈值", key="scroll_sense", from=0.5, to=5, step=0.1, format="%.1f" },
+  { type="toggle", subtitle="切换webview", key="切换webview" },
+  { type="toggle", subtitle="使用系统字体", key="使用系统字体" },
+  { type="card", subtitle="自定义网页字体(beta)" },
+  { type="card", subtitle="设置屏蔽词" },
 
-local function addToggle(subtitle, key, onToggle)
-  table.insert(data, {
-    type = 3,
-    subtitle = subtitle,
-    status = { Checked = getSetting(key) },
-    _key = key,
-    _onToggle = onToggle
-  })
-end
+  { type="title", title="主页设置" },
+  { type="toggle", subtitle="热榜关闭图片", key="热榜关闭图片" },
+  { type="toggle", subtitle="热榜关闭热度", key="热榜关闭热度" },
+  { type="toggle", subtitle="关闭推荐全站", key="关闭全站" },
+  { type="card", subtitle="修改主页推荐地点tab" },
+  { type="card", subtitle="设置关注默认选中栏" },
+  { type="card", subtitle="设置主页底栏排列" },
 
-local function addSlider(subtitle, key, from, to, step, formatter)
-  table.insert(data, {
-    type = 4,
-    subtitle = subtitle,
-    slider = {
-      valueFrom = from,
-      value = getNumberSetting(key, from),
-      valueTo = to,
-      stepSize = step,
-      LabelFormatter = {
-        getFormattedValue = formatter
+  { type="title", title="缓存设置" },
+  { type="toggle", subtitle="自动清理缓存", key="自动清理缓存" },
+  { type="card", subtitle="清理软件缓存" },
+
+  { type="title", title="页面设置" },
+  { type="card", subtitle="主题设置", arrow=true },
+  { type="toggle", subtitle="平行世界", key="平行世界" },
+  { type="toggle", subtitle="预见性返回手势", key="预见性返回手势" },
+
+  { type="title", title="其他" },
+  { type="card", subtitle="关于", arrow=true },
+  { type="card", subtitle="管理/android/data存储", arrow=true },
+  { type="toggle", subtitle="音量键切换", key="音量键选择tab" },
+  { type="toggle", subtitle="显示虚拟滑动按键", key="显示虚拟滑动按键" },
+  { type="toggle", subtitle="显示报错信息", key="调式模式" },
+  { type="toggle", subtitle="允许加载代码", key="允许加载代码" },
+  { type="toggle", subtitle="启用内部 WebView eruda 调试", key="eruda" },
+  { type="toggle", subtitle="自动检测更新", key="自动检测更新" },
+}
+
+for _, item in ipairs(settings_config) do
+  if item.type == "title" then
+    table.insert(data, { type = 1, title = item.title })
+  elseif item.type == "card" then
+    table.insert(data, { type = 2, subtitle = item.subtitle, rightIcon = { Visibility = item.arrow and 0 or 8 } })
+  elseif item.type == "toggle" then
+    table.insert(data, { type = 3, subtitle = item.subtitle, status = { Checked = getSetting(item.key) }, _key = item.key })
+  elseif item.type == "slider" then
+    table.insert(data, {
+      type = 4, subtitle = item.subtitle, _key = item.key,
+      slider = {
+        valueFrom = item.from, value = getNumberSetting(item.key, item.from), valueTo = item.to, stepSize = item.step or 1,
+        LabelFormatter = { getFormattedValue = function(v) return string.format(item.format, v) end }
       }
-    },
-    _key = key,
-    _onSlide = nil -- 后续在 clickfunc 中绑定
-  })
+    })
+  end
 end
 
-addTitle("浏览设置")
-addCard("搜索设置")
-addToggle("自动打开剪贴板上的知乎链接", "自动打开剪贴板上的知乎链接")
-addToggle("夜间模式追随系统", "Setting_Auto_Night_Mode")
-addToggle("夜间模式", "Setting_Night_Mode")
-addToggle("OLED纯黑", "OLED")
-addToggle("不加载图片", "不加载图片")
-addToggle("智能无图模式", "智能无图模式")
-addSlider("字体大小", "font_size", 10, 30, nil, function(v)
-  return string.format("%.0f sp", v)
-end)
-addSlider("推荐缓存", "feed_cache", 0, 180, nil, function(v)
-  return string.format("%.0f 条", v)
-end)
-addToggle("回答单页模式", "回答单页模式")
-addToggle("关闭热门搜索", "关闭热门搜索")
-addToggle("代码块自动换行", "代码块自动换行")
-addSlider("左右滑动倍数阈值", "scroll_sense", 0.5, 5, 0.1, function(v)
-  return string.format("%.1f", v)
-end)
-addToggle("切换webview", "切换webview")
-addToggle("使用系统字体", "使用系统字体")
-addCard("自定义网页字体(beta)")
-addCard("设置屏蔽词")
-
-addTitle("主页设置")
-addToggle("热榜关闭图片", "热榜关闭图片")
-addToggle("热榜关闭热度", "热榜关闭热度")
-addToggle("关闭推荐全站", "关闭全站")
-addCard("修改主页推荐地点tab")
-addCard("设置关注默认选中栏")
-addCard("设置主页底栏排列")
-
-addTitle("缓存设置")
-addToggle("自动清理缓存", "自动清理缓存")
-addCard("清理软件缓存")
-
-addTitle("页面设置")
-addCard("主题设置", true)
-addToggle("平行世界", "平行世界")
-addToggle("预见性返回手势", "预见性返回手势")
-
-addTitle("其他")
-addCard("关于", true)
-addCard("管理/android/data存储", true)
-addToggle("音量键切换", "音量键选择tab")
-addToggle("显示虚拟滑动按键", "显示虚拟滑动按键")
-addToggle("显示报错信息", "调式模式")
-addToggle("允许加载代码", "允许加载代码")
-addToggle("启用内部 WebView eruda 调试", "eruda")
-addToggle("自动检测更新", "自动检测更新")
-
-local clickfunc = {}
--- 搜索设置
-clickfunc["搜索设置"] = function()
-  local 自定义路径 = this.getSharedData("搜索引擎") or "https://www.bing.com/search?q=site%3Azhihu.com%20"
-  local editDialog = AlertDialog.Builder(this)
-  .setTitle("设置搜索引擎")
+local function showEditDialog(title, message, key, default_val, hint)
+  AlertDialog.Builder(this)
+  .setTitle(title)
   .setView(loadlayout({
-    LinearLayout;
-    layout_height = "fill";
-    layout_width = "fill";
-    orientation = "vertical";
-    {
-      TextView;
-      TextIsSelectable = true;
-      layout_marginTop = "10dp";
-      layout_marginLeft = "10dp",
-      layout_marginRight = "10dp",
-      Text = '请使用?q=类似物为结尾，如下\n知乎搜索页面 "https://www.zhihu.com/search?type=content&q="\n bing "  https://www.bing.com/search?q=site%3Azhihu.com%20"';
-      Typeface = 字体("product-Medium");
-    },
-    {
-      EditText;
-      layout_width = "match";
-      layout_height = "match";
-      layout_marginTop = "5dp";
-      layout_marginLeft = "10dp",
-      layout_marginRight = "10dp",
-      id = "edit";
-      Text = 自定义路径;
-      Typeface = 字体("product");
-    }
+    LinearLayout, orientation="vertical",
+    { TextView, text=message, Typeface=字体("product-Medium"), layout_margin="16dp", layout_marginBottom="8dp" },
+    { EditText, id="edit", text=this.getSharedData(key) or default_val, hint=hint, Typeface=字体("product"), layout_marginLeft="16dp", layout_marginRight="16dp", layout_marginBottom="16dp" }
   }))
   .setPositiveButton("确定", { onClick = function()
-      local text = edit.Text:gsub(" ", "")
-      if text == "" then
-        text = "https://www.bing.com/search?q=site%3Azhihu.com%20"
-      end
-      this.setSharedData("搜索引擎", text)
+      this.setSharedData(key, edit.Text)
       提示("设置成功")
   end })
   .setNegativeButton("取消", nil)
   .show()
 end
 
--- 夜间模式相关
+local clickfunc = {}
+
+clickfunc["搜索设置"] = function()
+  showEditDialog("设置搜索引擎", '请使用?q=类似物为结尾，如下\n知乎搜索页面 "https://www.zhihu.com/search?type=content&q="\n bing "  https://www.bing.com/search?q=site%3Azhihu.com%20"', "搜索引擎", "https://www.bing.com/search?q=site%3Azhihu.com%20")
+end
+
 clickfunc["夜间模式"] = function()
-  设置主题()
-  activity.recreate()
+  设置主题(); activity.recreate()
 end
+clickfunc["夜间模式追随系统"] = clickfunc["夜间模式"]
 
-clickfunc["夜间模式追随系统"] = function()
-  clickfunc["夜间模式"]()
-end
-
--- 字体大小
 clickfunc["字体大小"] = function()
-  if not font_tip then
-    font_tip = true
-    AlertDialog.Builder(this)
-    .setTitle("提示")
-    .setMessage("更改字号后推荐重启App获得更好的体验")
-    .setPositiveButton("立即重启", { onClick = function()
-        import "android.os.Process"
-        local intent = activity.getPackageManager().getLaunchIntentForPackage(activity.getPackageName())
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        activity.startActivity(intent)
-        Process.killProcess(Process.myPid())
-    end })
-    .setNegativeButton("我知道了", nil)
-    .show()
-  end
+  if font_tip then return end
+  font_tip = true
+  AlertDialog.Builder(this)
+  .setTitle("提示").setMessage("更改字号后推荐重启App获得更好的体验")
+  .setPositiveButton("立即重启", { onClick = function()
+      local intent = activity.getPackageManager().getLaunchIntentForPackage(activity.getPackageName())
+      intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+      activity.startActivity(intent)
+      import "android.os.Process"
+      Process.killProcess(Process.myPid())
+  end })
+  .setNegativeButton("我知道了", nil).show()
 end
 
--- 推荐缓存
-clickfunc["推荐缓存"] = function(slider, value)
-  if not cachetipdia then
-    cachetipdia = true
-    this.setSharedData("feed_cache_tip", "false")
-    AlertDialog.Builder(this)
-    .setTitle("提示")
-    .setMessage("是否开启重复内容去重提示？本提示仅在每次进入设置页时显示一次")
-    .setCancelable(false)
-    .setPositiveButton("关闭", nil)
-    .setNeutralButton("开启", { onClick = function()
-        this.setSharedData("feed_cache_tip", "true")
-    end })
-    .show()
-  end
-  提示("设置为0即关闭缓存推荐以实现去重，知乎仅对重度使用用户推荐流添加重复数据\nEMMC设备推荐关闭该选项以使加载更流畅")
-end
-
--- 滑动阈值
-clickfunc["左右滑动倍数阈值"] = function(_)
-  提示("设置后可前往回答页手动测试")
-end
-
--- 屏蔽词
 clickfunc["设置屏蔽词"] = function()
-  local 屏蔽词 = this.getSharedData("屏蔽词") or ""
-  local editDialog = AlertDialog.Builder(this)
-  .setTitle("设置屏蔽词")
-  .setView(loadlayout({
-    LinearLayout;
-    layout_height = "fill";
-    layout_width = "fill";
-    orientation = "vertical";
-    {
-      TextView;
-      TextIsSelectable = true;
-      layout_marginTop = "10dp";
-      layout_marginLeft = "10dp",
-      layout_marginRight = "10dp",
-      Text = '屏蔽后的内容将不会出现 该内容是全局屏蔽词 屏蔽词格式使用空格分割';
-      Typeface = 字体("product-Medium");
-    },
-    {
-      EditText;
-      layout_width = "match";
-      layout_height = "match";
-      layout_marginTop = "5dp";
-      layout_marginLeft = "10dp",
-      layout_marginRight = "10dp",
-      id = "edit";
-      Text = 屏蔽词;
-      Typeface = 字体("product");
-    }
-  }))
-  .setPositiveButton("确定", { onClick = function()
-      this.setSharedData("屏蔽词", edit.Text)
-      提示("设置成功 重启App生效")
-  end })
-  .setNegativeButton("取消", nil)
-  .show()
+  showEditDialog("设置屏蔽词", "屏蔽后的内容将不会出现 该内容是全局屏蔽词 屏蔽词格式使用空格分割", "屏蔽词", "", "输入屏蔽词")
 end
 
--- 关注默认栏
 clickfunc["设置关注默认选中栏"] = function()
-  local startfollow = {"精选", "最新", "想法"}
-  local starnum = ({["精选"]=1,["最新"]=2,["想法"]=3})[this.getSharedData("startfollow")] or 1
-  local tipalert = AlertDialog.Builder(this)
+  local options = {"精选", "最新", "想法"}
+  local selected = ({["精选"]=0,["最新"]=1,["想法"]=2})[this.getSharedData("startfollow")] or 0
+  AlertDialog.Builder(this)
   .setTitle("请选择关注默认选中栏")
-  .setSingleChoiceItems(startfollow, starnum - 1, { onClick = function(_, p)
-      starnum = p + 1
+  .setSingleChoiceItems(options, selected, { onClick = function(_, p) selected = p end })
+  .setPositiveButton("确定", { onClick = function()
+      this.setSharedData("startfollow", options[selected+1])
+      提示("下次启动App生效")
   end })
-  .setPositiveButton("确定", nil)
-  .setNegativeButton("取消", nil)
-  .show()
-  tipalert.getButton(tipalert.BUTTON_POSITIVE).onClick = function()
-    local sel = startfollow[starnum or 1]
-    this.setSharedData("startfollow", sel)
-    提示("下次启动App生效")
-    tipalert.dismiss()
-  end
+  .setNegativeButton("取消", nil).show()
 end
 
--- 自定义字体
 clickfunc["自定义网页字体(beta)"] = function()
-  local result = get_write_permissions(true)
-  if result ~= true then return end
+  if get_write_permissions(true) ~= true then return end
   local path = this.getSharedData("网页自定义字体")
-  local editDialog = AlertDialog.Builder(this)
-  .setTitle("设置网页自定义字体")
-  .setView(loadlayout({
-    LinearLayout;
-    layout_height = "fill";
-    layout_width = "fill";
-    orientation = "vertical";
+  local layout = {
+    LinearLayout, orientation="vertical",
     {
-      LinearLayout;
-      gravity = "center_vertical";
-      layout_width = "fill";
-      layout_height = "64dp";
-      ripple = "方自适应",
-      onClick = function()
-        local checked = not font_status.Checked
-        font_status.Checked = checked
-        font_layout_bottom.Visibility = checked and 0 or 8
-      end,
-      {
-        TextView;
-        Typeface = 字体("product");
-        textSize = "16sp";
-        textColor = textc;
-        text = "开启自定义字体";
-        gravity = "center_vertical";
-        layout_weight = "1";
-        layout_height = "-1";
-        layout_marginLeft = "16dp";
-      },
-      {
-        MaterialSwitch;
-        id = "font_status";
-        layout_marginRight = "16dp";
-        focusable = false;
-        clickable = false;
-        Checked = path ~= nil;
-      }
+      LinearLayout, gravity="center_vertical", layout_height="64dp", ripple="方自适应",
+      onClick = function() font_status.Checked = not font_status.Checked; font_layout.Visibility = font_status.Checked and 0 or 8 end,
+      { TextView, text="开启自定义字体", textSize="16sp", layout_weight="1", layout_marginLeft="16dp" },
+      { MaterialSwitch, id="font_status", Checked = (path ~= nil), focusable=false, clickable=false, layout_marginRight="16dp" }
     },
     {
-      LinearLayout;
-      layout_width = "fill";
-      layout_height = "wrap";
-      orientation = "vertical";
-      id = "font_layout_bottom";
-      Visibility = (path ~= nil) and 0 or 8,
-      {
-        TextView;
-        TextIsSelectable = true;
-        layout_marginTop = "10dp";
-        layout_marginLeft = "10dp",
-        layout_marginRight = "10dp",
-        Text = '部分页面使用网页加载 开启可自定义字体 理论支持绝大多数网页 请输入字体的路径 例如/sdcard/a.ttf 留空则为使用默认App字体 关闭则使用默认网页自带字体';
-        Typeface = 字体("product-Medium");
-      },
-      {
-        EditText;
-        layout_width = "match";
-        layout_height = "match";
-        layout_marginTop = "5dp";
-        layout_marginLeft = "10dp",
-        layout_marginRight = "10dp";
-        id = "edit";
-        Text = path;
-        Typeface = 字体("product");
-      }
+      LinearLayout, id="font_layout", orientation="vertical", Visibility = (path and 0 or 8),
+      { TextView, text='请输入字体的路径 例如/sdcard/a.ttf', layout_margin="10dp" },
+      { EditText, id="edit", text=path, layout_margin="10dp" }
     }
-  }))
+  }
+  AlertDialog.Builder(this).setTitle("设置网页自定义字体").setView(loadlayout(layout))
   .setPositiveButton("确定", { onClick = function()
-      local enable = font_status.Checked
-      if enable then
+      if font_status.Checked then
         local text = edit.Text:gsub(" ", "")
-        if text ~= "" then
-          if File(text).canRead() then
-            this.setSharedData("网页自定义字体", text)
-            AlertDialog.Builder(this)
-            .setTitle("提示")
-            .setMessage("软件仅支持ttf格式文件自定义字体（已经是ttf字体可无视）")
-            .setCancelable(false)
-            .setPositiveButton("我知道了", nil)
-            .show()
-           else
-            提示("无法读取文件，请检查路径")
-            return
-          end
+        if text ~= "" and File(text).canRead() then
+          this.setSharedData("网页自定义字体", text)
+          提示("设置成功 重启生效")
+         else
+          提示("路径无效或无法读取")
         end
        else
         this.setSharedData("网页自定义字体", nil)
+        提示("设置成功")
       end
-      提示("设置成功 重启App生效")
-  end })
-  .setNegativeButton("取消", nil)
-  .show()
+  end }).setNegativeButton("取消", nil).show()
 end
 
 -- WebView切换
@@ -423,303 +238,119 @@ end
 
 clickfunc["修改主页推荐地点tab"] = function()
   zHttp.get("https://api.zhihu.com/feed-root/sections/cityList", head, function(code, content)
-    if code == 200 then
-      local show_content = ""
-      local infos = luajson.decode(content).result_info
+    if code ~= 200 then return 提示("获取城市列表失败") end
+    local infos = luajson.decode(content).result_info
+    local cities = {}
+    for _, v in ipairs(infos) do
+      local names = {}
+      for _, city in ipairs(v.city_info_list) do table.insert(names, city.city_name) end
+      table.insert(cities, v.city_key .. "\n" .. table.concat(names, " "))
+    end
+    local show_content = table.concat(cities, "\n\n")
 
-      for k, v in ipairs(infos) do
-        local city_info_list = v.city_info_list
-        local city_key = v.city_key
-        for key, value in ipairs(city_info_list) do
-          if key == 1 then
-            if k > 1 then
-              show_content = show_content .. '\n' .. city_key .. '\n'
-             else
-              show_content = show_content .. city_key .. '\n'
-            end
-            show_content = show_content .. value.city_name
-           else
-            show_content = show_content .. " " .. value.city_name
-          end
-        end
+    local dialog = AlertDialog.Builder(this).setTitle("修改城市").setView(loadlayout({
+      LinearLayout, orientation="vertical", Focusable=true, FocusableInTouchMode=true,
+      { EditText, id="edit", hint="输入城市名", layout_width="match_parent", layout_margin="16dp", Typeface=字体("product") },
+      { ScrollView, layout_height="wrap", { TextView, text=show_content, layout_margin="16dp", TextIsSelectable=true, Typeface=字体("product") } }
+    })).setPositiveButton("确定", nil).setNegativeButton("取消", nil).show()
+
+    dialog.getButton(dialog.BUTTON_POSITIVE).onClick = function()
+      local city = edit.Text:gsub("%s+", "")
+      if city ~= "" and show_content:find(city) then
+        zHttp.post("https://api.zhihu.com/feed-root/sections/saveUserCity", '{"city":"'..city..'"}', posthead, function(c, content)
+          if c == 200 then 提示("修改成功，需刷新主页") else 提示("修改失败") end
+        end)
+        dialog.dismiss()
+       else
+        提示("不支持的城市")
       end
-
-      local dialog = AlertDialog.Builder(this)
-      .setTitle("修改城市")
-      .setView(loadlayout({
-        LinearLayout;
-        orientation="vertical";
-        Focusable=true;
-        FocusableInTouchMode=true;
-        {
-          EditText;
-          hint="输入";
-          layout_marginTop="5dp";
-          layout_marginLeft="10dp";
-          layout_marginRight="10dp";
-          layout_width="match_parent";
-          layout_gravity="center";
-          Typeface=字体("product");
-          id="edit";
-        };
-        {
-          ScrollView;
-          layout_height="fill";
-          fillViewport="true";
-          {
-            LinearLayout;
-            orientation="vertical";
-            {
-              TextView;
-              id="Prompt";
-              textSize="15sp";
-              layout_marginTop="10dp";
-              layout_marginLeft="10dp";
-              layout_marginRight="10dp";
-              layout_width="match_parent";
-              layout_height="match_parent";
-              TextIsSelectable=true;
-              Typeface=字体("product");
-              text=show_content;
-            };
-          };
-        };
-      }))
-      .setPositiveButton("确定", nil)
-      .setNegativeButton("取消", nil)
-      .show()
-
-      local positiveButton = dialog.getButton(dialog.BUTTON_POSITIVE)
-
-      positiveButton.onClick = function()
-        local checkstr = string.gsub(edit.Text, "%s+", "")
-        if checkstr ~= "" and show_content:find(checkstr) then
-          zHttp.post("https://api.zhihu.com/feed-root/sections/saveUserCity", '{"city":"'..checkstr..'"}', posthead, function(code, content)
-            if code == 200 then
-              提示("修改成功 你可能需要刷新页面才能看到更改")
-             else
-              提示("失败 请检查输入内容或联系作者修复")
-            end
-          end)
-         else
-          提示("你输入了一个不支持的城市")
-        end
-      end
-     else
-      提示("获取城市列表失败")
     end
   end)
 end
 
 clickfunc["设置主页底栏排列"] = function()
-  local data = {}
+  local page_data = {}
+  local config = this.getSharedData("home_cof")
+  local items = {}
+  for item in config:gmatch('[^,]+') do table.insert(items, item) end
+  local starthome = table.remove(items)
+  local allpages = { ["推荐"]=true, ["想法"]=true, ["热榜"]=true, ["关注"]=true }
 
-  local currentPageItemLayout = {
-    LinearLayout;
-    gravity="center_vertical";
-    layout_width="fill";
-    layout_height="50dp";
-    id="currentPageItemRoot";
-    ripple="方自适应",
-    {
-      TextView;
-      id="currentPageTitle";
-      textColor=textc;
-      gravity="center_vertical";
-      layout_weight="1";
-      layout_height="-1";
-      layout_marginLeft="16dp";
-      textSize="16sp";
-    };
-    {
-      RadioButton;
-      clickable=false,
-      layout_marginRight="16dp";
-      focusable=false,
-      id="currentPageRadioButton";
-    };
+  table.insert(page_data, { header = "当前" })
+  for _, item in ipairs(items) do
+    allpages[item] = nil
+    table.insert(page_data, { title = item, ishome = (item == starthome) })
+  end
+  table.insert(page_data, { header = "其他" })
+  for k in pairs(allpages) do table.insert(page_data, { title = k, ishome = false }) end
+
+  local layout = {
+    LinearLayout, orientation="vertical",
+    { RecyclerView, id="recyclerView", layout_width="match_parent" }
   }
 
-  local sectionHeaderLayout = {
-    LinearLayout;
-    layout_width="fill";
-    layout_height="wrap";
-    id="sectionHeaderRoot";
-    {
-      TextView,
-      id="sectionHeaderText",
-      layout_margin="16dp";
-      layout_marginTop="12dp";
-      layout_marginBottom="0dp";
-      textColor=primaryc;
-      textSize="18sp";
-    };
-  }
-
-  AlertDialog.Builder(activity)
-  .setView(loadlayout({
-    LinearLayout;
-    orientation="vertical";
-    Focusable=true,
-    FocusableInTouchMode=true,
-    {
-      RelativeLayout;
-      id="containerLayout";
-      layout_width="match_parent";
-      layout_height="wrap_content";
-      {
-        RecyclerView,
-        id="recyclerView",
-        layout_width="match_parent";
-      };
-    };
-  }))
+  local dialog = AlertDialog.Builder(this).setView(loadlayout(layout))
   .setPositiveButton("确定", function()
-    local starthome = ""
-    local conf = {}
-
-    for _, v in ipairs(data) do
-      if v.header then
-        if v.header == "其他" then break end
-        continue
-      end
-      if v.ishome == true then
-        starthome = v.title
-      end
-      table.insert(conf, v.title)
+    local selected, conf = nil, {}
+    for _, v in ipairs(page_data) do
+      if v.title then
+        table.insert(conf, v.title)
+        if v.ishome then selected = v.title end
+      elseif v.header == "其他" then break end
     end
-
-    if #conf < 2 then
-      return 提示("必须至少开启两个页")
-    end
-    if starthome == "" then
-      return 提示("必须选择一个主页")
-    end
-
-    table.insert(conf, starthome)
-    local confStr = table.concat(conf, ",")
-    this.setSharedData('home_cof', confStr)
-    提示("保存成功 下次启动App生效")
-  end)
-  .setNegativeButton("取消", nil)
-  .show()
+    if #conf < 2 or not selected then return 提示("需至少开启两页且选一个主页") end
+    table.insert(conf, selected)
+    this.setSharedData('home_cof', table.concat(conf, ","))
+    提示("保存成功，下次启动生效")
+  end).setNegativeButton("取消", nil).show()
 
   recyclerView.layoutManager = LinearLayoutManager(this)
-
-  local 启动页 = this.getSharedData("home_cof")
-  local items = {}
-  for item in 启动页:gmatch('[^,]+') do
-    table.insert(items, item)
-  end
-  local starthome = table.remove(items)
-
-  local allpages = { ["推荐"] = true, ["想法"] = true, ["热榜"] = true, ["关注"] = true }
-
-  table.insert(data, { header = "当前" })
-  for _, item in ipairs(items) do
-    local ishome = (item == starthome)
-    allpages[item] = nil
-    table.insert(data, { title = item, ishome = ishome })
-  end
-
-  table.insert(data, { header = "其他" })
-  for key, _ in pairs(allpages) do
-    table.insert(data, { title = key, ishome = false })
-  end
-
-  adapter = LuaCustRecyclerAdapter(AdapterCreator({
-    getItemCount = function()
-      return #data
-    end,
-
-    getItemViewType = function(pos)
-      local item = data[pos + 1]
-      local type = item.header and 1 or 0
-      item.type = type
-      return type
-    end,
-
+  local adapter = LuaCustRecyclerAdapter(AdapterCreator({
+    getItemCount = function() return #page_data end,
+    getItemViewType = function(pos) return page_data[pos+1].header and 1 or 0 end,
     onCreateViewHolder = function(parent, type)
-      local itemc = type == 0 and currentPageItemLayout or sectionHeaderLayout
+      local item_lay = (type == 1) and {
+        TextView, id="sectionHeaderText", layout_margin="16dp", textColor=primaryc, textSize="18sp"
+      } or {
+        LinearLayout, gravity="center_vertical", layout_height="50dp", ripple="方自适应", id="itemRoot",
+        { TextView, id="title", textColor=textc, layout_weight="1", layout_marginLeft="16dp", textSize="16sp" },
+        { RadioButton, id="radio", focusable=false, clickable=false, layout_marginRight="16dp" }
+      }
       local views = {}
-      local holder = LuaCustRecyclerHolder(loadlayout(itemc, views))
+      local holder = LuaCustRecyclerHolder(loadlayout(item_lay, views))
       holder.view.setTag(views)
       return holder
     end,
-
-    areContentsTheSame = function(old, new)
-      return old.title == new.title
-    end,
-
-    areItemsTheSame = function(old, new)
-      return old.title == new.title
-    end,
-
     onBindViewHolder = function(holder, position)
-      local item = data[position + 1]
+      local item = page_data[position+1]
       local tag = holder.itemView.tag
-      local itemtype = item.type
-
-      switch itemtype
-       case 0
-        tag.currentPageTitle.text = item.title
-        tag.currentPageRadioButton.Checked = item.ishome
-        tag.currentPageItemRoot.onClick = function()
-          local pos = holder.getBindingAdapterPosition()
-          for i, v in ipairs(data) do
-            if i - 1 ~= pos then
-              v.ishome = false
-              adapter.notifyItemChanged(i - 1)
-            end
-          end
-          item.ishome=true
-          tag.currentPageRadioButton.Checked=true
-        end
-       case 1
+      if item.header then
         tag.sectionHeaderText.text = item.header
+       else
+        tag.title.text = item.title
+        tag.radio.Checked = item.ishome
+        tag.itemRoot.onClick = function()
+          for _, v in ipairs(page_data) do v.ishome = false end
+          item.ishome = true
+          holder.getBindingAdapter().notifyDataSetChanged()
+        end
       end
     end
   }))
-
   recyclerView.adapter = adapter
 
   import "androidx.recyclerview.widget.ItemTouchHelper"
-  local itemclass = luajava.bindClass "androidx.recyclerview.widget.ItemTouchHelper$Callback"
-  local callback = luajava.override(luajava.bindClass("androidx.recyclerview.widget.ItemTouchHelper$Callback"), {
-    getMovementFlags = function(b, c, d)
-      local dragFlags = ItemTouchHelper.UP
-      local swipeFlags = ItemTouchHelper.LEFT
-      return int(itemclass.makeMovementFlags(ItemTouchHelper.RIGHT | ItemTouchHelper.LEFT | ItemTouchHelper.DOWN | ItemTouchHelper.UP, 0))
-    end,
-
-    isLongPressDragEnabled = function(a)
+  local callback = luajava.override(ItemTouchHelper.Callback, {
+    getMovementFlags = function() return ItemTouchHelper.Callback.makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) end,
+    canDropOver = function(_, _, current, target) return target.getAdapterPosition() > 0 end,
+    onMove = function(_, _, vh, target)
+      local from, to = vh.getAdapterPosition()+1, target.getAdapterPosition()+1
+      table.swap(page_data, from, to, true)
+      adapter.notifyItemMoved(from-1, to-1)
       return true
-    end,
-
-    isItemViewSwipeEnabled = function()
-      return false
-    end,
-
-    canDropOver = function(a, recyclerView, current, target)
-      local fromPos, toPos = current.getAdapterPosition(), target.getAdapterPosition()
-      if toPos == 0 or fromPos == 0 then
-        return false
-      end
-      return true
-    end,
-
-    onMove = function(a, recyclerView, viewHolder, target)
-      local fromPos, toPos = viewHolder.getAdapterPosition(), target.getAdapterPosition()
-      table.swap(data, fromPos, toPos, true)
-      recyclerView.adapter.notifyItemMoved(fromPos, toPos)
-      return true
-    end,
-
-    onSelectedChanged = function(viewHolder, actionState)
     end
   })
-
-  luajava.new(luajava.bindClass("androidx.recyclerview.widget.ItemTouchHelper"), callback).attachToRecyclerView(recyclerView)
+  ItemTouchHelper(callback).attachToRecyclerView(recyclerView)
 end
 
 clickfunc["管理/android/data存储"] = function()
@@ -741,42 +372,33 @@ clickfunc["管理/android/data存储"] = function()
   import "android.content.ComponentName"
 
   import "android.content.pm.PackageManager"
-  local intent = Intent(Intent.ACTION_GET_CONTENT)
-  intent.setType("text/plain");
-  intent.addCategory(Intent.CATEGORY_OPENABLE)
-  local info = this.getPackageManager().resolveActivity(intent, PackageManager.MATCH_DEFAULT_ONLY);
-  local packageName = info.activityInfo.packageName;
-
-  intent = Intent()
-  intent.setType("*/*");
-  local uri=Uri.parse("content://com.android.externalstorage.documents/document/primary%3AAndroid%2Fdata%2F"..activity.getPackageName().."%2Ffiles");
-  intent.setData(uri);
-  intent.setAction(Intent.ACTION_VIEW);
-  local componentName = ComponentName(packageName, "com.android.documentsui.files.FilesActivity");
-  intent.setComponent(componentName);
-  activity.startActivityForResult(intent,1);
-  提示("已跳转"..tostring(activity.getExternalFilesDir(nil)).. "请自行管理")
+  local resolve_intent = Intent(Intent.ACTION_GET_CONTENT).setType("text/plain").addCategory(Intent.CATEGORY_OPENABLE)
+  local info = this.getPackageManager().resolveActivity(resolve_intent, PackageManager.MATCH_DEFAULT_ONLY)
+  
+  if not info or not info.activityInfo then
+    return 提示("无法找到系统文件管理器，请手动管理存储空间")
+  end
+  
+  local packageName = info.activityInfo.packageName
+  local target_intent = Intent()
+  target_intent.setType("*/*")
+  local uri = Uri.parse("content://com.android.externalstorage.documents/document/primary%3AAndroid%2Fdata%2F"..activity.getPackageName().."%2Ffiles")
+  target_intent.setData(uri)
+  target_intent.setAction(Intent.ACTION_VIEW)
+  local componentName = ComponentName(packageName, "com.android.documentsui.files.FilesActivity")
+  target_intent.setComponent(componentName)
+  
+  local success, err = pcall(function() activity.startActivityForResult(target_intent, 1) end)
+  if success then
+    提示("已跳转，请自行管理")
+   else
+    提示("启动失败：" .. tostring(err))
+  end
 end
 
-clickfunc["显示报错信息"] = function(holder, item, index)
-  local debugMode = getSetting("调式模式")
-  if debugMode then
-    setSetting("调式模式", false)
-    提示("已关闭，重启生效")
-   else
-    AlertDialog.Builder(this)
-    .setTitle("是否要开启?")
-    .setMessage("开启后会提示一些错误信息")
-    .setPositiveButton("开启", { onClick = function()
-        setSetting("调式模式", true)
-        提示("成功！重启App生效")
-    end })
-    .setNeutralButton("取消", { onClick = function()
-        holder.status.Checked = false
-        adp.notifyDataSetChanged()
-    end })
-    .show()
-  end
+clickfunc["显示报错信息"] = function(holder, item)
+  local is_on = getSetting("调式模式")
+  提示(is_on and "已开启调试模式，重启生效" or "已关闭调试模式，重启生效")
 end
 
 波纹({fh}, "圆主题")

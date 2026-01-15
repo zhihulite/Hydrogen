@@ -20,6 +20,13 @@ import "androidx.core.view.WindowInsetsCompat"
 --导入 MyViewPager
 MyViewPager = require "views/MyViewPager"
 
+task(1, function()
+  local cookie = 获取Cookie("https://www.zhihu.com/")
+  if not cookie or not cookie:find("d_c0") then
+    Http.get("https://www.zhihu.com/", function(code, content) end)
+  end
+end)
+
 activity.setContentView(loadlayout("layout/fragment"))
 --activity.window.setNavigationBarContrastEnforced(false)
 --edgeToedge(mainfLay,true)
@@ -27,28 +34,23 @@ Protection=luajava.bindClass("androidx.core.view.insets.Protection")
 inSekai=false
 if activity.getSharedData("平行世界")~="false" then
   local rootView = activity.getDecorView()
-  inSekai=rootView.width>dp2px(600,true)
-  observer = rootView.getViewTreeObserver()
-  orirh={}
-  observer.addOnGlobalLayoutListener(ViewTreeObserver.OnGlobalLayoutListener({
+  local function updateSekai()
+    local width = rootView.width
+    local height = rootView.height
+    inSekai = width > dp2px(600, true)
+    if f1 then
+      local lp = f1.LayoutParams
+      lp.width = inSekai and width * 0.5 or width
+      f1.setLayoutParams(lp)
+    end
+    return height, width
+  end
+  
+  local orirh = {updateSekai()}
+  rootView.getViewTreeObserver().addOnGlobalLayoutListener(ViewTreeObserver.OnGlobalLayoutListener({
     onGlobalLayout=function()
-      if orirh[1]==tointeger(rootView.height)&&orirh[2]==tointeger(rootView.width)
-       else
-        --onBackCancelled()
-        orirh[1]=tointeger(rootView.height)
-        orirh[2]=tointeger(rootView.width)
-        inSekai=rootView.width>dp2px(600,true)
-        if rootView.width>dp2px(600,true)
-          if f1 local layoutParams = f1.LayoutParams;
-            layoutParams.width=orirh[2]*0.5
-            f1.setLayoutParams(layoutParams); end
-
-         else
-          if f1 local layoutParams = f1.LayoutParams;
-            layoutParams.width=orirh[2]
-            f1.setLayoutParams(layoutParams); end
-
-        end
+      if orirh[1] ~= tointeger(rootView.height) or orirh[2] ~= tointeger(rootView.width) then
+        orirh[1], orirh[2] = updateSekai()
       end
     end
   }))
@@ -57,11 +59,10 @@ end
 f1.setId(View.generateViewId())
 f2.setId(View.generateViewId())
 fragmentManager = activity.getSupportFragmentManager()
-local t = fragmentManager.beginTransaction()
+fragmentManager.beginTransaction()
 .add(f1.id,LuaFragment(loadlayout("layout/home")))
 .commit()
 
---fn={{"home",1}}
 f1.setTag("home")
 f1.setTag(R.id.tag_last_time,tonumber(os.time()))
 f2.setTag("empty")
@@ -71,28 +72,27 @@ f2.setTag(R.id.tag_last_time,tonumber(os.time())-114514)
 nav.setNavigationItemSelectedListener(NavigationView.OnNavigationItemSelectedListener{
   onNavigationItemSelected=function(menuItem)
     if menuItem.isCheckable() then
-      for i=0,nav.getMenu().size()-1 do
-        nav.getMenu().getItem(i).setChecked(false)
+      local menu = nav.getMenu()
+      for i=0, menu.size()-1 do
+        menu.getItem(i).setChecked(false)
       end
-      menuItem.setChecked(true);
+      menuItem.setChecked(true)
     end
-    --项目点击事件
-    local s=menuItem.title
+    
+    local s = menuItem.title
+    local needsLogin = {["收藏"]=true, ["关注"]=true, ["通知"]=true, ["更多"]=true}
+    
+    if needsLogin[s] and not getLogin() then
+      提示("请登录后使用本功能")
+      return true
+    end
 
     switch s
      case "收藏"
-      if getLogin()~=true then
-        提示("请登录后使用本功能")
-        return true
-      end
       collection_pagetool:refer(nil,nil,true)
      case "日报"
       daily_pagetool:getData()
      case "关注"
-      if getLogin()~=true then
-        提示("请登录后使用本功能")
-        return true
-      end
       followcontent_pagetool:refer(nil,nil,true)
      case "本地"
       task(300,function()newActivity("local_list")end)
@@ -101,39 +101,33 @@ nav.setNavigationItemSelectedListener(NavigationView.OnNavigationItemSelectedLis
      case "历史"
       task(300,function()newActivity("history")end)
      case "通知"
-      if getLogin()~=true then
-        提示("请登录后使用本功能")
-        return true
-      end
       task(300,function()newActivity("browser",{"https://www.zhihu.com/notifications"})end)
      case "更多"
-
-      if not(getLogin()) then
-        return 提示("请登录后使用本功能")
-      end
       task(20,function()
+        local more_options = {"通知","私信","设置","屏蔽用户管理","圆桌","专题"}
+        local more_urls = {"https://www.zhihu.com/notifications","https://www.zhihu.com/messages","https://www.zhihu.com/settings/account","屏蔽用户管理","https://www.zhihu.com/appview/roundtable","https://www.zhihu.com/appview/special"}
+        local jumpurl
         AlertDialog.Builder(this)
         .setTitle("请选择")
-        .setSingleChoiceItems({"通知","私信","设置","屏蔽用户管理","圆桌","专题"}, 0,{onClick=function(v,p)
-            local mtab={"https://www.zhihu.com/notifications","https://www.zhihu.com/messages","https://www.zhihu.com/settings/account","屏蔽用户管理","https://www.zhihu.com/appview/roundtable","https://www.zhihu.com/appview/special"}
-            jumpurl=mtab[p+1]
+        .setSingleChoiceItems(more_options, 0, {onClick=function(v,p)
+            jumpurl = more_urls[p+1]
         end})
-        .setNegativeButton("确定", {onClick=function()
-            if jumpurl=="屏蔽用户管理" then
-              jumpurl=nil
-              return newActivity("people_list",{"我的屏蔽用户列表"})
+        .setPositiveButton("确定", {onClick=function()
+            jumpurl = jumpurl or more_urls[1]
+            if jumpurl == "屏蔽用户管理" then
+              newActivity("people_list", {"我的屏蔽用户列表"})
+             else
+              newActivity("browser", {jumpurl})
             end
-            --防止没选中 nil
-            newActivity("browser",{jumpurl or "https://www.zhihu.com/notifications"})
-            jumpurl=nil
         end})
-        .show();
+        .setNegativeButton("取消", nil)
+        .show()
       end)
     end
 
     切换布局(s)
-    _drawer.close();
-    return true;
+    _drawer.close()
+    return true
   end
 });
 
@@ -267,6 +261,8 @@ nav.addHeaderView(loadlayout {
                 Http.get("https://www.zhihu.com/logout",head,function(code,content)
                 end)
                 清除所有cookie()
+                -- 重新获取游客Cookie以防止 zse96 加密失败
+                Http.get("https://www.zhihu.com/", function(code, content) end)
                 activity.setSharedData("signdata",nil)
                 activity.setSharedData("idx",nil)
                 activity.setSharedData("udid",nil)
@@ -343,29 +339,22 @@ if activity.getSharedData("第一次提示") and activity.getSharedData("开源�
 end
 
 
-if this.getSharedData("自动清理缓存") == nil then
-  this.setSharedData("自动清理缓存","true")
+local function setupDefaultSettings(settings)
+  for k, v in pairs(settings) do
+    if activity.getSharedData(k) == nil then
+      activity.setSharedData(k, v)
+    end
+  end
 end
 
-if this.getSharedData("全屏模式") == nil then
-  this.setSharedData("全屏模式","false")
-end
-
-if this.getSharedData("font_size")==nil then
-  this.setSharedData("font_size","20")
-end
-
-if this.getSharedData("Setting_Auto_Night_Mode")==nil then
-  activity.setSharedData("Setting_Auto_Night_Mode","true")
-end
-
-if activity.getSharedData("feed_cache")==nil
-  activity.setSharedData("feed_cache","100")
-end
-
-if activity.getSharedData("scroll_sense")==nil
-  activity.setSharedData("scroll_sense","1.8")
-end
+setupDefaultSettings({
+  ["自动清理缓存"] = "true",
+  ["全屏模式"] = "false",
+  ["font_size"] = "20",
+  ["Setting_Auto_Night_Mode"] = "true",
+  ["feed_cache"] = "100",
+  ["scroll_sense"] = "1.8"
+})
 
 pagadp=SWKLuaPagerAdapter()
 
@@ -385,109 +374,54 @@ local starthome=table.remove(home_items)
 
 home_pageinfo={
   推荐={
-    menu= { MenuItem,
-      title = "主页",
-      id = "home_tab",
-      enabled=true;
-      icon = 图标("home");
-    },
+    menu={ MenuItem, title="主页", id="home_tab", enabled=true, icon=图标("home") },
     lay=home_layout_table[1],
     init=function()
-      --推荐
-      home_pagetool=require "model.home_recommend"
-      :new()
-      :initpage(home_recy,homesr)
+      home_pagetool = require "model.home_recommend":new():initpage(home_recy, homesr)
       return home_pagetool
     end,
     refer=function(isclear)
-      if isclear==true or HometabLayout.getTabCount()==0 then
-        return 加载主页tab()
-      end
+      if isclear or HometabLayout.getTabCount()==0 then return 加载主页tab() end
       home_pagetool:refer(nil,nil,true)
     end,
-    getrecy=function()
-      return home_recy
-    end
+    getrecy=function() return home_recy end
   },
   想法={
-    menu= { MenuItem,
-      title = "想法",
-      id = "think_tab",
-      enabled=true;
-      icon = 图标("bubble_chart")
-    },
+    menu={ MenuItem, title="想法", id="think_tab", enabled=true, icon=图标("bubble_chart") },
     lay=home_layout_table[2],
     init=function()
-      --想法
-      thinker_pagetool=require "model.home_thinker"
-      :new()
-      :initpage(think_recy,thinksr)
+      thinker_pagetool = require "model.home_thinker":new():initpage(think_recy, thinksr)
       return thinker_pagetool
     end,
     refer=function(isclear)
-      if isclear then
-        return thinker_pagetool
-        :clearItem(1)
-        :refer(1)
-      end
+      if isclear then return thinker_pagetool:clearItem(1):refer(1) end
       thinker_pagetool:refer(nil,nil,true)
     end,
-    getrecy=function()
-      return think_recy
-    end
+    getrecy=function() return think_recy end
   },
   热榜={
-    menu= { MenuItem,
-      title = "热榜",
-      id = "hot_tab",
-      enabled=true;
-      icon = 图标("fire")
-    },
+    menu={ MenuItem, title="热榜", id="hot_tab", enabled=true, icon=图标("fire") },
     lay=home_layout_table[3],
     init=function()
-      --热榜
-      hot_pagetool=require "model.home_hot"
-      :new()
-      :initpage(hot_recy,hotsr)
+      hot_pagetool = require "model.home_hot":new():initpage(hot_recy, hotsr)
       return hot_pagetool
     end,
-    refer=function()
-      hot_pagetool:getData(false,true)
-    end,
-    getrecy=function()
-      return hot_recy
-    end
+    refer=function() hot_pagetool:getData(false,true) end,
+    getrecy=function() return hot_recy end
   },
   关注={
-    menu= { MenuItem,
-      title = "关注",
-      id = "following_tab",
-      enabled=true;
-      icon = 图标("group")
-    },
+    menu={ MenuItem, title="关注", id="following_tab", enabled=true, icon=图标("group") },
     lay=home_layout_table[4],
     init=function()
-      --关注
-      follow_pagetool=require "model.home_follow"
-      :new()
-      :initpage(follow_vpg,followTab)
+      follow_pagetool = require "model.home_follow":new():initpage(follow_vpg, followTab)
       return follow_pagetool
     end,
     refer=function(isclear)
-      if not(getLogin()) then
-        提示("请登录后使用本功能")
-       else
-        if isclear then
-          return follow_pagetool
-          :clearItem()
-          :refer(nil,nil,true)
-        end
-        follow_pagetool:refer(nil,nil,true)
-      end
+      if not getLogin() then return 提示("请登录后使用本功能") end
+      if isclear then follow_pagetool:clearItem() end
+      follow_pagetool:refer(nil,nil,true)
     end,
-    getrecy=function()
-      return follow_pagetool:getItem()
-    end
+    getrecy=function() return follow_pagetool:getItem() end
   }
 }
 
@@ -583,93 +517,59 @@ function 切换布局(layoutName)
     收藏 = {page_collections}
   }
 
-  if not pageConfig[layoutName] then
-    return false
+  if not pageConfig[layoutName] then return false end
+
+  local function showSearchDialog()
+    if not getLogin() then return 提示("请登录后使用本功能") end
+    AlertDialog.Builder(this)
+    .setTitle("请输入")
+    .setView(loadlayout({
+      LinearLayout, orientation="vertical", Focusable=true, FocusableInTouchMode=true,
+      { EditText, hint="输入", id="edit", layout_margin="10dp", layout_width="match_parent" }
+    }))
+    .setPositiveButton("确定", {onClick=function() newActivity("search_result", {edit.text, "collection"}) end})
+    .setNegativeButton("取消", nil)
+    .show()
   end
 
-  local specialConfig = {
+  local configs = {
     收藏 = {
-      tooltip = "新建收藏夹",
-      src=图标("add"),
+      tooltip = "新建收藏夹", src = 图标("add"),
       onClick = function()
-        if not getLogin() then
-          return 提示("你可能需要登录")
-        end
-        if collection_pagetool == nil then
-          提示("收藏加载中")
-          return true
-        end
-        新建收藏夹(function(mytext, myid, ispublic)
-          collection_pagetool:clearItem(1):refer(1)
-        end)
+        if not getLogin() then return 提示("你可能需要登录") end
+        if not collection_pagetool then return 提示("收藏加载中") end
+        新建收藏夹(function() collection_pagetool:clearItem(1):refer(1) end)
       end,
-      menuItems = {
-        {src=图标("search"), text="在收藏中搜索", onClick=function()
-            if not getLogin() then
-              return 提示("请登录后使用本功能")
-            end
-
-            AlertDialog.Builder(this)
-            .setTitle("请输入")
-            .setView(loadlayout({
-              LinearLayout;
-              orientation = "vertical";
-              Focusable = true,
-              FocusableInTouchMode = true,
-              {
-                EditText;
-                hint = "输入";
-                layout_marginTop = "5dp";
-                layout_marginLeft = "10dp";
-                layout_marginRight = "10dp";
-                layout_width = "match_parent";
-                layout_gravity = "center";
-                id = "edit";
-              };
-            }))
-            .setPositiveButton("确定", {onClick = function()
-                newActivity("search_result", {edit.text, "collection"})
-            end})
-            .setNegativeButton("取消", nil)
-            .show()
-
-        end},
-        {src=图标("email"), text="反馈", onClick=function() 跳转页面("feedback") end},
-        {src=图标("info"), text="关于", onClick=function() 跳转页面("sub/About/main") end}
+      menu = {
+        { src=图标("search"), text="在收藏中搜索", onClick=showSearchDialog },
+        { src=图标("email"), text="反馈", onClick=function() 跳转页面("feedback") end },
+        { src=图标("info"), text="关于", onClick=function() 跳转页面("sub/About/main") end }
       }
     },
     其他 = {
-      tooltip = "扫描",
-      src=图标("scan"),
+      tooltip = "扫描", src = 图标("scan"),
       onClick = function()
-        if not getLogin() then
-          return 提示("你可能需要登录")
-        end
+        if not getLogin() then return 提示("你可能需要登录") end
         nTView = _ask
-        task(20, function()
-          newActivity("scan", {"https://www.zhihu.com/messages", "提问"})
-        end)
+        task(20, function() newActivity("scan", {"https://www.zhihu.com/messages", "提问"}) end)
       end,
-      menuItems = {
-        {src=图标("email"), text="反馈", onClick=function() 跳转页面("feedback") end},
-        {src=图标("info"), text="关于", onClick=function() 跳转页面("sub/About/main") end}
+      menu = {
+        { src=图标("email"), text="反馈", onClick=function() 跳转页面("feedback") end },
+        { src=图标("info"), text="关于", onClick=function() 跳转页面("sub/About/main") end }
       }
     }
   }
-  local config = specialConfig[layoutName] or specialConfig.其他
+
+  local config = configs[layoutName] or configs.其他
   setmyToolip(_ask, config.tooltip)
   _ask.onClick = config.onClick
   _ask.setImageDrawable(Drawable.createFromPath(config.src))
 
-  a=MUKPopu({
-    tittle = "菜单",
-    list = config.menuItems
-  })
+  a = MUKPopu({ tittle="菜单", list=config.menu })
 
   for pageName, views in pairs(pageConfig) do
-    for _, view in ipairs(views) do
-      view.Visibility = pageName == layoutName and View.VISIBLE or View.GONE
-    end
+    local visibility = (pageName == layoutName) and View.VISIBLE or View.GONE
+    for _, view in ipairs(views) do view.Visibility = visibility end
   end
   _title.setText(layoutName)
 end
@@ -709,133 +609,75 @@ addAutoHideListener(allrecy,{bottombar})
 
 
 function 加载主页tab()
-  if not HometabLayout then
-    return
-  end
-
-  -- 并行加载推荐流
+  if not HometabLayout then return end
   home_pagetool:refer(nil, nil, true)
 
   zHttp.get("https://api.zhihu.com/feed-root/sections/query/v2", head, function(code, content)
-    if code == 200 then
-      HometabLayout.setVisibility(0)
-      local decoded_content = luajson.decode(content)
-      if not decoded_content or type(decoded_content.selected_sections) ~= "table" then
-        HometabLayout.setVisibility(8)
-        home_pagetool:refer(nil, nil, true)
-        return
-      end
-
-      if this.getSharedData("关闭全站") ~= "true" then
-        table.insert(decoded_content.selected_sections, 1, {
-          section_name = "全站",
-          section_id = nil,
-          sub_page_id = nil,
-        })
-      end
-
-      if HometabLayout.getTabCount() > 0 then
-        HometabLayout.removeAllTabs()
-        HometabLayout.clearOnTabSelectedListeners()
-      end
-
-      hometab = {}
-
-      for _, v in ipairs(decoded_content.selected_sections) do
-        local sub_page_id = v.sub_page_id
-        local section_id = v.section_id
-        table.insert(hometab, {
-          sub_page_id = sub_page_id,
-          section_id = section_id,
-        })
-        local tab = HometabLayout.newTab()
-        tab.setText(v.section_name or "")
-        HometabLayout.addTab(tab, false)
-      end
-
-      HometabLayout.addOnTabSelectedListener(TabLayout.OnTabSelectedListener {
-        onTabSelected = function(tab)
-          local pos = tab.getPosition() + 1
-          local item = hometab[pos]
-          if not item then return end
-
-          local section_id = item.section_id
-          local sub_page_id = item.sub_page_id
-
-          local new_url
-          if section_id == nil then
-            new_url = "https://api.zhihu.com/topstory/recommend?tsp_ad_cardredesign=0&feed_card_exp=card_corner|1&v_serial=1&isDoubleFlow=0&action=down&refresh_scene=0&scroll=up&limit=10&start_type=cold&device=phone&short_container_setting_value=0&include_guide_relation=false"
-           else
-            if sub_page_id then
-              new_url = "https://api.zhihu.com/feed-root/section/" .. section_id .. "?sub_page_id=" .. sub_page_id .. "&channelStyle=0"
-             else
-              new_url = "https://api.zhihu.com/feed-root/section/" .. section_id .. "?channelStyle=0"
-            end
-          end
-
-          if home_pagetool.urls[1] ~= new_url then
-            home_pagetool:setUrlItem(new_url)
-            home_pagetool:clearItem()
-            home_pagetool:refer()
-           else
-            home_pagetool:refer(nil, nil, true)
-          end
-        end,
-
-        onTabUnselected = function(tab) end,
-
-        onTabReselected = function(tab)
-          local pos = tab.getPosition() + 1
-          home_pagetool:clearItem(pos, true)
-          home_pagetool:refer(nil, true)
-        end,
-      })
-
-      -- 当滑动结束发送请求 尝试解决重复数据问题
-      home_pagetool.urlfunc = function(url, head)
-        if not getLogin() then
-          return url, head
-        end
-
-        local postdatas = {}
-        for _, v in ipairs(recommend_data or {}) do
-          if v.isread == '"r"' then
-            continue
-          end
-          local encoded_data = luajson.encode(v.readdata)
-          if encoded_data then
-            table.insert(postdatas, string.format("[%s,%s]", tostring(v.isread), encoded_data))
-          end
-        end
-
-        table.clear(recommend_data)
-
-        if #postdatas > 0 then
-          local postdata = "targets=" .. urlEncode("[" .. table.concat(postdatas, ",") .. "]")
-          zHttp.post("https://api.zhihu.com/lastread/touch/v2", postdata, apphead, function(code, content)
-          end)
-        end
-
-        --url = url .. "&start_type=warm&refresh_scene=0"
-        return url, head
-      end
-
-      --延迟防止滚动
-      HometabLayout.postDelayed(Runnable {
-        run = function()
-          if HometabLayout.getTabCount() > 0 then
-            local tab = HometabLayout.getTabAt(0)
-            if tab then
-              tab.select()
-            end
-          end
-        end
-      }, 300)
-
-     else
+    if code ~= 200 then
       HometabLayout.setVisibility(8)
-      home_pagetool:refer(nil, nil, true)
+      return
     end
+
+    local data = luajson.decode(content)
+    if not data or type(data.selected_sections) ~= "table" then
+      HometabLayout.setVisibility(8)
+      return
+    end
+
+    HometabLayout.setVisibility(0)
+    if activity.getSharedData("关闭全站") ~= "true" then
+      table.insert(data.selected_sections, 1, { section_name = "全站" })
+    end
+
+    HometabLayout.removeAllTabs()
+    HometabLayout.clearOnTabSelectedListeners()
+    hometab = {}
+
+    for _, v in ipairs(data.selected_sections) do
+      table.insert(hometab, { sub_page_id = v.sub_page_id, section_id = v.section_id })
+      HometabLayout.addTab(HometabLayout.newTab().setText(v.section_name or ""), false)
+    end
+
+    HometabLayout.addOnTabSelectedListener(TabLayout.OnTabSelectedListener {
+      onTabSelected = function(tab)
+        local item = hometab[tab.getPosition() + 1]
+        if not item then return end
+        
+        local new_url = item.section_id and 
+          string.format("https://api.zhihu.com/feed-root/section/%s?%schannelStyle=0", 
+            item.section_id, item.sub_page_id and "sub_page_id="..item.sub_page_id.."&" or "") or
+          "https://api.zhihu.com/topstory/recommend?tsp_ad_cardredesign=0&feed_card_exp=card_corner|1&v_serial=1&isDoubleFlow=0&action=down&refresh_scene=0&scroll=up&limit=10&start_type=cold&device=phone&short_container_setting_value=0&include_guide_relation=false"
+
+        if home_pagetool.urls[1] ~= new_url then
+          home_pagetool:setUrlItem(new_url):clearItem():refer()
+         else
+          home_pagetool:refer(nil, nil, true)
+        end
+      end,
+      onTabReselected = function(tab)
+        home_pagetool:clearItem(tab.getPosition() + 1, true):refer(nil, true)
+      end,
+    })
+
+    home_pagetool.urlfunc = function(url, head)
+      if not getLogin() or not recommend_data or #recommend_data == 0 then return url, head end
+      local postdatas = {}
+      for _, v in ipairs(recommend_data) do
+        if v.isread ~= '"r"' then
+          local encoded = luajson.encode(v.readdata)
+          if encoded then table.insert(postdatas, string.format("[%s,%s]", tostring(v.isread), encoded)) end
+        end
+      end
+      table.clear(recommend_data)
+      if #postdatas > 0 then
+        zHttp.post("https://api.zhihu.com/lastread/touch/v2", "targets=" .. urlEncode("[" .. table.concat(postdatas, ",") .. "]"), apphead, function(code, content) end)
+      end
+      return url, head
+    end
+
+    HometabLayout.postDelayed(function()
+      if HometabLayout.getTabCount() > 0 then HometabLayout.getTabAt(0).select() end
+    end, 300)
   end)
 end
 
@@ -863,53 +705,27 @@ end
 
 
 function getuserinfo()
+  Http.get('https://www.zhihu.com/api/v4/me', { ["cookie"] = 获取Cookie("https://www.zhihu.com/") }, function(code, content, raw, headers)
+    if code == 200 then
+      local data = luajson.decode(content)
+      activity.setSharedData("idx", data.id)
+      local udids = headers.get("x-udid")
+      if udids and not udids.isEmpty() then activity.setSharedData("udid", udids.get(0)) end
 
-  local myurl= 'https://www.zhihu.com/api/v4/me'
-
-  --不使用zHttp防止报错
-  Http.get(myurl, {
-    ["cookie"] = 获取Cookie("https://www.zhihu.com/");
-    },function(code,content,raw,headers)
-    if code==200 then--判断网站状态
-
-      local data=luajson.decode(content)
-      local 名字=data.name
-      local 头像=data.avatar_url
-      local 签名=data.headline
-      local uid=data.id
-      activity.setSharedData("idx",uid)
-
-      local values= headers.get("x-udid");
-      if values and values.isEmpty()==false then
-        activity.setSharedData("udid",values.get(0))
-      end
-
-      侧滑头.onClick=function()
-        newActivity("people",{uid})
-      end
-      loadglide(头像id,头像,false)
-      名字id.Text=名字
-      if #签名:gsub(" ","")<1 then
-        签名id.Text="你还没有签名呢"
-       else
-        签名id.Text=签名
-      end
+      侧滑头.onClick = function() newActivity("people", {data.id}) end
+      loadglide(头像id, data.avatar_url, false)
+      名字id.Text = data.name
+      签名id.Text = (#data.headline:gsub(" ", "") > 0) and data.headline or "你还没有签名呢"
       sign_out.setVisibility(View.VISIBLE)
       成功登录回调()
      else
-      --状态码不为200的事件
-      侧滑头.onClick=function()
-        activity.newActivity("login")
-      end
+      侧滑头.onClick = function() activity.newActivity("login") end
       HometabLayout.setVisibility(8)
-      loadglide(头像id,logopng)
-      名字id.Text="未登录，点击登录"
-      签名id.Text="获取失败"
-      sign_out.setVisibility(8)
-
+      loadglide(头像id, logopng)
+      名字id.Text, 签名id.Text = "未登录，点击登录", "获取失败"
+      sign_out.setVisibility(View.GONE)
     end
   end)
-
 end
 
 getuserinfo()
@@ -1241,28 +1057,6 @@ end
 setupDrawerEdge(_drawer)
 
 --Fragment TalkBack适配
-function getLastFragmentInContainer(container)
-  local fm = this.getSupportFragmentManager()
-  local fragments = luajava.astable(fm.getFragments())
-  local fragmentsInContainer = {}
-
-  for _, v in ipairs(fragments) do
-    if v and v.getView() then
-      local parent = v.getView().getParent()
-      if parent == container then
-        table.insert(fragmentsInContainer, v)
-      end
-    end
-  end
-
-  if #fragmentsInContainer > 0 then
-    local lastFragment = table.remove(fragmentsInContainer)
-    return fragmentsInContainer, lastFragment
-  end
-
-  return nil, nil
-end
-
 function getLastFragmentInContainer(container)
   local fm = this.getSupportFragmentManager()
   local fragments = luajava.astable(fm.getFragments())

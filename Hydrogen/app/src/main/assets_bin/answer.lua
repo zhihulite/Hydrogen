@@ -16,32 +16,8 @@ import "android.webkit.ValueCallback"
 import "com.google.android.material.progressindicator.LinearProgressIndicator"
 import "androidx.core.view.ViewCompat"
 import "com.google.android.material.appbar.AppBarLayout"
-问题id,回答id=...
 
---new 0.46 删除滑动监听
-
-local MaterialContainerTransform = luajava.bindClass "com.google.android.material.transition.MaterialContainerTransform"
---[=[if inSekai then
-  --[[if fn[#fn][1]=="answer" then
-activity.getSupportFragmentManager().popBackStack()
-    table.remove(fn,#fn)
-end]]
-  local t = activity.getSupportFragmentManager().beginTransaction()
-  t.setCustomAnimations(
-  android.R.anim.slide_in_left,
-  android.R.anim.slide_out_right,
-  android.R.anim.slide_in_left,
-  android.R.anim.slide_out_right)
-  --t.remove(activity.getSupportFragmentManager().findFragmentByTag("answer"))
-  t.add(f2.getId(),LuaFragment(loadlayout("layout/answer")),"answer")
-  t.addToBackStack(nil)
-  t.commit()
-  table.insert(fn,{"answer",2})
- else
-  activity.setContentView(loadlayout("layout/answer"))
-end
-]=]
-
+问题id, 回答id = ...
 
 设置视图("layout/answer")
 --设置toolbar(toolbar)
@@ -199,7 +175,6 @@ function 数据添加(t,回答id)
 
   local MyWebViewUtils=WebViewUtils(t.content)
   MyWebViewUtils:initSettings()
-  :initSettings()
   :initNoImageMode()
   :initDownloadListener()
   :setZhiHuUA()
@@ -218,15 +193,18 @@ function 数据添加(t,回答id)
         userinfo.visibility=0
       end
 
-      if 全局主题值=="Night" then
-        夜间模式回答页(view)
-       else
-        初始化背景(view)
+      local function 加载基础JS(view)
+        if 全局主题值=="Night" then
+          夜间模式回答页(view)
+         else
+          初始化背景(view)
+        end
+        local js_list = {"answer_pages", "imgplus", "mdcopy", "snap"}
+        for _, v in ipairs(js_list) do
+          加载js(view, 获取js(v))
+        end
       end
-      加载js(view,获取js("answer_pages"))
-      加载js(view,获取js("imgplus"))
-      加载js(view,获取js("mdcopy"))
-      加载js(view,获取js("snap"))
+      加载基础JS(view)
     end,
     onPageFinished=function(view,url,favicon)
       t.content.setVisibility(0)
@@ -234,6 +212,7 @@ function 数据添加(t,回答id)
         t.progress.getParent().removeView(t.progress)
         t.progress=nil
       end
+
       if 全局主题值=="Night" then
         夜间模式回答页(view)
        else
@@ -285,16 +264,9 @@ function 数据添加(t,回答id)
           if not(getLogin()) then
             提示("该回答含有视频 不登录可能无法显示视频 建议登录")
           end
-
-         elseif b.attachment then
-          local 视频链接
-          xpcall(function()
-            视频链接=b.attachment.video.video_info.playlist.sd.url
-            end,function()
-            视频链接=b.attachment.video.video_info.playlist.ld.url
-            end,function()
-            视频链接=b.attachment.video.video_info.playlist.hd.url
-          end)
+         elseif b.attachment and b.attachment.video then
+          local playlist = b.attachment.video.video_info.playlist
+          local 视频链接 = playlist.sd and playlist.sd.url or playlist.ld and playlist.ld.url or playlist.hd and playlist.hd.url
           if 视频链接 then
             加载js(view,'var myvideourl="'..视频链接..'"')
             加载js(view,获取js('videoanswer'))
@@ -338,125 +310,99 @@ function 数据添加(t,回答id)
 
 end
 
-local function 设置底栏内容(status,iconview,textview,icon)
-  if status then
-    iconview.setImageBitmap(loadbitmap(图标(icon)))
-    textview.setTextColor(转0x(primaryc))
-   else
-    iconview.setImageBitmap(loadbitmap(图标(icon.."_outline")))
-    textview.setTextColor(转0x(stextc))
+local function 更新底栏(data)
+  local function 设置状态(status, iconview, textview, icon, count)
+    if status then
+      iconview.setImageBitmap(loadbitmap(图标(icon)))
+      textview.setTextColor(转0x(primaryc))
+     else
+      iconview.setImageBitmap(loadbitmap(图标(icon.."_outline")))
+      textview.setTextColor(转0x(stextc))
+    end
+    textview.Text = tostring(count)
   end
+
+  设置状态(data.点赞状态, vote_icon, vote_count, "vote_up", data.voteup_count)
+  设置状态(data.感谢状态, thanks_icon, thanks_count, "favorite", data.thanks_count)
+  favlists_count.Text = tostring(data.favlists_count)
+  comment_count.Text = tostring(data.comment_count)
 end
 
 function 初始化页(mviews)
+  this.getLuaState().pushObjectValue(thisFragment)
+  this.getLuaState().setGlobal("currentFragment")
 
-  this.getLuaState().pushObjectValue(thisFragment);
-  this.getLuaState().setGlobal("currentFragment");
+  local data = mviews.data
+  if mviews.load and data and data.author then
+    username.Text = data.author.name
+    userheadline.Text = (data.author.headline == "" and "Ta还没有签名哦~" or data.author.headline)
+    loadglide(usericon, data.author.avatar_url)
+    更新底栏(data)
 
-  if mviews.load==true and mviews.data.author then
-    vote_count.Text=(mviews.data.voteup_count)..""
-    thanks_count.Text=(mviews.data.thanks_count)..""
-    favlists_count.Text=(mviews.data.favlists_count)..""
-    comment_count.Text=(mviews.data.comment_count)..""
-    comment.onLongClick=function()
-      提示(mviews.data.comment_count.."条评论")
+    comment.onLongClick = function()
+      提示(data.comment_count.."条评论")
       return true
     end
-    if mviews.data.author.headline=="" then
-      userheadline.Text="Ta还没有签名哦~"
-     else
-      userheadline.Text=mviews.data.author.headline
-    end
-    username.Text=mviews.data.author.name
-    loadglide(usericon,mviews.data.author.avatar_url)
-    local 回答id=mviews.data.id
-
-    设置底栏内容(mviews.data.点赞状态,vote_icon,vote_count,"vote_up")
-    设置底栏内容(mviews.data.感谢状态,thanks_icon,thanks_count,"favorite")
-
   end
 end
 
-function 加载页(data,isleftadd,pos)
+function 加载页(data, isleftadd, pos)
+  if data.load then return end
+  data.load = "loading"
 
-  if not(data.load) then --判断是否加载过没有
-
-    local target_id = 回答容器:getOneData(function(cb,r)--获取1条数据
-      if cb==false then
-        data.load=nil
-        提示("已经没有更多数据了")
-        if pos then
-          pg.adapter.remove(pos)
-          pg.setCurrentItem(pos-1,false)
-        end
-       else
-
-        data.data={
-          voteup_count=cb.voteup_count,
-          thanks_count=cb.thanks_count,
-          favlists_count=cb.favlists_count,
-          comment_count=cb.comment_count,
-          id=tostring(cb.id),
-          author={
-            avatar_url=cb.author.avatar_url,
-            headline=cb.author.headline,
-            name=cb.author.name,
-            id=tostring(cb.author.id)
-          },
-          点赞状态=cb.relationship.voting==1,
-          感谢状态=cb.relationship.is_thanked
-        }
-        data.ids.data = cb -- 给onPageFinished使用
-
-        if not(已记录) then
-          初始化历史记录数据(true)
-          保存历史记录(cb.id,cb.question.title,cb.excerpt,"回答")
-          已记录=true
-        end
-
-        userinfo.onClick=function()
-          local pos=pg.getCurrentItem()
-          local mview=数据表[pg.adapter.getItem(pos).id]
-          local id=mview.data.author.id
-          if id~="0" then
-            nTView=usericon
-            newActivity("people",{id})
-           else
-            提示("回答作者已设置匿名")
-          end
-        end
-
-        if cb.author.headline=="" then
-          userheadline.Text="Ta还没有签名哦~"
-         else
-          userheadline.Text=cb.author.headline
-        end
-        username.Text=cb.author.name
-        loadglide(usericon,cb.author.avatar_url)
-        初始化页(data)
-
+  local target_id = 回答容器:getOneData(function(cb)
+    if cb == false then
+      data.load = nil
+      提示("已经没有更多数据了")
+      if pos then
+        pg.adapter.remove(pos)
+        pg.setCurrentItem(pos - 1, false)
       end
-    end,isleftadd)
-
-    data.load=true
-    数据添加(data.ids, tostring(target_id))
-  end
-end
-
-function 首次设置()
-  defer local question_base=answer
-  :getinfo(回答id,function(tab)
-    all_answer.Text="点击查看全部"..(tab.answer_count).."个回答 >"
-    问题id=tab.id
-    if tab.answer_count==1 then
-      回答容器.isleft=true
+      return
     end
-    _title.Text=tab.title
 
-  end)
-  for i=1,3 do
-    pg.setCurrentItem(1,false)--设置正确的列
-  end
+    data.data = {
+      voteup_count = cb.voteup_count,
+      thanks_count = cb.thanks_count,
+      favlists_count = cb.favlists_count,
+      comment_count = cb.comment_count,
+      id = tostring(cb.id),
+      author = {
+        avatar_url = cb.author.avatar_url,
+        headline = cb.author.headline,
+        name = cb.author.name,
+        id = tostring(cb.author.id)
+      },
+      点赞状态 = (cb.relationship.voting == 1),
+      感谢状态 = cb.relationship.is_thanked
+    }
+    data.ids.data = cb
+
+    if not 已记录 then
+      初始化历史记录数据(true)
+      保存历史记录(cb.id, cb.question.title, cb.excerpt, "回答")
+      已记录 = true
+    end
+
+    userinfo.onClick = function()
+      local current_pos = pg.getCurrentItem()
+      local mview = 数据表[pg.adapter.getItem(current_pos).id]
+      if mview and mview.data and mview.data.author then
+        local author_id = mview.data.author.id
+        if author_id ~= "0" then
+          nTView = usericon
+          newActivity("people", {author_id})
+         else
+          提示("回答作者已设置匿名")
+        end
+      end
+    end
+
+    data.load = true
+    初始化页(data)
+  end, isleftadd)
+
+  数据添加(data.ids, tostring(target_id))
 end
 
 数据表={}
@@ -482,48 +428,39 @@ for i=1,2 do
   addAnswer()
 end
 
-pg.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，其他和PageView差不多
+pg.registerOnPageChangeCallback(OnPageChangeCallback{
   onPageSelected=function(pos)
-    --获取当前mviews
     local mviews=数据表[pg.adapter.getItem(pos).id]
-
     回答容器:updateLR()
-    --判断页面是否在开头or结尾 是否需要添加
     if pg.adapter.getItemCount()==pos+1 then
       if not 回答容器.isright then
-        --在最右添加 防止无法右滑
         addAnswer()
         加载页(mviews, false, pos)
-        appbar.setExpanded(true);
+        appbar.setExpanded(true)
       end
-     elseif pos==0 and pg.adapter.getItemCount()>=0
+     elseif pos==0 then
       if not 回答容器.isleft then
-        --在最前面添加fragment 防止无法左滑
         addAnswer(0)
         加载页(mviews, true, pos)
-        appbar.setExpanded(true);
+        appbar.setExpanded(true)
       end
-      --判断是否加载过
-     elseif pg.adapter.getItemCount()>=0 then
-      if mviews.load==true then
-        回答容器.getid=mviews.data.id
+     else
+      if mviews.load == true then
+        回答容器.getid = mviews.data.id
         初始化页(mviews)
       end
     end
   end,
   onPageScrolled=function(pos,positionOffset,positionOffsetPixels)
     if positionOffsetPixels==0 then
-
       dtl.layoutParams.getBehavior().slideUp(dtl)
-
       回答容器:updateLR()
-      --判断越界回弹
       if pg.adapter.getItemCount()==pos+1 then
         if 回答容器.isright then
           pg.setCurrentItem(pos-1,true)
           return 提示("前面没有内容啦")
         end
-       elseif pos==0 and pg.adapter.getItemCount()>=0
+       elseif pos==0 then
         if 回答容器.isleft then
           pg.setCurrentItem(1,true)
           return 提示("已经到最左了")
@@ -533,31 +470,28 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，其他�
   end
 })
 
-pg.setCurrentItem(1,false)--设置正确的列
--- 如果 setCurrentItem 没有触发回调（某些情况下），则手动触发第一次加载
-local current_pos = pg.getCurrentItem()
-local current_mviews = 数据表[pg.adapter.getItem(current_pos).id]
+pg.setCurrentItem(1,false)
+local current_mviews = 数据表[pg.adapter.getItem(pg.getCurrentItem()).id]
 if current_mviews and not current_mviews.load then
-  加载页(current_mviews, false, current_pos)
+  加载页(current_mviews, false, pg.getCurrentItem())
 end
 
-
-defer local question_base=answer
-:getinfo(回答id,function(tab)
-  all_answer.Text="点击查看全部"..(tab.answer_count).."个回答 >"
-  问题id=tab.id
-  if tab.answer_count==1 then
-    回答容器.isleft=true
+answer:getinfo(回答id, function(tab)
+  local info_text = "点击查看全部" .. tab.answer_count .. "个回答 >"
+  all_answer.Text = info_text
+  all_answer_expand.Text = info_text
+  问题id = tab.id
+  _title.Text = tab.title
+  expand_title.Text = tab.title
+  if tab.answer_count == 1 then
+    回答容器.isleft = true
   end
-  _title.Text=tab.title
-  all_answer_expand.Text="点击查看全部"..(tab.answer_count).."个回答 >"
-  expand_title.text=tab.title
 end)
 
 
 
 function onDestroy()
-  for k,v pairs(数据表) do
+  for k,v in pairs(数据表) do
     v.ids.content.destroy()
     System.gc()
   end
@@ -566,19 +500,18 @@ end
 voteup.onClick=function()
   local pos=pg.getCurrentItem()
   local mview=数据表[pg.adapter.getItem(pos).id]
-  local 回答id=mview.data.id
-  if 回答id==nil then
+  local data = mview.data
+  if not data or not data.id then
     return 提示("加载中")
   end
-  if not mview.data.点赞状态 then
+  local 回答id=data.id
+  if not data.点赞状态 then
     zHttp.post("https://api.zhihu.com/answers/"..回答id.."/voters",'{"type":"up"}',posthead,function(code,content)
       if code==200 then
         提示("点赞成功")
-        mview.data.点赞状态=true
-        local data=luajson.decode(content)
-        vote_count.text=tostring(mview.data.voteup_count+1)
-        vote_icon.setImageBitmap(loadbitmap(图标("vote_up")))
-        vote_count.setTextColor(转0x(primaryc))
+        data.点赞状态=true
+        data.voteup_count = data.voteup_count + 1
+        更新底栏(data)
        elseif code==401 then
         提示("请登录后使用本功能")
       end
@@ -587,11 +520,9 @@ voteup.onClick=function()
     zHttp.post("https://api.zhihu.com/answers/"..回答id.."/voters",'{"type":"neutral"}',posthead,function(code,content)
       if code==200 then
         提示("取消点赞成功")
-        mview.data.点赞状态=false
-        local data=luajson.decode(content)
-        vote_count.text=tostring(mview.data.voteup_count)
-        vote_icon.setImageBitmap(loadbitmap(图标("vote_up_outline")))
-        vote_count.setTextColor(转0x(stextc))
+        data.点赞状态=false
+        data.voteup_count = data.voteup_count - 1
+        更新底栏(data)
        elseif code==401 then
         提示("请登录后使用本功能")
       end
@@ -602,19 +533,18 @@ end
 thank.onClick=function()
   local pos=pg.getCurrentItem()
   local mview=数据表[pg.adapter.getItem(pos).id]
-  local 回答id=mview.data.id
-  if 回答id==nil then
+  local data = mview.data
+  if not data or not data.id then
     return 提示("加载中")
   end
-  if not mview.data.感谢状态 then
+  local 回答id=data.id
+  if not data.感谢状态 then
     zHttp.post("https://www.zhihu.com/api/v4/zreaction",'{"content_type":"answers","content_id":"'..回答id..'","action_type":"emojis","action_value":"red_heart"}',posthead,function(code,content)
       if code==200 then
         提示("表达感谢成功")
-        mview.data.感谢状态=true
-        local data=luajson.decode(content)
-        thanks_count.text=tostring(mview.data.thanks_count+1)
-        thanks_icon.setImageBitmap(loadbitmap(图标("favorite")))
-        thanks_count.setTextColor(转0x(primaryc))
+        data.感谢状态=true
+        data.thanks_count = data.thanks_count + 1
+        更新底栏(data)
        elseif code==401 then
         提示("请登录后使用本功能")
       end
@@ -623,11 +553,9 @@ thank.onClick=function()
     zHttp.delete("https://www.zhihu.com/api/v4/zreaction?content_type=answers&content_id="..回答id.."&action_type=emojis&action_value=",posthead,function(code,content)
       if code==200 then
         提示("取消感谢成功")
-        mview.data.感谢状态=false
-        local data=luajson.decode(content)
-        thanks_count.text=tostring(mview.data.thanks_count)
-        thanks_icon.setImageBitmap(loadbitmap(图标("favorite_outline")))
-        thanks_count.setTextColor(转0x(stextc))
+        data.感谢状态=false
+        data.thanks_count = data.thanks_count - 1
+        更新底栏(data)
        elseif code==401 then
         提示("请登录后使用本功能")
       end
@@ -688,82 +616,74 @@ ActivityResultCallback{
 end});
 
 task(1,function()
+  local function 获取当前WebView()
+    local item = pg.adapter.getItem(pg.getCurrentItem())
+    return 数据表[item.id].ids.content
+  end
+
+  local function 获取当前回答URL()
+    local content = 获取当前WebView()
+    local url = content.getUrl()
+    if url == nil then 提示("加载中") return nil end
+    return url
+  end
+
+  local function 获取分享文本(url)
+    local format = "【回答】【%s】%s: %s"
+    local answer_id = url:match("answer/(.+)")
+    return string.format(format, _title.Text, username.Text, "https://www.zhihu.com/question/"..问题id.."/answer/"..answer_id)
+  end
+
   a=MUKPopu({
     tittle="回答",
     list={
       {
         src=图标("refresh"),text="刷新",onClick=function()
-
-          数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.reload()
-
+          获取当前WebView().reload()
           提示("刷新中")
         end
       },
-
       {
         src=图标("share"),text="分享",onClick=function()
-          local url=数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.getUrl()
-          if url==nil then
-            提示("加载中")
-            return
-          end
-          local format="【回答】【%s】%s: %s"
-          分享文本(string.format(format,_title.Text,username.Text,"https://www.zhihu.com/question/"..问题id.."/answer/"..url:match("answer/(.+)")))
+          local url = 获取当前回答URL()
+          if url then 分享文本(获取分享文本(url)) end
         end,
         onLongClick=function()
-          local url=数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.getUrl()
-          if url==nil then
-            提示("加载中")
-            return
-          end
-          local format="【回答】【%s】%s: %s"
-          分享文本(string.format(format,_title.Text,username.Text,"https://www.zhihu.com/question/"..问题id.."/answer/"..url:match("answer/(.+)")),true)
+          local url = 获取当前回答URL()
+          if url then 分享文本(获取分享文本(url), true) end
         end
       },
-
       {
         src=图标("share"),text="以图片形式保存",onClick=function()
-          local url=数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.getUrl()
-          local webView=数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content
-          if url==nil then
-            提示("加载中")
-            return
-          end
-          local format="【回答】【%s】%s: %s"
-          --分享文本(string.format(format,_title.Text,username.Text,"https://www.zhihu.com/question/"..问题id.."/answer/"..url:match("answer/(.+)")))
+          local url = 获取当前回答URL()
+          if not url then return end
+          local webView = 获取当前WebView()
           import "android.graphics.Bitmap"
           import "android.graphics.Canvas"
           import "android.graphics.Paint"
           import "com.nwdxlgzs.view.photoview.PhotoView"
 
-
-          function webviewToBitmap(webView, func) --由于存在延迟，后续操作使用function(bitmap)传入
-            webView.evaluateJavascript("captureScreenshot()",
-            {onReceiveValue=function(b)
-                --偷懒 因为onReceiveValue回调不能直接处理异步
-                --应该使用js接口的 不过1秒似乎应该可以处理吧(
+          function webviewToBitmap(webView, func)
+            webView.evaluateJavascript("captureScreenshot()", {onReceiveValue=function(b)
                 local process
                 process=function()
-                  webView.evaluateJavascript(
-                  "getScreenshot()",
-                  {onReceiveValue=function(b)
-                      if string.find(b,"process")~=nil
-                        task(200,process)
-
+                  webView.evaluateJavascript("getScreenshot()", {onReceiveValue=function(b)
+                      if b:find("process") then
+                        task(200, process)
                        else
                         func(base64ToBitmap(b))
                       end
                   end})
                 end
-                task(300,process)
-            end});
+                task(300, process)
+            end})
           end
+
           webviewToBitmap(webView, function(bitmap)
             local ids={}
             AlertDialog.Builder(this)
             .setTitle("预览")
-            .setView(loadlayout(
-            {
+            .setView(loadlayout({
               LinearLayout;
               layout_width="-1";
               layout_height="-1";
@@ -776,135 +696,88 @@ task(1,function()
               }
             },ids))
             .setPositiveButton("确认并分享", function()
-              import "android.graphics.Bitmap"
               import "android.os.Environment"
               import "java.io.File"
               import "java.io.FileOutputStream"
-              import "java.lang.System"
-              import "android.content.FileProvider"
-              local dir=this.getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString()..""
-              local file=File(dir,"知乎回答-".._title.Text.."-来自-"..username.Text..".jpg")
-              fos = FileOutputStream(file);
-              bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos);
-              fos.flush();
-              fos.close();
+              import "androidx.core.content.FileProvider"
+              local dir = this.getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString()
+              local file = File(dir, "知乎回答-".._title.Text.."-来自-"..username.Text..".jpg")
+              local fos = FileOutputStream(file)
+              bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+              fos.flush()
+              fos.close()
+              local uri = FileProvider.getUriForFile(this, this.getPackageName()..".FileProvider", file)
               local sendIntent = Intent()
               .setAction(Intent.ACTION_SEND)
-              .putExtra(Intent.EXTRA_STREAM, FileProvider.getUriForFile(this, this.getPackageName()..".FileProvider", file))
-              .setData(FileProvider.getUriForFile(this, this.getPackageName()..".FileProvider", file))
+              .putExtra(Intent.EXTRA_STREAM, uri)
+              .setData(uri)
               .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-              --.putExtra(Intent.EXTRA_STREAM, file.toURI())
-              .putExtra(Intent.EXTRA_TEXT, string.format(format,_title.Text,username.Text,"https://www.zhihu.com/question/"..问题id.."/answer/"..url:match("answer/(.+)")))
-              .setType("image/*");
-
-              shareIntent = Intent.createChooser(sendIntent, nil);
-              this.startActivity(shareIntent);
+              .putExtra(Intent.EXTRA_TEXT, 获取分享文本(url))
+              .setType("image/*")
+              this.startActivity(Intent.createChooser(sendIntent, nil))
             end)
             .setNegativeButton("取消", nil)
-            .setOnDismissListener({
-              onDismiss = function()
-                webView.scrollBy(0, 1) --弹出窗口后返回可能导致webview无法滑动，这样可以重置一下
-            end})
+            .setOnDismissListener({onDismiss=function() webView.scrollBy(0, 1) end})
             .show()
-
-            loadglide(ids.iv,bitmap)
-
+            loadglide(ids.iv, bitmap)
           end)
-
-
-
         end,
       },
-
       {
         src=图标("chat_bubble"),text="查看评论",onClick=function()
-
-          local pos=pg.getCurrentItem()
-          local mview=数据表[pg.adapter.getItem(pos).id]
-          local 回答id=mview.data.id
-          if 回答id==nil then
-            return 提示("加载中")
-          end
-
-          local 保存路径=内置存储文件("Download/".._title.Text.."/"..username.Text)
-          newActivity("comment",{回答id,"answers",保存路径})
-
+          local pos = pg.getCurrentItem()
+          local mview = 数据表[pg.adapter.getItem(pos).id]
+          local 回答id = mview.data.id
+          if not 回答id then return 提示("加载中") end
+          local 保存路径 = 内置存储文件("Download/".._title.Text.."/"..username.Text)
+          newActivity("comment", {回答id, "answers", 保存路径})
         end
       },
       {
         src=图标("get_app"),text="保存到本地",onClick=function()
-
-          local result=get_write_permissions()
-          if result~=true then
-            return false
-          end
-
-          local pgnum=pg.adapter.getItem(pg.getCurrentItem()).id
-          local pgids=数据表[pgnum].ids
-
-          local 保存路径=内置存储文件("Download/".._title.Text.."/"..username.Text)
-          写入内容='question_id="'..问题id..'"\n'
-          写入内容=写入内容..'answer_id="'..回答id..'"\n'
-          写入内容=写入内容..'thanks_count="'..thanks_count.Text..'"\n'
-          写入内容=写入内容..'vote_count="'..vote_count.Text..'"\n'
-          写入内容=写入内容..'favlists_count="'..favlists_count.Text..'"\n'
-          写入内容=写入内容..'comment_count="'..comment_count.Text..'"\n'
-          写入内容=写入内容..'author="'..username.Text..'"\n'
-          写入内容=写入内容..'headline="'..userheadline.Text..'"\n'
-          写入文件(保存路径.."/detail.txt",写入内容)
-          newActivity("saveweb",{pgids.content.getUrl(),保存路径,写入内容})
+          if not get_write_permissions() then return end
+          local item = pg.adapter.getItem(pg.getCurrentItem())
+          local pgids = 数据表[item.id].ids
+          local 保存路径 = 内置存储文件("Download/".._title.Text.."/"..username.Text)
+          local detail = string.format('question_id="%s"\nanswer_id="%s"\nthanks_count="%s"\nvote_count="%s"\nfavlists_count="%s"\ncomment_count="%s"\nauthor="%s"\nheadline="%s"\n',
+            问题id, 回答id, thanks_count.Text, vote_count.Text, favlists_count.Text, comment_count.Text, username.Text, userheadline.Text)
+          写入文件(保存路径.."/detail.txt", detail)
+          newActivity("saveweb", {pgids.content.getUrl(), 保存路径, detail})
         end,
-
-
         onLongClick=function()
-          local pgnum=pg.adapter.getItem(pg.getCurrentItem()).id
-          local pgids=数据表[pgnum].ids
-          local content=pgids.content
-
-          content.evaluateJavascript('getmd()',{onReceiveValue=function(b)
+          local content = 获取当前WebView()
+          content.evaluateJavascript('getmd()', {onReceiveValue=function(b)
               提示("请选择一个保存位置")
-              saf_writeText=b
-              createDocumentLauncher.launch(_title.Text.."_"..username.Text..".md");
+              saf_writeText = b
+              createDocumentLauncher.launch(_title.Text.."_"..username.Text..".md")
           end})
-
-
-
         end
       },
-
       {
         src=图标("book"),text="加入收藏夹",onClick=function()
-          local url=数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.getUrl()
-          加入收藏夹(url:match("answer/(.+)"),"answer")
+          local url = 获取当前回答URL()
+          if url then 加入收藏夹(url:match("answer/(.+)"), "answer") end
         end,
         onLongClick=function()
-          local url=数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.getUrl()
-          加入默认收藏夹(url:match("answer/(.+)"),"answer")
+          local url = 获取当前回答URL()
+          if url then 加入默认收藏夹(url:match("answer/(.+)"), "answer") end
         end
       },
-
       {
         src=图标("book"),text="举报",onClick=function()
-
-          local pos=pg.getCurrentItem()
-          local mview=数据表[pg.adapter.getItem(pos).id]
-          local 回答id=mview.data.id
-          if 回答id==nil then
-            return 提示("加载中")
-          end
-
-          local url="https://www.zhihu.com/report?id="..回答id.."&type=answer"
-          newActivity("browser",{url.."&source=android&ab_signature=","举报"})
+          local pos = pg.getCurrentItem()
+          local mview = 数据表[pg.adapter.getItem(pos).id]
+          local 回答id = mview.data.id
+          if not 回答id then return 提示("加载中") end
+          local url = "https://www.zhihu.com/report?id="..回答id.."&type=answer"
+          newActivity("browser", {url.."&source=android&ab_signature=", "举报"})
         end
       },
-
       {
         src=图标("search"),text="在网页查找内容",onClick=function()
-          local content=数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content
-          webview查找文字(content)
+          webview查找文字(获取当前WebView())
         end
       },
-
     }
   })
 end)
@@ -914,29 +787,23 @@ if activity.getSharedData("回答提示0.04")==nil
   .setTitle("小提示")
   .setCancelable(false)
   .setMessage("你可双击标题回到顶部")
-  .setPositiveButton("我知道了",{onClick=function() activity.setSharedData("回答提示0.04","true") end})
+  .setPositiveButton("我知道了", {onClick=function() activity.setSharedData("回答提示0.04","true") end})
   .show()
 end
 
-
 if this.getSharedData("显示虚拟滑动按键")=="true" then
   bottom_parent.Visibility=0
-  up_button.onClick=function()
-    local pos=pg.getCurrentItem()
-    local mview=数据表[pg.adapter.getItem(pos).id]
-    local id表=mview.ids
-    local content=id表.content
-    content.scrollBy(0, -content.height+dp2px(40));
-    if content.getScrollY()<=0 then
-      appbar.setExpanded(true,false);
+  local function 滑动(direction)
+    local mview = 数据表[pg.adapter.getItem(pg.getCurrentItem()).id]
+    local content = mview.ids.content
+    local offset = (direction == "up" and -1 or 1) * (content.height - dp2px(40))
+    content.scrollBy(0, offset)
+    if direction == "up" and content.getScrollY() <= 0 then
+      appbar.setExpanded(true, false)
+     elseif direction == "down" then
+      appbar.setExpanded(false, false)
     end
   end
-  down_button.onClick=function()
-    local pos=pg.getCurrentItem()
-    local mview=数据表[pg.adapter.getItem(pos).id]
-    local id表=mview.ids
-    local content=id表.content
-    content.scrollBy(0, (content.height-dp2px(40)));
-    appbar.setExpanded(false,false);
-  end
+  up_button.onClick = function() 滑动("up") end
+  down_button.onClick = function() 滑动("down") end
 end
