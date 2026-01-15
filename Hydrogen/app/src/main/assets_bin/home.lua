@@ -364,7 +364,7 @@ if activity.getSharedData("feed_cache")==nil
 end
 
 if activity.getSharedData("scroll_sense")==nil
-  activity.setSharedData("scroll_sense","2.5")
+  activity.setSharedData("scroll_sense","1.8")
 end
 
 pagadp=SWKLuaPagerAdapter()
