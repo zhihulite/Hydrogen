@@ -33,7 +33,7 @@ function 搜索(text)
     提示("请输入您要搜索的内容")
    else
     if this.getSharedData("搜索引擎")==nil
-      this.setSharedData("搜索引擎","https://www.bing.com/search?q=site%3Azhihu.com%20")
+      this.setSharedData("搜索引擎","https://www.zhihu.com/search?type=content&q=")
     end
     search_eg=this.getSharedData("搜索引擎")
     newActivity("browser",{search_eg..urlEncode(search_text)})

@@ -104,7 +104,7 @@ local function showEditDialog(title, message, key, default_val, hint)
   .setTitle(title)
   .setView(loadlayout({
     LinearLayout, orientation="vertical",
-    { TextView, text=message, Typeface=字体("product-Medium"), layout_margin="16dp", layout_marginBottom="8dp" },
+    { TextView, text=message, textIsSelectable=true, Typeface=字体("product-Medium"), layout_margin="16dp", layout_marginBottom="8dp" },
     { EditText, id="edit", text=this.getSharedData(key) or default_val, hint=hint, Typeface=字体("product"), layout_marginLeft="16dp", layout_marginRight="16dp", layout_marginBottom="16dp" }
   }))
   .setPositiveButton("确定", { onClick = function()
@@ -118,7 +118,7 @@ end
 local clickfunc = {}
 
 clickfunc["搜索设置"] = function()
-  showEditDialog("设置搜索引擎", '请使用?q=类似物为结尾，如下\n知乎搜索页面 "https://www.zhihu.com/search?type=content&q="\n bing "  https://www.bing.com/search?q=site%3Azhihu.com%20"', "搜索引擎", "https://www.bing.com/search?q=site%3Azhihu.com%20")
+  showEditDialog("设置搜索引擎", '请使用?q=类似物为结尾，如下\n知乎搜索页面 "https://www.zhihu.com/search?type=content&q="\n bing "  https://www.bing.com/search?q=site%3Azhihu.com%20"', "搜索引擎", "https://www.zhihu.com/search?type=content&q=")
 end
 
 clickfunc["夜间模式"] = function()
