@@ -1,10 +1,11 @@
-zemoji = require "model.zemoji":getZemoji().zemoji
---pcall(function()LuaUtil.unZip(srcLuaDir.."/res/zemoji.zip",activity.getExternalCacheDir().getPath())end)
-
-zemojip={}
-for ii,j in pairs(zemoji) do
-  table.add(zemojip,{ii=ii,i=表情(ii)})
-end
+local zemojip={}
+task(1, function()
+  local zemoji_mod = require "model.zemoji":getZemoji().zemoji
+  for ii, j in pairs(zemoji_mod) do
+    table.insert(zemojip, {ii=ii, i=表情(ii)})
+  end
+  zemoji = zemoji_mod
+end)
 
 local base={}
 

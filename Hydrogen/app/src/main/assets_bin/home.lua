@@ -575,28 +575,26 @@ function 切换布局(layoutName)
 end
 
 
---日报
-daily_pagetool=require "model.home_daily"
-:new()
-:initpage(daily_recy,dailysr)
+--日报、收藏、关注内容等次要组件延迟初始化以加速主页呈现
+task(100, function()
+  --日报
+  daily_pagetool=require "model.home_daily"
+  :new()
+  :initpage(daily_recy,dailysr)
 
---收藏
-collection_pagetool=require "model.home_collection"
-:new()
-:initpage(collection_vpg,CollectiontabLayout)
+  --收藏
+  collection_pagetool=require "model.home_collection"
+  :new()
+  :initpage(collection_vpg,CollectiontabLayout)
 
---关注内容
-followcontent_pagetool=require "model.follow_content"
-:new()
-:initpage(followpage,followtabLayout)
+  --关注内容
+  followcontent_pagetool=require "model.follow_content"
+  :new()
+  :initpage(followpage,followtabLayout)
+end)
 
 
 local allrecy={home_recy,hot_recy,think_recy}
-if follow_pagetool then
-  for i=1,follow_pagetool.allcount do
-    table.insert(allrecy,follow_pagetool.ids["list".."_"..i])
-  end
-end
 
 addAutoHideListener(allrecy,{bottombar})
 
@@ -610,6 +608,9 @@ addAutoHideListener(allrecy,{bottombar})
 
 function 加载主页tab()
   if not HometabLayout then return end
+  -- 如果已经有 Tab 且不是强制刷新，则不重新获取
+  if HometabLayout.getTabCount() > 0 then return end
+  
   home_pagetool:refer(nil, nil, true)
 
   zHttp.get("https://api.zhihu.com/feed-root/sections/query/v2", head, function(code, content)
@@ -683,24 +684,36 @@ end
 
 
 function 成功登录回调()
+  local old_idx = activity.getSharedData("idx")
   setHead()
-  collection_pagetool:setUrls({
-    "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/collections_v2?offset=0&limit=20",
-    "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/following_collections?offset=0"
-  })
-  followcontent_pagetool:setUrls({
-    "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/".."following_questions".."?limit=10",
-    "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/".."following_collections".."?limit=10",
-    "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/".."following_topics".."?limit=10",
-    "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/".."following_columns".."?limit=10",
-    "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/".."followees".."?limit=10",
-    "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/".."following_news_specials".."?limit=10",
-    "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/".."following_roundtables".."?limit=10",
-  })
+  
+  -- 如果 PageTool 已经初始化，则更新其 URL 模板
+  if collection_pagetool then
+    collection_pagetool:setUrls({
+      "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/collections_v2?offset=0&limit=20",
+      "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/following_collections?offset=0"
+    })
+  end
+  if followcontent_pagetool then
+    followcontent_pagetool:setUrls({
+      "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/".."following_questions".."?limit=10",
+      "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/".."following_collections".."?limit=10",
+      "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/".."following_topics".."?limit=10",
+      "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/".."following_columns".."?limit=10",
+      "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/".."followees".."?limit=10",
+      "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/".."following_news_specials".."?limit=10",
+      "https://api.zhihu.com/people/"..activity.getSharedData("idx").."/".."following_roundtables".."?limit=10",
+    })
+  end
 
   local pos=page_home.getCurrentItem()+1
   local home_item=home_items[pos]
-  home_pageinfo[home_item].refer(true)
+  local tool = home_pageinfo[home_item].pagetool
+  
+  -- 只有在身份真正发生变化（如从游客转登录）或页面为空时才强制刷新
+  if old_idx ~= activity.getSharedData("idx") or (tool and not tool:hasData()) then
+    home_pageinfo[home_item].refer(true)
+  end
 end
 
 
@@ -728,7 +741,10 @@ function getuserinfo()
   end)
 end
 
-getuserinfo()
+-- 提前发起并发请求
+task(1, getuserinfo)
+task(10, 加载主页tab)
+
 
 local opentab={}
 function check()

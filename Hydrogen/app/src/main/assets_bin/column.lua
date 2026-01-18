@@ -82,47 +82,41 @@ _title.Text="加载中"
 
 
 function 刷新()
-
-  base_column:getData(function(data,code)
-    if data==false then
-      if code == 404 then
-        _title.Text="页面不存在"
-       else
-        _title.Text="加载失败"
-      end
+  -- 并行发起详情获取和网页加载
+  base_column:getData(function(data, code)
+    if data == false then
+      if code == 404 then _title.Text = "页面不存在" else _title.Text = "加载失败" end
       return 提示("加载页面失败")
     end
-    --针对没有通过请求直接回调的内容的处理
-    if type(data)=="table" then
-      --针对直播需要特殊判断
-      if 类型~="直播" then
-        author_id=data.author.id
-        author_name=data.author.name
-        page_title=data.title
-        _title.text=page_title
-        --软件自己拼接成的保存路径
-        保存路径=data.savepath
-        保存历史记录(base_column.id, data.title, data.excerpt_title or data.excerpt or "", base_column.type)
-       else
-        author_id=data.theater.actor.id
+    
+    if type(data) == "table" then
+      if 类型 ~= "直播" then
+        author_id = data.author.id
+        author_name = data.author.name
+        page_title = data.title
+        _title.text = page_title
+        保存路径 = data.savepath
+        task(100, function()
+          保存历史记录(base_column.id, data.title, data.excerpt_title or data.excerpt or "", base_column.type)
+        end)
+      else
+        author_id = data.theater.actor.id
       end
     end
-    content.setVisibility(8)
-
-    if 类型=="文章" then
-      --omni=mix 防止文章点击赞同提示服务繁忙
-      content.loadUrl(base_column.weburl.."?omni=mix&use_hybrid_toolbar=1")
-     else
-      content.loadUrl(base_column.weburl)
-    end
-
   end)
 
-
-  if 类型=="直播" then
-    followdoc='document.querySelector(".TheaterRoomHeader-actor").childNodes[2]'
+  -- 关键优化：不再等待 getData 回调，立即开始加载网页
+  content.setVisibility(8)
+  local web_url = base_column.weburl
+  if 类型 == "文章" then
+    content.loadUrl(web_url .. "?omni=mix&use_hybrid_toolbar=1")
+  else
+    content.loadUrl(web_url)
   end
 
+  if 类型 == "直播" then
+    followdoc = 'document.querySelector(".TheaterRoomHeader-actor").childNodes[2]'
+  end
 end
 
 MyWebViewUtils:initWebViewClient{

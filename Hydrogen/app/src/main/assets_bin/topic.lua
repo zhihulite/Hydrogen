@@ -68,15 +68,21 @@ topic_page.setAdapter(pagadp)
 
 
 local base_topic=require "model.topic":new(topic_id)
-:getData(function(data)
-  _title.text=data.name
-  loadglide(_image,data.avatar_url,false)
-  loadglide(_bigimage,data.avatar_url,false)
-  if data.introduction==""then
-    _excerpt.text="暂无话题描述"
-   else
-    _excerpt.text=data.introduction
-  end
+
+task(1, function()
+  base_topic:getData(function(data)
+    if not data then return end
+    _title.text=data.name
+    loadglide(_image,data.avatar_url,false)
+    loadglide(_bigimage,data.avatar_url,false)
+    _excerpt.text = (data.introduction == "") and "暂无话题描述" or data.introduction
+    
+    -- 保存历史记录
+    task(100, function()
+      初始化历史记录数据()
+      保存历史记录(topic_id, data.name, data.introduction, "话题")
+    end)
+  end)
 end)
 
 function 获取url(type)
@@ -124,7 +130,7 @@ pop={
   }
 }
 
-task(1,function()
+task(10,function()
   a=MUKPopu(pop)
 end)
 
@@ -146,6 +152,7 @@ topic_pagetool=base_topic:initpage(topic_page,TopictabLayout)
 end)
 
 topic_page.setCurrentItem(1,false)
+
 
 if activity.getSharedData("话题提示0.01")==nil
   AlertDialog.Builder(this)

@@ -371,12 +371,10 @@ function Page_Tool:createfunc()
 
           if pagedata[pos].isend==false then
             pagedata[pos]["canload"]=true
-           elseif pagedata[pos].isend then
-            提示("没有新内容了")
           end
-
         end
 
+        local is_first_load = pagedata[pos].isfirst
         local adpdata=self:getItemData(pos)
         if pagedata[pos].isfirst then
           pagedata[pos].isfirst=false
@@ -410,6 +408,11 @@ function Page_Tool:createfunc()
           end
          else
           func(data,adpdata)
+        end
+
+        -- 只有在非首次加载且确实到末尾时才提示
+        if pagedata[pos].isend and not is_first_load then
+          提示("没有新内容了")
         end
 
         local add_count=#adpdata-old_size

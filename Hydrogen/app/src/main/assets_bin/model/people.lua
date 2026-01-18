@@ -241,7 +241,7 @@ end
 -- 根据用户ID构造各类标签对应的URL配置
 function base:getUrls()
   local people_id = self.id
-  local url_token=self.url_token
+  local url_token = self.url_token or people_id -- 容错：如果 url_token 还没获取到，尝试使用 id
   return {
     activities = "https://www.zhihu.com/api/v3/moments/" .. people_id .. "/activities?limit=20",
     zvideo = "https://www.zhihu.com/api/v4/members/" .. url_token .. "/zvideos?offset=0&limit=20",

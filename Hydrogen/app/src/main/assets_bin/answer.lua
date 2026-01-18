@@ -58,6 +58,31 @@ import "model.answer"
 
 回答容器=answer:new(回答id)
 
+task(1, function()
+  answer:getinfo(回答id, function(tab)
+    local info_text = "点击查看全部" .. tab.answer_count .. "个回答 >"
+    all_answer.Text = info_text
+    all_answer_expand.Text = info_text
+    问题id = tab.id
+    _title.Text = tab.title
+    expand_title.Text = tab.title
+    if tab.answer_count == 1 and 回答容器 then
+      回答容器.isleft = true
+    end
+    
+    local function openQuestion()
+      if 问题id==nil or 问题id=="null" then
+        return 提示("加载中")
+      end
+      newActivity("question",{问题id})
+    end
+    
+    all_root.onClick = openQuestion
+    all_root_expand.onClick = openQuestion
+    all_answer_expand.onClick = openQuestion
+  end)
+end)
+
 local dtl_translation = 0
 local currentWebView
 local function getDtlMaxTranslation()
@@ -323,6 +348,7 @@ function 加载页(data, isleftadd, pos)
   if data.load then return end
   data.load = "loading"
 
+  -- 提前获取 ID 并发起 WebView 加载，实现与详情请求并行
   local target_id = 回答容器:getOneData(function(cb)
     if cb == false then
       data.load = nil
@@ -376,6 +402,7 @@ function 加载页(data, isleftadd, pos)
     初始化页(data)
   end, isleftadd)
 
+  -- 关键优化：不再等待 getOneData 的异步回调，立即开始加载网页
   数据添加(data.ids, tostring(target_id))
 end
 
@@ -468,30 +495,6 @@ if current_mviews then
     加载页(current_mviews, false, pg.getCurrentItem())
   end
 end
-
-answer:getinfo(回答id, function(tab)
-  local info_text = "点击查看全部" .. tab.answer_count .. "个回答 >"
-  all_answer.Text = info_text
-  all_answer_expand.Text = info_text
-  问题id = tab.id
-  _title.Text = tab.title
-  expand_title.Text = tab.title
-  if tab.answer_count == 1 and 回答容器 then
-    回答容器.isleft = true
-  end
-  
-  local function openQuestion()
-    if 问题id==nil or 问题id=="null" then
-      return 提示("加载中")
-    end
-    newActivity("question",{问题id})
-  end
-  
-  all_root.onClick = openQuestion
-  all_root_expand.onClick = openQuestion
-  all_answer_expand.onClick = openQuestion
-end)
-
 
 
 function onDestroy()

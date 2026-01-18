@@ -21,7 +21,7 @@ local function initLocalComments(is_chat)
   
   local item_lay = 获取适配器项目布局("comment/comments_reply")
   local sadapter = LuaAdapter(activity, item_lay)
-  local_comment_list.setAdapter(sadapter) -- 这里的逻辑在原代码中有些混淆，统一使用 local_comment_list 承载
+  local_comment_list.setAdapter(sadapter)
   if is_chat then local_comment_list.setVisibility(0); localcomment.setVisibility(0) end
 
   local function addComment(name, content, id, has_replies)
@@ -41,37 +41,39 @@ local function initLocalComments(is_chat)
     }
   end
 
-  if is_chat then
-    local file = io.open(comment_id, "r")
-    if file then
-      local author, content = nil, ""
-      for line in file:lines() do
-        if line:find('author="') then
-          author = line:match('author="([^"]+)"')
-          content = ""
-         else
-          content = content .. line
-          local e = content:find('"', 10)
-          if e then
-            addComment(author, content:sub(9, e - 1))
-            author, content = nil, ""
+  task(1, function()
+    if is_chat then
+      local file = io.open(comment_id, "r")
+      if file then
+        local author, content = nil, ""
+        for line in file:lines() do
+          if line:find('author="') then
+            author = line:match('author="([^"]+)"')
+            content = ""
+          else
+            content = content .. line
+            local e = content:find('"', 10)
+            if e then
+              addComment(author, content:sub(9, e - 1))
+              author, content = nil, ""
+            end
           end
         end
+        file:close()
       end
-      file:close()
+      _title.text = "对话列表"
+    else
+      local files = luajava.astable(File(保存路径.."/fold/").listFiles() or {})
+      for _, f in ipairs(files) do
+        local raw = 读取文件(tostring(f))
+        local name = raw:match('author="([^"]*)"')
+        local content = raw:match('content="(.-)"')
+        local has_more = raw:find("author", raw:find("author") + 1)
+        addComment(name, content, f.Name, has_more ~= nil)
+      end
+      _title.text = "保存的评论 "..#sadapter.getData().."条"
     end
-    _title.text = "对话列表"
-   else
-    local files = luajava.astable(File(保存路径.."/fold/").listFiles())
-    for _, f in ipairs(files) do
-      local raw = 读取文件(tostring(f))
-      local name = raw:match('author="([^"]*)"')
-      local content = raw:match('content="(.-)"')
-      local has_more = raw:find("author", raw:find("author") + 1)
-      addComment(name, content, f.Name, has_more ~= nil)
-    end
-    _title.text = "保存的评论 "..#sadapter.getData().."条"
-  end
+  end)
 
   local_comment_list.setOnItemClickListener(AdapterView.OnItemClickListener{
     onItemClick = function(id, v, zero, one)
