@@ -35,8 +35,7 @@ print(dtl.height)]]
   local safeStatus=safeStatusView.layoutParams
   safeStatus.height=状态栏高度
   safeStatusView.setLayoutParams(safeStatus)
-  静态渐变(转0x(backgroundc),0x00000000,safeStatusView,"竖")
-
+  safeStatusView.setBackgroundColor(转0x(backgroundc))
 end)
 
 local recyclerViewField = ViewPager2.getDeclaredField("mRecyclerView");
@@ -144,7 +143,7 @@ local function 执行加载JS(view)
    else
     初始化背景(view)
   end
-  local js_list = {"answer_pages", "imgplus", "mdcopy", "snap"}
+  local js_list = {"answer_pages", "imgplus", "mdcopy", "snap", "fade_in"}
   for _, v in ipairs(js_list) do
     加载js(view, 获取js(v))
   end

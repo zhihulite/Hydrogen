@@ -28,9 +28,9 @@
       layout_height="wrap";
       layout_width="fill";
       orientation="vertical";
-      elevation="4dp";
+      elevation="0dp";
       clipChildren=false;
-      backgroundColor=0x00000000,
+      background=backgroundc,
       {
         FrameLayout,
         layout_height="wrap";
@@ -38,7 +38,7 @@
         layout_width="fill";
         --layout_scrollFlags="scroll|snap|enterAlways|enterAlwaysCollapsed";
         --layout_scrollEffect="compress",
-        backgroundColor=0x00000000,
+        background=backgroundc,
         {
           LinearLayout;
           id="title_bar_expand",
@@ -94,19 +94,13 @@
       };]=]
           },
           {
-            MaterialCardView;
+            LinearLayout;
             layout_height="wrap";
             layout_width="wrap",
-            --CardBackgroundColor=res.color.attr.colorSurfaceContainerHigh,
-            CardBackgroundColor=0x00000000,
-            Elevation="0";
             layout_margin="16dp";
             layout_marginTop="4dp";
             layout_marginLeft="8dp",
             layout_marginBottom="0dp";
-            radius="32dp";
-            StrokeColor="42dp";
-            StrokeWidth="1dp",
             id="userinfo",
 
             {
