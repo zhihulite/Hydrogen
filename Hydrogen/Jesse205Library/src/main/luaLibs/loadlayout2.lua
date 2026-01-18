@@ -524,6 +524,9 @@ local function loadlayout(t, root, group)
   -- 设置layout_margin属性
   -- or t.layout_marginStart or t.layout_marginEnd
   if t.layout_margin or t.layout_marginLeft or t.layout_marginTop or t.layout_marginRight or t.layout_marginBottom then
+    if not pcall(function() params.setMargins(0, 0, 0, 0) end) then
+      params = ViewGroup.MarginLayoutParams(params)
+    end
     params.setMargins(checkValues(t.layout_marginLeft or t.layout_margin or 0,
     t.layout_marginTop or t.layout_margin or 0,
     t.layout_marginRight or t.layout_margin or 0,

@@ -232,92 +232,82 @@ function 关闭页面()
   end]]
 end
 
-function edgeToedge(顶栏,底栏,callback)
+local ViewCompat = luajava_bindClass "androidx.core.view.ViewCompat"
+local WindowInsetsCompat = luajava_bindClass "androidx.core.view.WindowInsetsCompat"
+local OnApplyWindowInsetsListener = luajava_bindClass "androidx.core.view.OnApplyWindowInsetsListener"
 
+function edgeToedge(顶栏,底栏,callback)
   import "androidx.activity.EdgeToEdge"
   EdgeToEdge.enable(this);
 
-  import "androidx.core.view.OnApplyWindowInsetsListener"
-  local ViewCompat = luajava_bindClass "androidx.core.view.ViewCompat"
-  local WindowInsetsCompat = luajava_bindClass "androidx.core.view.WindowInsetsCompat"
   local view=window.getDecorView()
 
   local function init()
     local windowInsets = ViewCompat.getRootWindowInsets(view);
+    if not windowInsets then return end
+    
     状态栏高度=windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
     | WindowInsetsCompat.Type.displayCutout()
     | WindowInsetsCompat.Type.ime()).top;
     导航栏高度=windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
     | WindowInsetsCompat.Type.displayCutout()).bottom;
 
-
     if 顶栏 then
-      if type(顶栏)~=type({})
-        顶栏={顶栏}
-      end
-      for i,顶栏 in pairs(顶栏)
-        local bottompadding=顶栏.getPaddingBottom()
+      local 顶栏列表 = type(顶栏) == "table" and 顶栏 or {顶栏}
+      for _, 控件 in pairs(顶栏列表)
+        local bottompadding = 控件.getPaddingBottom()
         if not 底栏 then
-          bottompadding=bottompadding+导航栏高度
+          bottompadding = bottompadding + 导航栏高度
         end
-        ViewCompat.setOnApplyWindowInsetsListener(顶栏,OnApplyWindowInsetsListener{
-          onApplyWindowInsets=function(顶栏,windowInsets,initPadding)
-            状态栏高度=windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
+        ViewCompat.setOnApplyWindowInsetsListener(控件, OnApplyWindowInsetsListener{
+          onApplyWindowInsets=function(v, insets, initPadding)
+            状态栏高度 = insets.getInsets(WindowInsetsCompat.Type.systemBars()
             | WindowInsetsCompat.Type.displayCutout()).top;
 
-            顶栏.setPadding(
-            顶栏.getPaddingLeft(),
-            状态栏高度,
-            顶栏.getPaddingRight(),
-            bottompadding
+            v.setPadding(
+              v.getPaddingLeft(),
+              状态栏高度,
+              v.getPaddingRight(),
+              bottompadding
             );
-            return windowInsets
+            return insets
           end
         })
       end
     end
 
-    if type(底栏)~=type(false) then
-      if type(底栏)~=type({})
-        底栏={底栏}
-      end
-      for i,底栏 in pairs(底栏)
-        ViewCompat.setOnApplyWindowInsetsListener(底栏,OnApplyWindowInsetsListener{
-          onApplyWindowInsets=function(底栏,windowInsets,initPadding)
-            导航栏高度=windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
+    if type(底栏) ~= "boolean" and 底栏 then
+      local 底栏列表 = type(底栏) == "table" and 底栏 or {底栏}
+      for _, 控件 in pairs(底栏列表)
+        ViewCompat.setOnApplyWindowInsetsListener(控件, OnApplyWindowInsetsListener{
+          onApplyWindowInsets=function(v, insets, initPadding)
+            导航栏高度 = insets.getInsets(WindowInsetsCompat.Type.systemBars()
             | WindowInsetsCompat.Type.displayCutout()).bottom;
-            底栏.setPadding(
-            底栏.getPaddingLeft(),
-            底栏.getPaddingTop(),
-            底栏.getPaddingRight(),
-            导航栏高度
+            v.setPadding(
+              v.getPaddingLeft(),
+              v.getPaddingTop(),
+              v.getPaddingRight(),
+              导航栏高度
             );
-            return windowInsets
+            return insets
           end
         })
       end
     end
+
     if callback then
-      ViewCompat.setOnApplyWindowInsetsListener(view,OnApplyWindowInsetsListener{
-        onApplyWindowInsets=function(底栏,windowInsets,initPadding)
+      ViewCompat.setOnApplyWindowInsetsListener(view, OnApplyWindowInsetsListener{
+        onApplyWindowInsets=function(v, insets, initPadding)
           callback()
-          return windowInsets
+          return insets
         end
       })
     end
   end
 
-  --[[ViewCompat.setOnApplyWindowInsetsListener(view,ViewCompat.OnApplyWindowInsetsListener{
-    onApplyWindowInsets=function(v,windowInsets,initPadding)
-      init()
-      return WindowInsetsCompat.CONSUMED
-    end
-  })]]
-  local attachedToWindow = view.isAttachedToWindow();
-  if attachedToWindow then
+  if view.isAttachedToWindow() then
     init()
-   else
-
+  else
     view.addOnAttachStateChangeListener(View.OnAttachStateChangeListener({
       onViewAttachedToWindow=function(v)
         init()
@@ -326,8 +316,6 @@ function edgeToedge(顶栏,底栏,callback)
       end
     }))
   end
-
-
 end
 
 
@@ -613,23 +601,25 @@ if rccolumn==0
 end
 function 写入文件(路径,内容)
   xpcall(function()
-    local 文件夹路径=tostring(File(tostring(路径)).getParentFile())
-    if not(文件夹是否存在(文件夹路径)) then
-      f=File(文件夹路径).mkdirs()
+    local file = File(tostring(路径))
+    local parent = file.getParentFile()
+    if not parent.exists() then
+      parent.mkdirs()
     end
     io_open(tostring(路径),"w"):write(tostring(内容)):close()
-    end,function()
+  end, function()
     提示("写入文件 "..路径.." 失败")
   end)
 end
 
 function 读取文件(路径)
-  if 文件是否存在(路径) then
-    rtn=io_open(路径):read("*a")
-   else
-    rtn=""
+  local f = io_open(路径, "r")
+  if f then
+    local rtn = f:read("*a")
+    f:close()
+    return rtn
   end
-  return rtn
+  return ""
 end
 
 function 复制文件(from,to)
@@ -756,31 +746,21 @@ function 清除搜索历史记录()
 end
 
 
+local Configuration = luajava_bindClass "android.content.res.Configuration"
 function 获取系统夜间模式(isApplicationContext)
-  local mactivity
-  if isApplicationContext==true then
-    mactivity=activity.getApplicationContext()
-   else
-    mactivity=activity
-  end
-  _,Re=xpcall(function()
-    import "android.content.res.Configuration"
-    currentNightMode = mactivity.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK
-    return currentNightMode == Configuration.UI_MODE_NIGHT_YES--夜间模式启用
-    end,function()
-    return false
+  local mactivity = isApplicationContext and activity.getApplicationContext() or activity
+  local ok, Re = pcall(function()
+    local currentNightMode = mactivity.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK
+    return currentNightMode == Configuration.UI_MODE_NIGHT_YES
   end)
-  return Re
+  return ok and Re or false
 end
 
 function 获取主题夜间模式()
-  _,Re=xpcall(function()
-    NightMode = AppCompatDelegate.getDefaultNightMode();
-    return NightMode == AppCompatDelegate.MODE_NIGHT_YES--夜间模式启用
-    end,function()
-    return false
+  local ok, Re = pcall(function()
+    return AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES
   end)
-  return Re
+  return ok and Re or false
 end
 
 
@@ -1046,240 +1026,133 @@ function 关闭对话框(an)
   an.dismiss()
 end
 
-function 三按钮对话框(bt,nr,qd,qx,ds,qdnr,qxnr,dsnr,iscancelable)
-
-  import "com.google.android.material.bottomsheet.*"
-
+local function createBaseDialogLayout(bt, nr, buttons)
   local gd2 = GradientDrawable()
-  gd2.setColor(转0x(backgroundc))--填充
-  local radius=dp2px(16)
-  gd2.setCornerRadii({radius,radius,radius,radius,0,0,0,0})--圆角
-  gd2.setShape(0)--形状，0矩形，1圆形，2线，3环形
-  local dann={
-    LinearLayout;
-    layout_width=-1;
-    layout_height=-1;
-    {
-      LinearLayout;
-      orientation="vertical";
-      layout_width=-1;
-      layout_height=-2;
-      Elevation="4dp";
-      BackgroundDrawable=gd2;
-      id="ztbj";
-      {
-        CardView;
-        layout_gravity="center",
-        CardBackgroundColor=转0x(cardedge);
-        radius="3dp",
-        Elevation="0dp";
-        layout_height="6dp",
-        layout_width="56dp",
-        layout_marginTop="12dp";
-      };
-      {
-        TextView;
-        layout_width=-1;
-        layout_height=-2;
-        textSize="20sp";
-        layout_marginTop="24dp";
-        layout_marginLeft="24dp";
-        layout_marginRight="24dp";
-        Text=bt;
-        Typeface=字体("product-Bold");
-        textColor=转0x(primaryc);
-      };
-      {
-        ScrollView;
-        layout_width=-1;
-        layout_height=-1;
-        {
-          TextView;
-          layout_width=-1;
-          layout_height=-2;
-          layout_marginTop="8dp";
-          layout_marginLeft="24dp";
-          layout_marginRight="24dp";
-          layout_marginBottom="8dp";
-          Typeface=字体("product");
-          Text=nr;
-          textColor=转0x(textc);
-          id="sandhk_wb";
-          textSize=内容文字大小;
-          lineHeight=内容行高;
-        };
-      };
-      {
-        LinearLayout;
-        orientation="horizontal";
-        layout_width=-1;
-        layout_height=-2;
-        gravity="right|center";
-        {
-          MaterialButton_OutlinedButton;
-          layout_marginTop="16dp";
-          layout_marginLeft="16dp";
-          layout_marginRight="16dp";
-          layout_marginBottom="16dp";
-          textColor=转0x(stextc);
-          text=ds;
-          id="dsnr_c";
-          Typeface=字体("product-Bold");
-        };
-        {
-          LinearLayout;
-          orientation="horizontal";
-          layout_width=-1;
-          layout_height=-2;
-          layout_weight=1;
-        };
-        {
-          MaterialButton_OutlinedButton;
-          textColor=转0x(stextc);
-          text=qx;
-          id="qxnr_c";
-          Typeface=字体("product-Bold");
-        };
-        {
-          MaterialButton;
-          layout_marginTop="16dp";
-          layout_marginLeft="16dp";
-          layout_marginRight="16dp";
-          layout_marginBottom="16dp";
-          textColor=转0x(backgroundc);
-          text=qd;
-          id="qdnr_c";
-          Typeface=字体("product-Bold");
-        };
-      };
-    };
-  };
+  gd2.setColor(转0x(backgroundc))
+  local radius = dp2px(16)
+  gd2.setCornerRadii({radius, radius, radius, radius, 0, 0, 0, 0})
+  gd2.setShape(0)
 
-  if iscancelable==nil then
-    iscancelable=true
+  local layout = {
+    LinearLayout,
+    layout_width = -1,
+    layout_height = -1,
+    {
+      LinearLayout,
+      orientation = "vertical",
+      layout_width = -1,
+      layout_height = -2,
+      Elevation = "4dp",
+      BackgroundDrawable = gd2,
+      id = "ztbj",
+      {
+        CardView,
+        layout_gravity = "center",
+        CardBackgroundColor = 转0x(cardedge),
+        radius = "3dp",
+        Elevation = "0dp",
+        layout_height = "6dp",
+        layout_width = "56dp",
+        layout_marginTop = "12dp",
+      },
+      {
+        TextView,
+        layout_width = -1,
+        layout_height = -2,
+        textSize = "20sp",
+        layout_marginTop = "24dp",
+        layout_marginLeft = "24dp",
+        layout_marginRight = "24dp",
+        Text = bt,
+        Typeface = 字体("product-Bold"),
+        textColor = 转0x(primaryc),
+      },
+      {
+        ScrollView,
+        layout_width = -1,
+        layout_height = -1,
+        {
+          TextView,
+          layout_width = -1,
+          layout_height = -2,
+          layout_marginTop = "8dp",
+          layout_marginLeft = "24dp",
+          layout_marginRight = "24dp",
+          layout_marginBottom = "8dp",
+          Typeface = 字体("product"),
+          Text = nr,
+          textColor = 转0x(textc),
+          id = "sandhk_wb",
+          textSize = 内容文字大小,
+          lineHeight = 内容行高,
+        },
+      },
+      {
+        LinearLayout,
+        orientation = "horizontal",
+        layout_width = -1,
+        layout_height = -2,
+        gravity = "right|center",
+        id = "button_container",
+      },
+    },
+  }
+
+  local tmpview = {}
+  local view = loadlayout2(layout, tmpview)
+  local container = tmpview.button_container
+
+  for _, btn in ipairs(buttons) do
+    local btn_layout = {
+      btn.type or MaterialButton,
+      layout_marginTop = "16dp",
+      layout_marginLeft = "16dp",
+      layout_marginRight = "16dp",
+      layout_marginBottom = "16dp",
+      textColor = btn.textColor or 转0x(backgroundc),
+      text = btn.text,
+      id = btn.id,
+      Typeface = 字体("product-Bold"),
+    }
+    if btn.weight then
+      btn_layout.layout_weight = btn.weight
+      btn_layout.layout_width = -1
+    end
+    container.addView(loadlayout2(btn_layout, tmpview, LinearLayout))
   end
-  local tmpview={}
-  local bottomSheetDialog = BottomSheetDialog(this)
-  bottomSheetDialog.setContentView(loadlayout2(dann,tmpview))
-  local an=bottomSheetDialog.show()
-  .setCancelable(iscancelable);
-  tmpview.dsnr_c.onClick=function()
-    dsnr(an)
-  end;
-  tmpview.qxnr_c.onClick=function()
-    qxnr(an)
-  end;
-  tmpview.qdnr_c.onClick=function()
-    qdnr(an)
-  end;
+
+  return view, tmpview
 end
 
-
-function 双按钮对话框(bt,nr,qd,qx,qdnr,qxnr,iscancelable)
-
-  import "com.google.android.material.bottomsheet.*"
-
-  local gd2 = GradientDrawable()
-  gd2.setColor(转0x(backgroundc))--填充
-  local radius=dp2px(16)
-  gd2.setCornerRadii({radius,radius,radius,radius,0,0,0,0})--圆角
-  gd2.setShape(0)--形状，0矩形，1圆形，2线，3环形
-  local dann={
-    LinearLayout;
-    layout_width=-1;
-    layout_height=-1;
-    {
-      LinearLayout;
-      orientation="vertical";
-      layout_width=-1;
-      layout_height=-2;
-      Elevation="4dp";
-      BackgroundDrawable=gd2;
-      id="ztbj";
-      {
-        CardView;
-        layout_gravity="center",
-        CardBackgroundColor=转0x(cardedge);
-        radius="3dp",
-        Elevation="0dp";
-        layout_height="6dp",
-        layout_width="56dp",
-        layout_marginTop="12dp";
-      };
-      {
-        TextView;
-        layout_width=-1;
-        layout_height=-2;
-        textSize="20sp";
-        layout_marginTop="24dp";
-        layout_marginLeft="24dp";
-        layout_marginRight="24dp";
-        Text=bt;
-        Typeface=字体("product-Bold");
-        textColor=转0x(primaryc);
-      };
-      {
-        ScrollView;
-        layout_width=-1;
-        layout_height=-1;
-        {
-          TextView;
-          layout_width=-1;
-          layout_height=-2;
-          layout_marginTop="8dp";
-          layout_marginLeft="24dp";
-          layout_marginRight="24dp";
-          layout_marginBottom="8dp";
-          Typeface=字体("product");
-          Text=nr;
-          textColor=转0x(textc);
-          id="sandhk_wb";
-          textSize=内容文字大小;
-          lineHeight=内容行高;
-        };
-      };
-      {
-        LinearLayout;
-        orientation="horizontal";
-        layout_width=-1;
-        layout_height=-2;
-        gravity="right|center";
-        {
-          MaterialButton_OutlinedButton;
-          textColor=转0x(stextc);
-          text=qx;
-          id="qxnr_c";
-          Typeface=字体("product-Bold");
-        };
-        {
-          MaterialButton;
-          layout_marginTop="16dp";
-          layout_marginLeft="16dp";
-          layout_marginRight="16dp";
-          layout_marginBottom="16dp";
-          textColor=转0x(backgroundc);
-          text=qd;
-          id="qdnr_c";
-          Typeface=字体("product-Bold");
-        };
-      };
-    };
-  };
-
-  if iscancelable==nil then
-    iscancelable=true
-  end
-  local tmpview={}
+function 三按钮对话框(bt, nr, qd, qx, ds, qdnr, qxnr, dsnr, iscancelable)
+  local buttons = {
+    {text = ds, id = "dsnr_c", textColor = 转0x(stextc), type = MaterialButton_OutlinedButton},
+    {text = "", id = "spacer", weight = 1, type = LinearLayout}, -- Spacer
+    {text = qx, id = "qxnr_c", textColor = 转0x(stextc), type = MaterialButton_OutlinedButton},
+    {text = qd, id = "qdnr_c", textColor = 转0x(backgroundc), type = MaterialButton}
+  }
+  local layout, tmpview = createBaseDialogLayout(bt, nr, buttons)
   local bottomSheetDialog = BottomSheetDialog(this)
-  bottomSheetDialog.setContentView(loadlayout2(dann,tmpview))
-  local an=bottomSheetDialog.show()
-  .setCancelable(iscancelable);
-  tmpview.qxnr_c.onClick=function()
-    qxnr(an)
-  end;
-  tmpview.qdnr_c.onClick=function()
-    qdnr(an)
-  end;
+  bottomSheetDialog.setContentView(layout)
+  local an = bottomSheetDialog.show()
+  an.setCancelable(iscancelable ~= false)
+  tmpview.dsnr_c.onClick = function() dsnr(an) end
+  tmpview.qxnr_c.onClick = function() qxnr(an) end
+  tmpview.qdnr_c.onClick = function() qdnr(an) end
+end
+
+function 双按钮对话框(bt, nr, qd, qx, qdnr, qxnr, iscancelable)
+  local buttons = {
+    {text = qx, id = "qxnr_c", textColor = 转0x(stextc), type = MaterialButton_OutlinedButton},
+    {text = qd, id = "qdnr_c", textColor = 转0x(backgroundc), type = MaterialButton}
+  }
+  local layout, tmpview = createBaseDialogLayout(bt, nr, buttons)
+  local bottomSheetDialog = BottomSheetDialog(this)
+  bottomSheetDialog.setContentView(layout)
+  local an = bottomSheetDialog.show()
+  an.setCancelable(iscancelable ~= false)
+  tmpview.qxnr_c.onClick = function() qxnr(an) end
+  tmpview.qdnr_c.onClick = function() qdnr(an) end
 end
 
 
@@ -2538,93 +2411,73 @@ import "android.graphics.drawable.GradientDrawable"
 
 StringHelper = {}
 
---[[
-utf-8编码规则
-单字节 - 0起头
-   1字节  0xxxxxxx   0 - 127
-多字节 - 第一个字节n个1加1个0起头
-   2 字节 110xxxxx   192 - 223
-   3 字节 1110xxxx   224 - 239
-   4 字节 11110xxx   240 - 247
-可能有1-4个字节
---]]
-function StringHelper.GetBytes(char)
-  if not char then
-    return 0
-  end
-  local code = string.byte(char)
-  if code < 127 then
-    return 1
-   elseif code <= 223 then
-    return 2
-   elseif code <= 239 then
-    return 3
-   elseif code <= 247 then
-    return 4
-   else
-    -- 讲道理不会走到这里^_^
-    return 0
-  end
-end
-
 function StringHelper.getCount(str)
-  local tempStr = str
-  local index = 0 -- 字符记数
-  local bytes = 0 -- 字符的字节记数
-
-  endIndex = endIndex or -1
-  while string.len(tempStr) > 0 do
-    bytes = bytes + StringHelper.GetBytes(tempStr)
-    tempStr = string.sub(str, bytes+1)
-
-    index = index + 1
+  if utf8 then
+    return utf8.len(str)
   end
-  return index
+  local _, count = string.gsub(str, "[^\128-\191]", "")
+  return count
 end
 
-function StringHelper.Sub(str,startIndex, endIndex,addStr)
-  local tempStr = str
-  local byteStart = 1 -- string.sub截取的开始位置
-  local byteEnd = -1 -- string.sub截取的结束位置
-  local index = 0 -- 字符记数
-  local bytes = 0 -- 字符的字节记数
-
+function StringHelper.Sub(str, startIndex, endIndex, addStr)
+  local count = StringHelper.getCount(str)
   startIndex = math.max(startIndex, 1)
-  endIndex = endIndex or -1
-  while string.len(tempStr) > 0 do
-    if index == startIndex - 1 then
-      byteStart = bytes+1;
-     elseif index == endIndex then
-      byteEnd = bytes;
-      break
+  endIndex = (not endIndex or endIndex < 0) and count or math.min(endIndex, count)
+  
+  local result = str
+  if utf8 then
+    local byteStart = utf8.offset(str, startIndex)
+    local byteEnd = utf8.offset(str, endIndex + 1)
+    if byteStart then
+      result = string.sub(str, byteStart, (byteEnd and byteEnd - 1) or -1)
     end
-    bytes = bytes + StringHelper.GetBytes(tempStr)
-    tempStr = string.sub(str, bytes+1)
+  else
+    -- Fallback for environments without utf8 library
+    local byteStart, byteEnd = 1, -1
+    local currentPos = 1
+    local charIndex = 1
+    while charIndex <= count do
+      local b = string.byte(str, currentPos)
+      local len = 1
+      if b >= 240 then len = 4
+      elseif b >= 224 then len = 3
+      elseif b >= 192 then len = 2 end
+      
+      if charIndex == startIndex then byteStart = currentPos end
+      if charIndex == endIndex then byteEnd = currentPos + len - 1 break end
+      
+      currentPos = currentPos + len
+      charIndex = charIndex + 1
+    end
+    result = string.sub(str, byteStart, byteEnd)
+  end
 
-    index = index + 1
+  if addStr and count > endIndex then
+    result = result .. addStr
   end
-  if addStr then
-    if StringHelper.getCount(str)>=endIndex then
-      addStr=addStr
-     else
-      addStr=""
-    end
-   else
-    addStr=""
-  end
-  return string.sub(str, byteStart, byteEnd)..addStr
+  return result
 end
 
-function 替换文件字符串(路径,要替换的字符串,替换成的字符串)
-  if 路径 then
-    路径=tostring(路径)
-    内容=io_open(路径):read("*a")
-    io_open(路径,"w+"):write(tostring(内容:gsub(要替换的字符串,替换成的字符串))):close()
-    import "androidx.core.content.ContextCompat"
-    filedir=tostring(ContextCompat.getDataDir(activity)).."/files/init.lua"
-   else
-    return false
+function table.clone(org)
+  local res = {}
+  for k, v in pairs(org) do
+    if type(v) == "table" then
+      res[k] = table.clone(v)
+    else
+      res[k] = v
+    end
   end
+  return res
+end
+
+function 替换文件字符串(路径, 要替换的字符串, 替换成的字符串)
+  local path = tostring(路径)
+  local content = 读取文件(path)
+  if content ~= "" then
+    写入文件(path, content:gsub(要替换的字符串, 替换成的字符串))
+    return true
+  end
+  return false
 end
 
 function urlEncode(s)
@@ -2767,71 +2620,53 @@ end
 
 
 function setHead()
+  local udid = this.getSharedData("udid")
+  local signdata = this.getSharedData("signdata")
+  
+  local common_head = {
+    ["x-udid"] = udid,
+  }
 
-  if this.getSharedData("signdata") then
-    local jsondata=luajson.decode(this.getSharedData("signdata"))
-    access_token="Bearer "..jsondata.access_token
-    head = {
-      ["authorization"] = access_token,
-      ["x-udid"] = this.getSharedData("udid"),
-    }
-
-    posthead=table.clone(head)
-    posthead["content-type"]="application/json; charset=UTF-8"
-
-
-    apphead = {
-      ["x-api-version"] = "3.1.8";
-      ["x-app-za"] = "OS=Android&VersionName=10.12.0&VersionCode=21210&Product=com.zhihu.android&Installer=Google+Play&DeviceType=AndroidPhone";
-      ["x-app-version"] = "10.12.0";
-      ["x-app-bundleid"] = "com.zhihu.android";
-      ["x-app-flavor"] = "play";
-      ["x-app-build"] = "release";
-      ["x-network-type"] = "WiFi";
-      ["authorization"] = access_token;
-      ["x-udid"] = this.getSharedData("udid");
-      ["user-agent"] = "com.zhihu.android/Futureve/10.12.0",
-    }
-
-    postapphead=table.clone(apphead)
-    postapphead["content-type"]="application/json; charset=UTF-8"
-
-   else
-    head = {
-      ["cookie"] = 获取Cookie("https://www.zhihu.com/");
-      ["x-udid"] = this.getSharedData("udid");
-    }
-
-    posthead=table.clone(head)
-    posthead["content-type"]="application/json; charset=UTF-8"
-
-    apphead = {
-      ["x-api-version"] = "3.1.8";
-      ["x-app-za"] = "OS=Android&VersionName=10.12.0&VersionCode=21210&Product=com.zhihu.android&Installer=Google+Play&DeviceType=AndroidPhone";
-      ["x-app-version"] = "10.12.0";
-      ["x-app-bundleid"] = "com.zhihu.android";
-      ["x-app-flavor"] = "play";
-      ["x-app-build"] = "release";
-      ["x-network-type"] = "WiFi";
-      ["cookie"] = 获取Cookie("https://www.zhihu.com/");
-      ["x-udid"] = this.getSharedData("udid");
-      ["user-agent"] = "com.zhihu.android/Futureve/10.12.0",
-    }
-
-    postapphead=table.clone(apphead)
-    postapphead["content-type"]="application/json; charset=UTF-8"
+  if signdata then
+    local jsondata = luajson.decode(signdata)
+    access_token = "Bearer " .. jsondata.access_token
+    common_head["authorization"] = access_token
+  else
+    common_head["cookie"] = 获取Cookie("https://www.zhihu.com/")
   end
 
+  head = common_head
+  posthead = {}
+  for k, v in pairs(head) do posthead[k] = v end
+  posthead["content-type"] = "application/json; charset=UTF-8"
+
+  apphead = {
+    ["x-api-version"] = "3.1.8",
+    ["x-app-za"] = "OS=Android&VersionName=10.12.0&VersionCode=21210&Product=com.zhihu.android&Installer=Google+Play&DeviceType=AndroidPhone",
+    ["x-app-version"] = "10.12.0",
+    ["x-app-bundleid"] = "com.zhihu.android",
+    ["x-app-flavor"] = "play",
+    ["x-app-build"] = "release",
+    ["x-network-type"] = "WiFi",
+    ["user-agent"] = "com.zhihu.android/Futureve/10.12.0",
+  }
+  for k, v in pairs(head) do apphead[k] = v end
+
+  postapphead = {}
+  for k, v in pairs(apphead) do postapphead[k] = v end
+  postapphead["content-type"] = "application/json; charset=UTF-8"
+
   if followhead then
-    followhead = table.clone(apphead)
-    followhead["x-moments-ab-param"] = "follow_tab=1";
+    followhead = {}
+    for k, v in pairs(apphead) do followhead[k] = v end
+    followhead["x-moments-ab-param"] = "follow_tab=1"
   end
 
   if homeapphead then
-    homeapphead=table.clone(head)
-    homeapphead["x-close-recommend"]="0"
+    homeapphead = {}
+    for k, v in pairs(head) do homeapphead[k] = v end
+    homeapphead["x-close-recommend"] = "0"
   end
-
 end
 
 setHead()
@@ -2995,16 +2830,6 @@ function get_installApp_permissions()
   end
 end
 
-
-function 替换文件字符串(路径,要替换的字符串,替换成的字符串)
-  if 路径 then
-    路径=tostring(路径)
-    内容=io_open(路径):read("*a")
-    io_open(路径,"w+"):write(tostring(内容:gsub(要替换的字符串,替换成的字符串))):close()
-   else
-    return false
-  end
-end
 
 function getRandom(n)
   local t = {
