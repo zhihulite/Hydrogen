@@ -153,12 +153,7 @@ end})
 WebViewUtils=require "views/WebViewUtils"
 local MyWebViewUtils=WebViewUtils(t.content)
 local function 设置滑动跟随(t)
-  t.onGenericMotion=function(view,x,y,lx,ly)
-    if t.getScrollY()<=0 then
-      appbar.setExpanded(true);
-     else
-      appbar.setExpanded(false);
-    end
+  t.onScrollChange=function(view,x,y,lx,ly)
   end
 end
 

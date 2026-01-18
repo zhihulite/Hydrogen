@@ -56,15 +56,42 @@ IArgbEvaluator=ArgbEvaluator.newInstance()
 设置toolbar(root_card)
 import "model.answer"
 
+回答容器=answer:new(回答id)
+
+local dtl_translation = 0
+local currentWebView
+local function getDtlMaxTranslation()
+  local h = dtl.height
+  if h == 0 then h = dp2px(56) end
+  return h + dp2px(32)
+end
+
+local function setDtlTranslation(trans, animate)
+  dtl_translation = trans
+  if animate then
+    dtl.animate().translationY(trans).setDuration(200).start()
+   else
+    dtl.setTranslationY(trans)
+  end
+end
+
+local last_verticalOffset = 0
+local is_dragging = false
+
 appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{
   onOffsetChanged = function(appBarLayout, verticalOffset)
+    local dy = last_verticalOffset - verticalOffset
+    -- 过滤掉因 snap 引起的自动动画位移（通常是在非拖拽状态下的位移）
+    -- 这里通过判断 verticalOffset 的突变来辅助，或者简单地在拖拽时才允许线性变动
+    local max_translation = getDtlMaxTranslation()
+    dtl_translation = math.max(0, math.min(max_translation, dtl_translation + dy))
+    dtl.setTranslationY(dtl_translation)
+    
+    last_verticalOffset = verticalOffset
     local progress = (-verticalOffset)/(all_root_expand.height)
-    if progress==1
+    if progress==1 then
       isAppBarLaunch=true
-      --mainLay.backgroundColor=res.color.attr.colorSurfaceContainer
-
      else
-      --_title.setPadding(0,dp2px(60)*(1-progress),0,0)
       all_root.alpha=progress
     end
   end
@@ -74,23 +101,28 @@ function onPause()
   mainLay.setLayerType(View.LAYER_TYPE_SOFTWARE,nil)
 end
 function onResume()
-  数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.resumeTimers()
+  local current_pos = pg.getCurrentItem()
+  local item = pg.adapter.getItem(current_pos)
+  if item and 数据表[item.id] then
+    数据表[item.id].ids.content.resumeTimers()
+  end
   mainLay.setLayerType(View.LAYER_TYPE_NONE,nil)
 end
-local function 设置滑动跟随(t)
-  t.onGenericMotion=function(view,x,y,lx,ly)
-    if t.getScrollY()<=0 then
-      appbar.setExpanded(true);
-     else
-      appbar.setExpanded(false);
-    end
-  end
+
+local function 统一滑动跟随(view,x,y,lx,ly)
+  if view ~= currentWebView then return end
+  local dy = y - ly
+  if math.abs(dy) > 300 then return end
+  local max_translation = getDtlMaxTranslation()
+  dtl_translation = math.max(0, math.min(max_translation, dtl_translation + dy))
+  dtl.setTranslationY(dtl_translation)
 end
 
 comment.onClick=function()
   local pos=pg.getCurrentItem()
-  local mview=数据表[pg.adapter.getItem(pos).id]
-  local 回答id=mview.data.id
+  local item = pg.adapter.getItem(pos)
+  local mview = 数据表[item.id]
+  local 回答id = mview and mview.data.id
   if 回答id==nil then
     return 提示("加载中")
   end
@@ -100,84 +132,49 @@ comment.onClick=function()
   newActivity("comment",{回答id,"answers",保存路径})
 end;
 
-
-回答容器=answer:new(回答id)
-
-if activity.getSharedData("回答单页模式")=="true" then
-  pg.setUserInputEnabled(false);
-end
-
-local detector=GestureDetector(this,{a=lambda _:_})
-local isDoubleTap=false
-local timeOut=500
-detector.setOnDoubleTapListener {
-  onDoubleTap=function()
-    local pos=pg.getCurrentItem()
-    local mview=数据表[pg.adapter.getItem(pos).id]
-    mview.ids.content.scrollTo(0, 0)
-    isDoubleTap=true
-    task(timeOut,function()isDoubleTap=false end)
-  end
-}
-
-all_root.onClick=function(v)
-  if not isDoubleTap then
-    task(timeOut,function()
-      if not isDoubleTap then
-        if 问题id==nil or 问题id=="null" then
-          return 提示("加载中")
-        end
-        newActivity("question",{问题id})
-      end
-    end)
-  end
-end
-
-all_root_expand.onClick=function()
-  if 问题id==nil or 问题id=="null" then
-    return 提示("加载中")
-  end
-  newActivity("question",{问题id})
-end
-
-all_root.onLongClick=function(view)
-
-  local url=数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.getUrl()
-  if url==nil then
-    提示("加载中")
-    return
-  end
-  local format="【回答】【%s】%s: %s"
-  local text=(string.format(format,_title.Text,username.Text,"https://www.zhihu.com/question/"..问题id.."/answer/"..url:match("answer/(.+)")))
-  --local uri=activity.getUriForPath(activity.getLuaDir().."/ic_launcher-playstore.png")
-  --选择一个幸运的视图作为阴影
-  local shadowBuilder=View.DragShadowBuilder(view)
-  local clipData=ClipData.newPlainText("知乎回答",text)
-  --local clipData=ClipData.newUri(activity.getContentResolver(), "URI", Uri.parse("https://www.zhihu.com/question/"..问题id.."/answer/"..url:match("answer/(.+)")))
-  --启动拖放
-  --startDragAndDrop是api24加入的，所以要进行版本号的判断。虽然startDrag也能做到相同的效果，但是startDrag已经废弃
-  if Build.VERSION.SDK_INT >= 24 then
-    view.startDragAndDrop(clipData,shadowBuilder,nil,View.DRAG_FLAG_OPAQUE|View.DRAG_FLAG_GLOBAL|View.DRAG_FLAG_GLOBAL_URI_READ|View.DRAG_FLAG_GLOBAL_URI_WRITE)
+local function 执行加载JS(view)
+  if 全局主题值=="Night" then
+    夜间模式回答页(view)
    else
-    view.startDrag(clipData,shadowBuilder,nil,View.DRAG_FLAG_OPAQUE|View.DRAG_FLAG_GLOBAL|View.DRAG_FLAG_GLOBAL_URI_READ|View.DRAG_FLAG_GLOBAL_URI_WRITE)
+    初始化背景(view)
   end
-  return true
+  local js_list = {"answer_pages", "imgplus", "mdcopy", "snap"}
+  for _, v in ipairs(js_list) do
+    加载js(view, 获取js(v))
+  end
 end
 
-all_root.onTouch=function(v,e)
-  return detector.onTouchEvent(e)
+local function 处理视频逻辑(t, b)
+  local view = t.content
+  if b.content:find("video%-box") then
+    加载js(view,"document.cookie='"..获取Cookie("https://www.zhihu.com/")..'"')
+    加载js(view,获取js("videoload"))
+    if not(getLogin()) then
+      提示("该回答含有视频 不登录可能无法显示视频 建议登录")
+    end
+   elseif b.attachment and b.attachment.video then
+    local playlist = b.attachment.video.video_info.playlist
+    local 视频链接 = playlist.sd and playlist.sd.url or playlist.ld and playlist.ld.url or playlist.hd and playlist.hd.url
+    if 视频链接 then
+      加载js(view,'var myvideourl="'..视频链接..'"')
+      加载js(view,获取js('videoanswer'))
+     else
+      AlertDialog.Builder(this)
+      .setTitle("提示")
+      .setMessage("该回答为视频回答 不登录无法显示视频 如想查看本视频回答中的视频请登录")
+      .setCancelable(false)
+      .setPositiveButton("我知道了",nil)
+      .show()
+    end
+  end
 end
 
 WebViewUtils=require "views/WebViewUtils"
 function 数据添加(t,回答id)
-
-  设置滑动跟随(t.content)
+  t.content.onScrollChange = 统一滑动跟随
 
   local MyWebViewUtils=WebViewUtils(t.content)
-  MyWebViewUtils:initSettings()
-  :initNoImageMode()
-  :initDownloadListener()
-  :setZhiHuUA()
+  MyWebViewUtils:initSettings():initNoImageMode():initDownloadListener():setZhiHuUA()
 
   MyWebViewUtils:initWebViewClient{
     shouldOverrideUrlLoading=function(view,url)
@@ -188,62 +185,38 @@ function 数据添加(t,回答id)
     end,
     onPageStarted=function(view,url,favicon)
       t.content.setVisibility(8)
-      if t.progress~=nil then
+      if t.progress then
         t.progress.setVisibility(0)
         userinfo.visibility=0
       end
-
-      local function 加载基础JS(view)
-        if 全局主题值=="Night" then
-          夜间模式回答页(view)
-         else
-          初始化背景(view)
-        end
-        local js_list = {"answer_pages", "imgplus", "mdcopy", "snap"}
-        for _, v in ipairs(js_list) do
-          加载js(view, 获取js(v))
-        end
-      end
-      加载基础JS(view)
+      执行加载JS(view)
     end,
     onPageFinished=function(view,url,favicon)
       t.content.setVisibility(0)
-      if t.progress~=nil then
+      if t.progress then
         t.progress.getParent().removeView(t.progress)
         t.progress=nil
       end
 
-      if 全局主题值=="Night" then
-        夜间模式回答页(view)
-       else
-        初始化背景(view)
-      end
-
-      if this.getSharedData("eruda") == "true" then
-        加载js(view,获取js("eruda"))
-      end
-      屏蔽元素(view,{".AnswerReward",".AppViewRecommendedReading"})
+      if 全局主题值=="Night" then 夜间模式回答页(view) else 初始化背景(view) end
+      if this.getSharedData("eruda") == "true" then 加载js(view,获取js("eruda")) end
+      屏蔽元素(view,{'.AnswerReward','.AppViewRecommendedReading'})
 
       task(200,function()
         加载js(view,获取js("answer_code"))
         加载js(view,获取js("scrollRestorer"))
-        --添加延迟 防止scrollRestorer未初始化
-        task(50,function()
-          view.evaluateJavascript("window.scrollRestorer.restoreScrollPosition()",
-          {onReceiveValue=function(b)
-              task(50,function()
-                view.evaluateJavascript(
-                "window.scrollRestorerPos",
-                {onReceiveValue=function(b)
-                    local 保存滑动位置 = tonumber(b) or 0
-                    if 保存滑动位置>userinfo.height then
-                      appbar.setExpanded(false);
-                      dtl.layoutParams.getBehavior().slideDown(dtl);
-                      提示("已恢复到上次滑动位置")
-                    end
-                end})
-              end)
-          end});
+        -- 合并延时任务，减少嵌套层级
+        task(100, function()
+          view.evaluateJavascript("window.scrollRestorer.restoreScrollPosition()", {onReceiveValue=function(b)
+            view.evaluateJavascript("window.scrollRestorerPos", {onReceiveValue=function(pos_val)
+              local 保存滑动位置 = tonumber(pos_val) or 0
+              if 保存滑动位置 > userinfo.height then
+                appbar.setExpanded(false)
+                setDtlTranslation(getDtlMaxTranslation())
+                提示("已恢复到上次滑动位置")
+              end
+            end})
+          end})
         end)
       end)
 
@@ -251,63 +224,33 @@ function 数据添加(t,回答id)
         加载js(t.content,'document.querySelectorAll(".ztext pre").forEach(p => { p.style.whiteSpace = "pre-wrap"; p.style.wordWrap = "break-word"; });')
       end
 
-      local function 处理数据逻辑()
-        local b = t.data
-        if not b then
-          task(100, 处理数据逻辑)
-          return
-        end
-
-        if b.content:find("video%-box") then
-          加载js(view,"document.cookie='"..获取Cookie("https://www.zhihu.com/").."'")
-          加载js(view,获取js("videoload"))
-          if not(getLogin()) then
-            提示("该回答含有视频 不登录可能无法显示视频 建议登录")
-          end
-         elseif b.attachment and b.attachment.video then
-          local playlist = b.attachment.video.video_info.playlist
-          local 视频链接 = playlist.sd and playlist.sd.url or playlist.ld and playlist.ld.url or playlist.hd and playlist.hd.url
-          if 视频链接 then
-            加载js(view,'var myvideourl="'..视频链接..'"')
-            加载js(view,获取js('videoanswer'))
-           else
-            AlertDialog.Builder(this)
-            .setTitle("提示")
-            .setMessage("该回答为视频回答 不登录无法显示视频 如想查看本视频回答中的视频请登录")
-            .setCancelable(false)
-            .setPositiveButton("我知道了",nil)
-            .show()
-          end
-        end
-      end
-      处理数据逻辑()
-
+      -- 扁平化数据逻辑处理
+      task(100, function()
+        if t.data then 处理视频逻辑(t, t.data) end
+      end)
     end,
   }
 
   MyWebViewUtils:initChromeClient({
     onConsoleMessage=function(consoleMessage)
-      --打印控制台信息
-      if consoleMessage.message():find("滑动") and activity.getSharedData("回答单页模式")=="true" then return end
-      if consoleMessage.message():find("开始滑动") then
+      local msg = consoleMessage.message()
+      if msg:find("滑动") and activity.getSharedData("回答单页模式")=="true" then return end
+      if msg:find("开始滑动") then
         t.content.requestDisallowInterceptTouchEvent(true)
-        pg.setUserInputEnabled(false);
-       elseif consoleMessage.message():find("结束滑动") then
+        pg.setUserInputEnabled(false)
+       elseif msg:find("结束滑动") then
         t.content.requestDisallowInterceptTouchEvent(false)
-        pg.setUserInputEnabled(true);
-       elseif consoleMessage.message():find("打印") then
-        print(consoleMessage.message())
-       elseif consoleMessage.message():find("toast分割") then
-        local text=tostring(consoleMessage.message()):match("toast分割(.+)")
-        提示(text)
+        pg.setUserInputEnabled(true)
+       elseif msg:find("打印") then
+        print(msg)
+       elseif msg:find("toast分割") then
+        提示(msg:match("toast分割(.+)"))
       end
     end,
   })
 
-
   t.content.loadUrl("https://www.zhihu.com/appview/answer/"..回答id)
   t.content.setVisibility(0)
-
 end
 
 local function 更新底栏(data)
@@ -386,7 +329,8 @@ function 加载页(data, isleftadd, pos)
 
     userinfo.onClick = function()
       local current_pos = pg.getCurrentItem()
-      local mview = 数据表[pg.adapter.getItem(current_pos).id]
+      local item = pg.adapter.getItem(current_pos)
+      local mview = 数据表[item.id]
       if mview and mview.data and mview.data.author then
         local author_id = mview.data.author.id
         if author_id ~= "0" then
@@ -430,38 +374,43 @@ end
 
 pg.registerOnPageChangeCallback(OnPageChangeCallback{
   onPageSelected=function(pos)
-    local mviews=数据表[pg.adapter.getItem(pos).id]
-    回答容器:updateLR()
+    local item = pg.adapter.getItem(pos)
+    local mviews = 数据表[item.id]
+    if not mviews then return end
+    
+    currentWebView = mviews.ids.content
+    setDtlTranslation(0, true)
+    if 回答容器 then 回答容器:updateLR() end
+    
     if pg.adapter.getItemCount()==pos+1 then
-      if not 回答容器.isright then
+      if 回答容器 and not 回答容器.isright then
         addAnswer()
         加载页(mviews, false, pos)
         appbar.setExpanded(true)
       end
      elseif pos==0 then
-      if not 回答容器.isleft then
+      if 回答容器 and not 回答容器.isleft then
         addAnswer(0)
         加载页(mviews, true, pos)
         appbar.setExpanded(true)
       end
      else
       if mviews.load == true then
-        回答容器.getid = mviews.data.id
+        if 回答容器 then 回答容器.getid = mviews.data.id end
         初始化页(mviews)
       end
     end
   end,
   onPageScrolled=function(pos,positionOffset,positionOffsetPixels)
     if positionOffsetPixels==0 then
-      dtl.layoutParams.getBehavior().slideUp(dtl)
-      回答容器:updateLR()
+      if 回答容器 then 回答容器:updateLR() end
       if pg.adapter.getItemCount()==pos+1 then
-        if 回答容器.isright then
+        if 回答容器 and 回答容器.isright then
           pg.setCurrentItem(pos-1,true)
           return 提示("前面没有内容啦")
         end
        elseif pos==0 then
-        if 回答容器.isleft then
+        if 回答容器 and 回答容器.isleft then
           pg.setCurrentItem(1,true)
           return 提示("已经到最左了")
         end
@@ -471,9 +420,13 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{
 })
 
 pg.setCurrentItem(1,false)
-local current_mviews = 数据表[pg.adapter.getItem(pg.getCurrentItem()).id]
-if current_mviews and not current_mviews.load then
-  加载页(current_mviews, false, pg.getCurrentItem())
+local item = pg.adapter.getItem(pg.getCurrentItem())
+local current_mviews = 数据表[item.id]
+if current_mviews then
+  currentWebView = current_mviews.ids.content
+  if not current_mviews.load then
+    加载页(current_mviews, false, pg.getCurrentItem())
+  end
 end
 
 answer:getinfo(回答id, function(tab)
@@ -483,7 +436,7 @@ answer:getinfo(回答id, function(tab)
   问题id = tab.id
   _title.Text = tab.title
   expand_title.Text = tab.title
-  if tab.answer_count == 1 then
+  if tab.answer_count == 1 and 回答容器 then
     回答容器.isleft = true
   end
 end)
@@ -499,8 +452,9 @@ end
 
 voteup.onClick=function()
   local pos=pg.getCurrentItem()
-  local mview=数据表[pg.adapter.getItem(pos).id]
-  local data = mview.data
+  local item = pg.adapter.getItem(pos)
+  local mview = 数据表[item.id]
+  local data = mview and mview.data
   if not data or not data.id then
     return 提示("加载中")
   end
@@ -532,8 +486,9 @@ end
 
 thank.onClick=function()
   local pos=pg.getCurrentItem()
-  local mview=数据表[pg.adapter.getItem(pos).id]
-  local data = mview.data
+  local item = pg.adapter.getItem(pos)
+  local mview = 数据表[item.id]
+  local data = mview and mview.data
   if not data or not data.id then
     return 提示("加载中")
   end
@@ -565,12 +520,14 @@ end
 
 
 mark.onClick=function()
-  local url=数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.getUrl()
+  local item = pg.adapter.getItem(pg.getCurrentItem())
+  local url = 数据表[item.id].ids.content.getUrl()
   加入收藏夹(url:match("answer/(.+)"),"answer")
 end
 
 mark.onLongClick=function()
-  local url=数据表[pg.adapter.getItem(pg.getCurrentItem()).id].ids.content.getUrl()
+  local item = pg.adapter.getItem(pg.getCurrentItem())
+  local url = 数据表[item.id].ids.content.getUrl()
   加入默认收藏夹(url:match("answer/(.+)"),"answer")
   return true
 end
@@ -726,8 +683,9 @@ task(1,function()
       {
         src=图标("chat_bubble"),text="查看评论",onClick=function()
           local pos = pg.getCurrentItem()
-          local mview = 数据表[pg.adapter.getItem(pos).id]
-          local 回答id = mview.data.id
+          local item = pg.adapter.getItem(pos)
+          local mview = 数据表[item.id]
+          local 回答id = mview and mview.data.id
           if not 回答id then return 提示("加载中") end
           local 保存路径 = 内置存储文件("Download/".._title.Text.."/"..username.Text)
           newActivity("comment", {回答id, "answers", 保存路径})
@@ -739,7 +697,7 @@ task(1,function()
           local item = pg.adapter.getItem(pg.getCurrentItem())
           local pgids = 数据表[item.id].ids
           local 保存路径 = 内置存储文件("Download/".._title.Text.."/"..username.Text)
-          local detail = string.format('question_id="%s"\nanswer_id="%s"\nthanks_count="%s"\nvote_count="%s"\nfavlists_count="%s"\ncomment_count="%s"\nauthor="%s"\nheadline="%s"\n',
+          local detail = string.format('question_id="%s"\nanswer_id="%s"\nthanks_count="%s"\nvote_count="%s"\nfavlists_count="%s"\ncomment_count="%s"\nauthor="%s"\nheadline="%s"\n', 
             问题id, 回答id, thanks_count.Text, vote_count.Text, favlists_count.Text, comment_count.Text, username.Text, userheadline.Text)
           写入文件(保存路径.."/detail.txt", detail)
           newActivity("saveweb", {pgids.content.getUrl(), 保存路径, detail})
@@ -766,8 +724,9 @@ task(1,function()
       {
         src=图标("book"),text="举报",onClick=function()
           local pos = pg.getCurrentItem()
-          local mview = 数据表[pg.adapter.getItem(pos).id]
-          local 回答id = mview.data.id
+          local item = pg.adapter.getItem(pos)
+          local mview = 数据表[item.id]
+          local 回答id = mview and mview.data.id
           if not 回答id then return 提示("加载中") end
           local url = "https://www.zhihu.com/report?id="..回答id.."&type=answer"
           newActivity("browser", {url.."&source=android&ab_signature=", "举报"})
@@ -782,7 +741,7 @@ task(1,function()
   })
 end)
 
-if activity.getSharedData("回答提示0.04")==nil
+if activity.getSharedData("回答提示0.04")==nil then
   AlertDialog.Builder(this)
   .setTitle("小提示")
   .setCancelable(false)
@@ -794,7 +753,8 @@ end
 if this.getSharedData("显示虚拟滑动按键")=="true" then
   bottom_parent.Visibility=0
   local function 滑动(direction)
-    local mview = 数据表[pg.adapter.getItem(pg.getCurrentItem()).id]
+    local item = pg.adapter.getItem(pg.getCurrentItem())
+    local mview = 数据表[item.id]
     local content = mview.ids.content
     local offset = (direction == "up" and -1 or 1) * (content.height - dp2px(40))
     content.scrollBy(0, offset)

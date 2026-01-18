@@ -267,7 +267,6 @@
       layout_height="wrap";
       layout_marginBottom="6dp",
       layout_gravity="bottom|center";
-      layout_behavior=luajava.bindClass "com.google.android.material.behavior.HideBottomViewOnScrollBehavior"(this,nil),
       id="dtl";
       {
         LinearLayout;

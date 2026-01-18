@@ -286,10 +286,58 @@ clickfunc["设置主页底栏排列"] = function()
 
   local layout = {
     LinearLayout, orientation="vertical",
-    { RecyclerView, id="recyclerView", layout_width="match_parent" }
+    { RecyclerView, id="recyclerView", layout_width="match_parent", layout_height="wrap_content" }
   }
 
-  local dialog = AlertDialog.Builder(this).setView(loadlayout(layout))
+  local views = {}
+  local dialog_view = loadlayout(layout, views)
+  local recyclerView = views.recyclerView
+
+  local adapter
+  adapter = LuaCustRecyclerAdapter(AdapterCreator({
+    getItemCount = function() return #page_data end,
+    getItemViewType = function(pos) return page_data[pos+1].header and 1 or 0 end,
+    onCreateViewHolder = function(parent, viewType)
+      local item_lay
+      if viewType == 1 then
+        item_lay = {
+          TextView, id="sectionHeaderText", layout_margin="16dp", textColor=primaryc, textSize="18sp"
+        }
+       else
+        item_lay = {
+          LinearLayout, gravity="center_vertical", layout_height="50dp", id="itemRoot",
+          { TextView, id="title", textColor=textc, layout_weight="1", layout_marginLeft="16dp", textSize="16sp" },
+          { RadioButton, id="radio", focusable=false, clickable=false, layout_marginRight="16dp" }
+        }
+      end
+      local item_views = {}
+      local view = loadlayout(item_lay, item_views, parent.getClass())
+      local holder = LuaCustRecyclerHolder(view)
+      holder.view.setTag(item_views)
+      return holder
+    end,
+    onBindViewHolder = function(holder, position)
+      local item = page_data[position+1]
+      local tag = holder.view.getTag()
+      if item.header then
+        tag.sectionHeaderText.text = item.header
+       else
+        tag.title.text = item.title
+        tag.radio.Checked = item.ishome
+        tag.itemRoot.onClick = function()
+          for _, v in ipairs(page_data) do v.ishome = false end
+          item.ishome = true
+          adapter.notifyDataSetChanged()
+        end
+        波纹({tag.itemRoot}, "方自适应")
+      end
+    end
+  }))
+
+  recyclerView.layoutManager = LinearLayoutManager(this)
+  recyclerView.adapter = adapter
+
+  local dialog = AlertDialog.Builder(this).setView(dialog_view)
   .setPositiveButton("确定", function()
     local selected, conf = nil, {}
     for _, v in ipairs(page_data) do
@@ -304,48 +352,13 @@ clickfunc["设置主页底栏排列"] = function()
     提示("保存成功，下次启动生效")
   end).setNegativeButton("取消", nil).show()
 
-  recyclerView.layoutManager = LinearLayoutManager(this)
-  local adapter = LuaCustRecyclerAdapter(AdapterCreator({
-    getItemCount = function() return #page_data end,
-    getItemViewType = function(pos) return page_data[pos+1].header and 1 or 0 end,
-    onCreateViewHolder = function(parent, type)
-      local item_lay = (type == 1) and {
-        TextView, id="sectionHeaderText", layout_margin="16dp", textColor=primaryc, textSize="18sp"
-      } or {
-        LinearLayout, gravity="center_vertical", layout_height="50dp", ripple="方自适应", id="itemRoot",
-        { TextView, id="title", textColor=textc, layout_weight="1", layout_marginLeft="16dp", textSize="16sp" },
-        { RadioButton, id="radio", focusable=false, clickable=false, layout_marginRight="16dp" }
-      }
-      local views = {}
-      local holder = LuaCustRecyclerHolder(loadlayout(item_lay, views))
-      holder.view.setTag(views)
-      return holder
-    end,
-    onBindViewHolder = function(holder, position)
-      local item = page_data[position+1]
-      local tag = holder.itemView.tag
-      if item.header then
-        tag.sectionHeaderText.text = item.header
-       else
-        tag.title.text = item.title
-        tag.radio.Checked = item.ishome
-        tag.itemRoot.onClick = function()
-          for _, v in ipairs(page_data) do v.ishome = false end
-          item.ishome = true
-          holder.getBindingAdapter().notifyDataSetChanged()
-        end
-      end
-    end
-  }))
-  recyclerView.adapter = adapter
-
   import "androidx.recyclerview.widget.ItemTouchHelper"
   local callback = luajava.override(ItemTouchHelper.Callback, {
-    getMovementFlags = function() return ItemTouchHelper.Callback.makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0) end,
+    getMovementFlags = function() return int(ItemTouchHelper.Callback.makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0)) end,
     canDropOver = function(_, _, current, target) return target.getAdapterPosition() > 0 end,
     onMove = function(_, _, vh, target)
       local from, to = vh.getAdapterPosition()+1, target.getAdapterPosition()+1
-      table.swap(page_data, from, to, true)
+      table.swap(page_data, from, to)
       adapter.notifyItemMoved(from-1, to-1)
       return true
     end
