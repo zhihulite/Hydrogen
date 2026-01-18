@@ -4,6 +4,29 @@ import "model.zHttp"
 import "model.zhihu_url"
 luajson=require "json"
 
+local type = type
+local pairs = pairs
+local ipairs = ipairs
+local tostring = tostring
+local tonumber = tonumber
+local math_floor = math.floor
+local string_find = string.find
+local string_match = string.match
+local string_gsub = string.gsub
+local string_format = string.format
+local table_insert = table.insert
+local table_remove = table.remove
+local table_concat = table.concat
+
+local io_open = io.open
+
+local pcall = pcall
+local xpcall = xpcall
+
+local luajava_bindClass = luajava.bindClass
+local luajava_override = luajava.override
+local luajava_astable = luajava.astable
+
 initApp=true
 useCustomAppToolbar=true
 import "jesse205"
@@ -19,9 +42,9 @@ oldDarkActionBar=getSharedData("theme_darkactionbar")
 MyPageTool2 = require "views/MyPageTool2"
 
 --重写SwipeRefreshLayout到自定义view 原SwipeRefreshLayout和滑动组件有bug
-SwipeRefreshLayout = luajava.bindClass "com.hydrogen.view.CustomSwipeRefresh"
+SwipeRefreshLayout = luajava_bindClass "com.hydrogen.view.CustomSwipeRefresh"
 --重写BottomSheetDialog到自定义view 解决横屏显示不全问题
-BottomSheetDialog = luajava.bindClass "com.hydrogen.view.BaseBottomSheetDialog"
+BottomSheetDialog = luajava_bindClass "com.hydrogen.view.BaseBottomSheetDialog"
 
 versionCode=0.612
 layout_dir="layout/item_layout/"
@@ -59,7 +82,7 @@ function addAutoHideListener(recs,views)
 end
 
 function MyLuaFileFragment(a,b,c)
-  return luajava.override(luajava.bindClass("com.hydrogen.MyLuaFileFragment"),{
+  return luajava_override(luajava_bindClass("com.hydrogen.MyLuaFileFragment"),{
     onDestroy=function(super)super()
 
       this.getLuaState().pushNil()
@@ -215,8 +238,8 @@ function edgeToedge(顶栏,底栏,callback)
   EdgeToEdge.enable(this);
 
   import "androidx.core.view.OnApplyWindowInsetsListener"
-  local ViewCompat = luajava.bindClass "androidx.core.view.ViewCompat"
-  local WindowInsetsCompat = luajava.bindClass "androidx.core.view.WindowInsetsCompat"
+  local ViewCompat = luajava_bindClass "androidx.core.view.ViewCompat"
+  local WindowInsetsCompat = luajava_bindClass "androidx.core.view.WindowInsetsCompat"
   local view=window.getDecorView()
 
   local function init()
@@ -313,8 +336,8 @@ function base64ToBitmap(encodedImage)
   local prefix = "data:image/png;base64,"
   local imageData = string.sub(encodedImage, #prefix + 1)
 
-  local Base64 = luajava.bindClass "android.util.Base64"
-  local BitmapFactory = luajava.bindClass "android.graphics.BitmapFactory"
+  local Base64 = luajava_bindClass "android.util.Base64"
+  local BitmapFactory = luajava_bindClass "android.graphics.BitmapFactory"
 
   local decodedImage = Base64.decode(imageData, Base64.DEFAULT)
   return BitmapFactory.decodeByteArray(decodedImage, 0, #decodedImage)
@@ -338,7 +361,7 @@ function findDirectoryUpward(startPath)
     end
 
     -- 移除最后一个目录
-    path = string.gsub(path,'[^/]+/?$', '')
+    path = string_gsub(path,'[^/]+/?$', '')
     -- 检查是否已经到达根目录
     if path == '/' then
       break
@@ -358,8 +381,8 @@ logopng=srcLuaDir.."/logo.png"
 
 function 设置toolbar属性(toolbar,title)
 
-  local PorterDuffColorFilter=luajava.bindClass "android.graphics.PorterDuffColorFilter"
-  local PorterDuff=luajava.bindClass "android.graphics.PorterDuff"
+  local PorterDuffColorFilter=luajava_bindClass "android.graphics.PorterDuffColorFilter"
+  local PorterDuff=luajava_bindClass "android.graphics.PorterDuff"
   local bitmap=loadbitmap(图标("arrow_back"))
   local imgdp = 26
   local imgpx=TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, imgdp, activity.Resources.DisplayMetrics)
@@ -375,7 +398,7 @@ function 设置toolbar属性(toolbar,title)
   toolbar.title=title
 
   import "androidx.appcompat.widget.Toolbar"
-  local AppCompatTextView=luajava.bindClass "androidx.appcompat.widget.AppCompatTextView"
+  local AppCompatTextView=luajava_bindClass "androidx.appcompat.widget.AppCompatTextView"
   for i=0,toolbar.getChildCount()-1 do
     local view = toolbar.getChildAt(i);
     if luajava.instanceof(view,AppCompatTextView) then
@@ -398,7 +421,7 @@ function get_number_and_following(str)
   -- 使用正则表达式匹配数字和后续内容，直到遇到空格或字符串结束
   for s in string.gmatch(str, "%-?%d+%.?%d?[^%s]*") do
     -- 将匹配到的内容插入到table中
-    table.insert(result, s)
+    table_insert(result, s)
   end
   -- 返回table
   return result
@@ -406,7 +429,7 @@ end
 
 function numtostr(num)
   if num>10000 then
-    num=tostring(math.floor(num/10000)).."万"
+    num=tostring(math_floor(num/10000)).."万"
   end
   return tostring(num)
 end
@@ -491,11 +514,11 @@ function tokb(m)
   if m<=1024 then
     return m.."B"
    elseif m<=(1024^2) then
-    return (math.floor((m/1024*100)+0.5)/100).."KB"
+    return (math_floor((m/1024*100)+0.5)/100).."KB"
    elseif m<=(1024^3) then
-    return (math.floor((m/(1024^2)*100)+0.5)/100).."MB"
+    return (math_floor((m/(1024^2)*100)+0.5)/100).."MB"
    elseif m<=(1024^4) then
-    return (math.floor((m/(1024^3)*100)+0.5)/100).."GB"
+    return (math_floor((m/(1024^3)*100)+0.5)/100).."GB"
   end
 end
 
@@ -541,7 +564,7 @@ end
 
 function processTable(userdataTable)
   if type(userdataTable)=="userdata"
-    userdataTable=luajava.astable(userdataTable)
+    userdataTable=luajava_astable(userdataTable)
   end
   local resultTable = {}
 
@@ -549,7 +572,7 @@ function processTable(userdataTable)
     if type(value) == "userdata" then
       local valueType = tostring(value)
       if valueType == "Lua Table" then
-        local convertedTable = luajava.astable(value)
+        local convertedTable = luajava_astable(value)
         resultTable[key] = processTable(convertedTable)
        else
         resultTable[key] = value
@@ -594,7 +617,7 @@ function 写入文件(路径,内容)
     if not(文件夹是否存在(文件夹路径)) then
       f=File(文件夹路径).mkdirs()
     end
-    io.open(tostring(路径),"w"):write(tostring(内容)):close()
+    io_open(tostring(路径),"w"):write(tostring(内容)):close()
     end,function()
     提示("写入文件 "..路径.." 失败")
   end)
@@ -602,7 +625,7 @@ end
 
 function 读取文件(路径)
   if 文件是否存在(路径) then
-    rtn=io.open(路径):read("*a")
+    rtn=io_open(路径):read("*a")
    else
     rtn=""
   end
@@ -667,9 +690,9 @@ function 获取Cookie(url,isckeck)
       local data=luajson.decode(activity.getSharedData("signdata")).cookie
       local mdata={}
       for k,v pairs(data)
-        table.insert(mdata,k.."="..v)
+        table_insert(mdata,k.."="..v)
       end
-      mdata=table.concat(mdata,"; ")
+      mdata=table_concat(mdata,"; ")
       return mdata;
     end
   end
@@ -701,7 +724,7 @@ end
 
 function 获取历史记录()
   初始化历史记录数据()
-  return luajava.astable(MyHistoryManager.getRecentFirst())
+  return luajava_astable(MyHistoryManager.getRecentFirst())
 end
 
 function 清除历史记录()
@@ -725,7 +748,7 @@ function 保存搜索历史记录(content)
 end
 
 function 获取搜索历史记录()
-  return luajava.astable(MySearchHistoryManager.getRecentFirst())
+  return luajava_astable(MySearchHistoryManager.getRecentFirst())
 end
 
 function 清除搜索历史记录()
@@ -763,7 +786,7 @@ end
 
 function dec2hex(n)
   local color=0xFFFFFFFF & n
-  local hex_str = string.format("#%08X", color)
+  local hex_str = string_format("#%08X", color)
   return hex_str
 end
 
@@ -919,8 +942,8 @@ function 颜色渐变(控件,左色,右色)
   --控件.setBackgroundDrawable(ColorDrawable(左色))
 end
 
-Fragment = luajava.bindClass "androidx.fragment.app.Fragment"
---LuaFragment = luajava.bindClass "com.androlua.LuaFragment"
+Fragment = luajava_bindClass "androidx.fragment.app.Fragment"
+--LuaFragment = luajava_bindClass "com.androlua.LuaFragment"
 --activity.setContentView(loadlayout("layout/fragment"))
 
 nF={}
@@ -939,7 +962,7 @@ end
 function 获取js(jsname)
   local path=activity.getLuaPath('/js')
   local path=path.."/"..jsname..".js"
-  local content=io.open(path):read("*a")
+  local content=io_open(path):read("*a")
   return content
 end
 
@@ -950,7 +973,7 @@ function 屏蔽元素(id,tab)
   end
 end
 
-local Pattern = luajava.bindClass "java.util.regex.Pattern"
+local Pattern = luajava_bindClass "java.util.regex.Pattern"
 function Regular_Matching(reg,str)
   --正则表达式,需要匹配的内容
   local pattern = Pattern.compile(reg)
@@ -1287,7 +1310,7 @@ function 重命名文件(旧,新)
 end
 
 function 追加更新文件(path, content)
-  io.open(path,"a+"):write(content):close()
+  io_open(path,"a+"):write(content):close()
 end
 
 function 文件夹是否存在(file)
@@ -1405,11 +1428,11 @@ function 表情(n)
 end
 
 --引用Java的FileInputStream类
-local FileInputStream = luajava.bindClass "java.io.FileInputStream"
+local FileInputStream = luajava_bindClass "java.io.FileInputStream"
 --引用Android的BitmapFactory类
-local BitmapFactory = luajava.bindClass "android.graphics.BitmapFactory"
+local BitmapFactory = luajava_bindClass "android.graphics.BitmapFactory"
 --引用Android的BitmapDrawable类
-local BitmapDrawable = luajava.bindClass "android.graphics.drawable.BitmapDrawable"
+local BitmapDrawable = luajava_bindClass "android.graphics.drawable.BitmapDrawable"
 
 function getImageDrawable(image_path)
   --打开文件输入流 读取图像文件
@@ -1419,9 +1442,9 @@ function getImageDrawable(image_path)
   --使用Bitmap对象创建一个BitmapDrawable对象并返回
   return BitmapDrawable(activity.getResources(), bitmap)
 end
-SpannableStringBuilder = luajava.bindClass "android.text.SpannableStringBuilder"
-local Spannable = luajava.bindClass "android.text.Spannable"
-local ImageSpan = luajava.bindClass "android.text.style.ImageSpan"
+SpannableStringBuilder = luajava_bindClass "android.text.SpannableStringBuilder"
+local Spannable = luajava_bindClass "android.text.Spannable"
+local ImageSpan = luajava_bindClass "android.text.style.ImageSpan"
 function Spannable_Image(spannable, str, drawable, start, _end, flags) -- SpannableString,要更改的内容（支持正则）,图片[,开始位置,结束位置,flags]
   local tab = (str and Regular_Matching(str,spannable) or {{["start"]=tointeger(start),["ends"]=tointeger(_end)}}) or {} -- 判断是否有内容。否则将使用后面的位置。
   for _, v in pairs(tab) do
@@ -1430,10 +1453,10 @@ function Spannable_Image(spannable, str, drawable, start, _end, flags) -- Spanna
   end
   return spannable
 end
-local Glide = luajava.bindClass "com.bumptech.glide.Glide"
-local CustomTarget = luajava.bindClass "com.bumptech.glide.request.target.CustomTarget"
-local PorterDuffColorFilter=luajava.bindClass "android.graphics.PorterDuffColorFilter"
-local PorterDuff=luajava.bindClass "android.graphics.PorterDuff"
+local Glide = luajava_bindClass "com.bumptech.glide.Glide"
+local CustomTarget = luajava_bindClass "com.bumptech.glide.request.target.CustomTarget"
+local PorterDuffColorFilter=luajava_bindClass "android.graphics.PorterDuffColorFilter"
+local PorterDuff=luajava_bindClass "android.graphics.PorterDuff"
 local colorFilter = PorterDuffColorFilter(res.color.attr.colorPrimary, PorterDuff.Mode.SRC_ATOP)
 like_drawable = getImageDrawable(图标("favorite_outline")).setBounds(sp2px(0), sp2px(0), sp2px(18), sp2px(18)).setColorFilter(colorFilter)
 liked_drawable = getImageDrawable(图标("favorite")).setBounds(sp2px(0), sp2px(0), sp2px(18), sp2px(18)).setColorFilter(colorFilter)
@@ -1553,7 +1576,7 @@ function 下载文件对话框(title,url,path,ex)
 
 
   function ding(a,b)--已下载，总长度(byte)
-    appdowninfo.Text=string.format("%0.2f",a/1024/1024).."MB/"..string.format("%0.2f",b/1024/1024).."MB".."\n下载状态：正在下载"
+    appdowninfo.Text=string_format("%0.2f",a/1024/1024).."MB/"..string_format("%0.2f",b/1024/1024).."MB".."\n下载状态：正在下载"
     进度条.progress=(a/b*100)
   end
 
@@ -1567,7 +1590,7 @@ function 下载文件对话框(title,url,path,ex)
       提示("导入完成ʕ•ٹ•ʔ")
      else
       if path:find(".apk$")~=nil then
-        提示("安装包下载成功,大小"..string.format("%0.2f",c/1024/1024).."MB，储存在："..path)
+        提示("安装包下载成功,大小"..string_format("%0.2f",c/1024/1024).."MB，储存在："..path)
         双按钮对话框("安装APP",[===[您下载了安装包文件，要现在安装吗？ 取消后可前往]===]..path.."手动安装","立即安装","取消",function(an)
           安装apk(path)
           end,function(an)
@@ -1582,7 +1605,7 @@ function 下载文件对话框(title,url,path,ex)
         end
 
        else
-        提示("下载完成，大小"..string.format("%0.2f",c/1024/1024).."MB，储存在："..path)
+        提示("下载完成，大小"..string_format("%0.2f",c/1024/1024).."MB，储存在："..path)
       end
     end
   end
@@ -1757,7 +1780,7 @@ function MUKPopu(t)
 
   if this.getSharedData("允许加载代码")=="true" then
     if t.isload_codeEx~=true then
-      table.insert(t.list,{src=图标("build"),text="执行代码",onClick=function()
+      table_insert(t.list,{src=图标("build"),text="执行代码",onClick=function()
           local InputLayout={
             LinearLayout;
             orientation="vertical";
@@ -2098,7 +2121,7 @@ function 加入收藏夹(回答id,收藏类型,func)
 
       local orii=0
       local i=0
-      for k, v in pairs(luajava.astable(adp.getData())) do
+      for k, v in pairs(luajava_astable(adp.getData())) do
         local oristatus=v.oristatus
         local status=v.status.Checked
 
@@ -2110,14 +2133,14 @@ function 加入收藏夹(回答id,收藏类型,func)
 
         if oristatus~=status then
           if status==true then
-            table.insert(dotab.add,v.myid)
+            table_insert(dotab.add,v.myid)
            elseif status==false then
-            table.insert(dotab.remove,v.myid)
+            table_insert(dotab.remove,v.myid)
           end
         end
       end
-      local addstr=urlEncode(table.concat(dotab.add,","))
-      local removestr=urlEncode(table.concat(dotab.remove,","))
+      local addstr=urlEncode(table_concat(dotab.add,","))
+      local removestr=urlEncode(table_concat(dotab.remove,","))
       if addstr=="" and removestr=="" then
         return
       end
@@ -2595,8 +2618,8 @@ end
 function 替换文件字符串(路径,要替换的字符串,替换成的字符串)
   if 路径 then
     路径=tostring(路径)
-    内容=io.open(路径):read("*a")
-    io.open(路径,"w+"):write(tostring(内容:gsub(要替换的字符串,替换成的字符串))):close()
+    内容=io_open(路径):read("*a")
+    io_open(路径,"w+"):write(tostring(内容:gsub(要替换的字符串,替换成的字符串))):close()
     import "androidx.core.content.ContextCompat"
     filedir=tostring(ContextCompat.getDataDir(activity)).."/files/init.lua"
    else
@@ -2605,13 +2628,13 @@ function 替换文件字符串(路径,要替换的字符串,替换成的字符�
 end
 
 function urlEncode(s)
-  s = string.gsub(s, "([^%w%.%- ])", function(c) return string.format("%%%02X", string.byte(c)) end)
-  return string.gsub(s, " ", " ")
+  s = string_gsub(s, "([^%w%.%- ])", function(c) return string_format("%%%02X", string.byte(c)) end)
+  return string_gsub(s, " ", " ")
 end
 
 
 function urlDecode(s)
-  s = string.gsub(s, '%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
+  s = string_gsub(s, '%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
   return s
 end
 
@@ -2654,8 +2677,8 @@ function 等待doc(view)
 end
 
 function getFont_b64(filePath)
-  local FileInputStream=luajava.bindClass"java.io.FileInputStream"
-  local Base64=luajava.bindClass "android.util.Base64";
+  local FileInputStream=luajava_bindClass"java.io.FileInputStream"
+  local Base64=luajava_bindClass "android.util.Base64";
 
   local fis = FileInputStream(filePath)
   local fileContent = byte[fis.available()];
@@ -2678,7 +2701,7 @@ end
 function matchtext(str,regex)
   local t={}
   for i,v in string.gfind(str,regex) do
-    table.insert(t,string.sub(str,i,v))
+    table_insert(t,string.sub(str,i,v))
   end
   return t
 end --返回table
@@ -2688,7 +2711,7 @@ function getDirSize(path)
   if not(File(path).exists()) then
     return 0
   end
-  local a=luajava.astable(File(path).listFiles() or {})
+  local a=luajava_astable(File(path).listFiles() or {})
   for k,v in pairs(a) do
     if v.isDirectory() then
       len=len+getDirSize(tab,tostring(v))
@@ -2713,11 +2736,11 @@ function table.swap(数据, 查找位置, 替换位置, ismode)
     查找位置 = 查找位置 + 1
   end
   xpcall(function()
-    删除数据=table.remove(数据, 查找位置)
+    删除数据=table_remove(数据, 查找位置)
     end,function()
     return false
   end)
-  table.insert(数据, 替换位置, 删除数据)
+  table_insert(数据, 替换位置, 删除数据)
 end
 
 function getLogin()
@@ -2828,7 +2851,7 @@ function 清理内存()
         if File(path).canWrite()==false then
           return
         end
-        local a=luajava.astable(File(path).listFiles() or {})
+        local a=luajava_astable(File(path).listFiles() or {})
 
         for k,v in pairs(a) do
           if v.isDirectory() then
@@ -2976,8 +2999,8 @@ end
 function 替换文件字符串(路径,要替换的字符串,替换成的字符串)
   if 路径 then
     路径=tostring(路径)
-    内容=io.open(路径):read("*a")
-    io.open(路径,"w+"):write(tostring(内容:gsub(要替换的字符串,替换成的字符串))):close()
+    内容=io_open(路径):read("*a")
+    io_open(路径,"w+"):write(tostring(内容:gsub(要替换的字符串,替换成的字符串))):close()
    else
     return false
   end
@@ -3090,7 +3113,7 @@ function ChoicePath(StartPath,callback)
     end
     ls=File(path).listFiles()
     if ls~=nil then
-      ls=luajava.astable(File(path).listFiles()) --全局文件列表变量
+      ls=luajava_astable(File(path).listFiles()) --全局文件列表变量
       table.sort(ls,function(a,b)
         return (a.isDirectory()~=b.isDirectory() and a.isDirectory()) or ((a.isDirectory()==b.isDirectory()) and a.Name<b.Name)
       end)
