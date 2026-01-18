@@ -1,22 +1,20 @@
 {
-  LinearLayout,
+  FrameLayout,
   layout_width="fill";
   layout_height="fill";
   id="root";
-  orientation="vertical",
   {
     NestedLuaWebView,
     id="content",
-    layout_width="-1";
-    layout_height="-1";
+    layout_width="match_parent";
+    layout_height="match_parent";
     Visibility=8,
   };
   {
-    LinearProgressIndicator;
+    ProgressBar;
     id="progress";
-    Visibility=8,
-    layout_width="match_parent";
-    layout_height="wrap_content";
+    Visibility=8;
+    layout_gravity="center";
     indeterminate="true";
   },
 };

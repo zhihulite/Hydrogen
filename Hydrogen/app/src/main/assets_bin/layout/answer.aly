@@ -5,28 +5,38 @@
   elevation="0";
   background=backgroundc;
   id="mainLay";
+  clipChildren=false;
 
   {
-    CoordinatorLayout;
+    FrameLayout;
     id="coord";
     layout_height="fill";
     layout_width="fill";
+    clipChildren=false;
 
     {
-      AppBarLayout;
+      ViewPager2;
+      layout_width="fill";
+      layout_height="fill";
+      clipToPadding=false,
+      id="pg",
+    };
+
+    {
+      LinearLayout;
       id="appbar",
       layout_height="wrap";
       layout_width="fill";
-      --layout_scrollFlags="scroll|enterAlways|snap|exitUntilCollapsed",
-      --layout_scrollEffect="compress",
-      liftable=false,
-      TargetElevation=0;
+      orientation="vertical";
+      elevation="4dp";
+      clipChildren=false;
       backgroundColor=0x00000000,
       {
-        CollapsingToolbarLayout,
+        FrameLayout,
+        layout_height="wrap";
         minHeight="64dp",
         layout_width="fill";
-        layout_scrollFlags="scroll|snap|enterAlways|enterAlwaysCollapsed";
+        --layout_scrollFlags="scroll|snap|enterAlways|enterAlwaysCollapsed";
         --layout_scrollEffect="compress",
         backgroundColor=0x00000000,
         {
@@ -153,9 +163,7 @@
           id="toolbar";
           title="qwq",
           --layout_scrollFlags="scroll|snap|enterAlways";
-          layout_collapseMode="pin",
           id="root_card",
-          elevation="0dp";
           layout_width="fill",
           layout_height="wrap",
           backgroundColor=backgroundc,
@@ -249,16 +257,7 @@
     },
 
 
-    {
-      ViewPager2;
-      layout_width="fill";
-      layout_height="fill";
-      clipToPadding=false,
-      layout_behavior="@string/appbar_scrolling_view_behavior";
 
-      --layout_marginBottom=dp2px(56);
-      id="pg",
-    };
 
     {luajava.bindClass "com.google.android.material.floatingtoolbar.FloatingToolbarLayout";
       --FrameLayout,

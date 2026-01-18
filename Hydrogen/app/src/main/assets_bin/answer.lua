@@ -54,6 +54,7 @@ IArgbEvaluator=ArgbEvaluator.newInstance()
 波纹({fh,_more,mark,comment,thank,voteup},"圆主题")
 波纹({all_root},"方自适应")
 设置toolbar(root_card)
+all_root.alpha = 0
 import "model.answer"
 
 回答容器=answer:new(回答id)
@@ -78,24 +79,6 @@ end
 local last_verticalOffset = 0
 local is_dragging = false
 
-appbar.addOnOffsetChangedListener(AppBarLayout.OnOffsetChangedListener{
-  onOffsetChanged = function(appBarLayout, verticalOffset)
-    local dy = last_verticalOffset - verticalOffset
-    -- 过滤掉因 snap 引起的自动动画位移（通常是在非拖拽状态下的位移）
-    -- 这里通过判断 verticalOffset 的突变来辅助，或者简单地在拖拽时才允许线性变动
-    local max_translation = getDtlMaxTranslation()
-    dtl_translation = math.max(0, math.min(max_translation, dtl_translation + dy))
-    dtl.setTranslationY(dtl_translation)
-    
-    last_verticalOffset = verticalOffset
-    local progress = (-verticalOffset)/(all_root_expand.height)
-    if progress==1 then
-      isAppBarLaunch=true
-     else
-      all_root.alpha=progress
-    end
-  end
-})
 
 function onPause()
   mainLay.setLayerType(View.LAYER_TYPE_SOFTWARE,nil)
@@ -111,10 +94,33 @@ end
 
 local function 统一滑动跟随(view,x,y,lx,ly)
   if view ~= currentWebView then return end
+  
+  -- 1. 计算 Header 的滚动范围 (即 UserInfo 部分的高度)
+  -- 注意：这里假设 all_root_expand 是我们需要隐藏的部分
+  local header_height = all_root_expand.getHeight()
+  if header_height == 0 then header_height = dp2px(100) end -- Fallback
+  
+  -- 2. 计算当前应该偏移的距离
+  -- 我们希望 appbar 随 scrollY 向上移动，不再限制最大距离，使其随正文一直滚动
+  local scroll_y = view.getScrollY()
+  local translation = -scroll_y
+  
+  -- 3. 执行偏移
+  -- appbar 整体上移
+  appbar.setTranslationY(translation)
+  -- toolbar 反向移动以保持固定 (Pin effect)
+  root_card.setTranslationY(-translation)
+  
+  -- 4. 处理透明度渐变
+  local progress = math.min(1, math.abs(translation) / header_height)
+  all_root.setAlpha(progress) -- 标题栏渐显
+  all_root_expand.setAlpha(1 - progress) -- 用户信息渐隐 (可选)
+  
+  -- 5. 底栏 (dtl) 逻辑 (保留原有逻辑)
   local dy = y - ly
   if math.abs(dy) > 300 then return end
-  local max_translation = getDtlMaxTranslation()
-  dtl_translation = math.max(0, math.min(max_translation, dtl_translation + dy))
+  local max_dtl_trans = getDtlMaxTranslation()
+  dtl_translation = math.max(0, math.min(max_dtl_trans, dtl_translation + dy))
   dtl.setTranslationY(dtl_translation)
 end
 
@@ -169,11 +175,24 @@ local function 处理视频逻辑(t, b)
   end
 end
 
-WebViewUtils=require "views/WebViewUtils"
+local last_appbar_height = 0
+appbar.getViewTreeObserver().addOnGlobalLayoutListener(ViewTreeObserver.OnGlobalLayoutListener{
+  onGlobalLayout=function()
+    local height_px = appbar.getHeight()
+    if height_px > 0 and height_px ~= last_appbar_height and currentWebView then
+      last_appbar_height = height_px
+      local density = activity.getResources().getDisplayMetrics().density
+      local height_dp = height_px / density
+      -- Update padding with reduced gap (20dp) to match content
+      currentWebView.evaluateJavascript("document.body.style.paddingTop = '"..(height_dp - 20).."px'", nil)
+    end
+  end
+})
+
 function 数据添加(t,回答id)
   t.content.onScrollChange = 统一滑动跟随
 
-  local MyWebViewUtils=WebViewUtils(t.content)
+  local MyWebViewUtils=require("views/WebViewUtils")(t.content)
   MyWebViewUtils:initSettings():initNoImageMode():initDownloadListener():setZhiHuUA()
 
   MyWebViewUtils:initWebViewClient{
@@ -185,10 +204,13 @@ function 数据添加(t,回答id)
     end,
     onPageStarted=function(view,url,favicon)
       t.content.setVisibility(8)
-      if t.progress then
-        t.progress.setVisibility(0)
-        userinfo.visibility=0
-      end
+      userinfo.visibility=0
+      -- 延迟显示加载动画，避免快速切换时的闪烁
+      task(200, function()
+        if t.progress and t.content.getVisibility() == 8 then
+          t.progress.setVisibility(0)
+        end
+      end)
       执行加载JS(view)
     end,
     onPageFinished=function(view,url,favicon)
@@ -197,6 +219,16 @@ function 数据添加(t,回答id)
         t.progress.getParent().removeView(t.progress)
         t.progress=nil
       end
+      
+      -- 注入 Padding-Top 撑开网页
+      view.post(function()
+        local height_px = appbar.getHeight()
+        if height_px > 0 then
+          local density = activity.getResources().getDisplayMetrics().density
+          local height_dp = height_px / density
+          view.evaluateJavascript("document.body.style.paddingTop = '"..(height_dp - 20).."px'", nil)
+        end
+      end)
 
       if 全局主题值=="Night" then 夜间模式回答页(view) else 初始化背景(view) end
       if this.getSharedData("eruda") == "true" then 加载js(view,获取js("eruda")) end
@@ -211,7 +243,6 @@ function 数据添加(t,回答id)
             view.evaluateJavascript("window.scrollRestorerPos", {onReceiveValue=function(pos_val)
               local 保存滑动位置 = tonumber(pos_val) or 0
               if 保存滑动位置 > userinfo.height then
-                appbar.setExpanded(false)
                 setDtlTranslation(getDtlMaxTranslation())
                 提示("已恢复到上次滑动位置")
               end
@@ -382,17 +413,27 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{
     setDtlTranslation(0, true)
     if 回答容器 then 回答容器:updateLR() end
     
+    -- 同步 AppBar 状态与当前 WebView 的滚动位置
+    local scroll_y = currentWebView.getScrollY()
+    local translation = -scroll_y
+    appbar.setTranslationY(translation)
+    root_card.setTranslationY(-translation)
+    
+    local header_height = all_root_expand.getHeight()
+    if header_height == 0 then header_height = dp2px(100) end
+    local progress = math.min(1, math.abs(translation) / header_height)
+    all_root.setAlpha(progress)
+    all_root_expand.setAlpha(1 - progress)
+    
     if pg.adapter.getItemCount()==pos+1 then
       if 回答容器 and not 回答容器.isright then
         addAnswer()
         加载页(mviews, false, pos)
-        appbar.setExpanded(true)
       end
      elseif pos==0 then
       if 回答容器 and not 回答容器.isleft then
         addAnswer(0)
         加载页(mviews, true, pos)
-        appbar.setExpanded(true)
       end
      else
       if mviews.load == true then
@@ -439,6 +480,17 @@ answer:getinfo(回答id, function(tab)
   if tab.answer_count == 1 and 回答容器 then
     回答容器.isleft = true
   end
+  
+  local function openQuestion()
+    if 问题id==nil or 问题id=="null" then
+      return 提示("加载中")
+    end
+    newActivity("question",{问题id})
+  end
+  
+  all_root.onClick = openQuestion
+  all_root_expand.onClick = openQuestion
+  all_answer_expand.onClick = openQuestion
 end)
 
 
@@ -758,11 +810,6 @@ if this.getSharedData("显示虚拟滑动按键")=="true" then
     local content = mview.ids.content
     local offset = (direction == "up" and -1 or 1) * (content.height - dp2px(40))
     content.scrollBy(0, offset)
-    if direction == "up" and content.getScrollY() <= 0 then
-      appbar.setExpanded(true, false)
-     elseif direction == "down" then
-      appbar.setExpanded(false, false)
-    end
   end
   up_button.onClick = function() 滑动("up") end
   down_button.onClick = function() 滑动("down") end
