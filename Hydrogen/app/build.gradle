@@ -12,6 +12,7 @@ android {
         targetSdk 33
         versionCode 1
         versionName "new"
+        resConfigs "zh"
     }
 
     signingConfigs {
@@ -43,7 +44,7 @@ android {
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            ndk.abiFilters 'armeabi-v7a', 'x86', 'arm64-v8a'
+            ndk.abiFilters 'armeabi-v7a', 'arm64-v8a'
         }
         debug {
             signingConfig signingConfigs.debug

@@ -1,132 +1,35 @@
-name: Android Build Workflow
+name: Android Build
 
 on:
+  push:
+    branches: [ "main" ]
   workflow_dispatch:
-    inputs:
-      build_type:
-        description: '选择构建类型'
-        required: true
-        type: choice
-        options:
-          - 'assembleRelease'
-          - 'assembleRelease_unlua'
-          - 'build_and_publish'
-          - 'build_and_beta_publish'
-        default: 'assembleRelease'
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      packages: write
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up JDK
+      - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: gradle
 
-      - name: Grant execute permission for gradlew
-        run: (cd Hydrogen && chmod +x gradlew)
-
-      - name: Execute Gradle Command in Hydrogen Directory
+      - name: Build with Gradle
         run: |
-          if [ "${{ github.event.inputs.build_type }}" = "assembleRelease" ]; then
-            (cd Hydrogen && ./gradlew app:assembleRelease)
-          elif [ "${{ github.event.inputs.build_type }}" = "assembleRelease_unlua" ]; then
-            (cd Hydrogen && ./gradlew app:assembleRelease_unlua)
-          elif [ "${{ github.event.inputs.build_type }}" = "build_and_publish" ]; then
-            (cd Hydrogen && ./gradlew app:assembleRelease)
-          elif [ "${{ github.event.inputs.build_type }}" = "build_and_beta_publish" ]; then
-            (cd Hydrogen && ./gradlew app:assembleRelease)
-          fi
+          cd Hydrogen
+          chmod +x gradlew
+          ./gradlew app:assembleRelease
 
-      # 上传 assembleRelease 产物
       - name: Upload Release APK
-        if: github.event.inputs.build_type == 'assembleRelease'
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: |
             Hydrogen/app/build/outputs/apk/release/*.apk
             Hydrogen/app/build/outputs/mapping/release/mapping.txt
-
-      # 上传 assembleRelease_unlua 产物
-      - name: Upload Rebuilt APK
-        if: github.event.inputs.build_type == 'assembleRelease_unlua'
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-unlua-apk
-          path: |
-            Hydrogen/app/build/outputs/apk/release/*.apk
-            Hydrogen/app/build/outputs/mapping/release/mapping.txt
-
-      # 提取版本号
-      - name: Extract version from APK filename
-        if: github.event.inputs.build_type == 'build_and_publish' || github.event.inputs.build_type == 'build_and_beta_publish'
-        id: extract_version
-        run: |
-          # 查找 APK 文件
-          APK_FILE=$(find Hydrogen/app/build/outputs/apk/release/ -name "*.apk" | head -1)
-          if [ -n "$APK_FILE" ]; then
-            # 获取 APK 文件的创建时间
-            BUILD_TIME=$(stat -c '%y' "$APK_FILE" | cut -d'.' -f1)
-            echo "build_time=$BUILD_TIME" >> "$GITHUB_OUTPUT"
-            echo "APK 文件创建时间: $BUILD_TIME"
-
-            # 提取文件名中的版本信息
-            FILENAME=$(basename "$APK_FILE")
-            echo "APK 文件名: $FILENAME"
-            
-            # 按照 _ 分割文件名
-            IFS='_' read -ra PARTS <<< "$FILENAME"
-            
-            if [ ${#PARTS[@]} -ge 3 ]; then
-              APK_NAME="${PARTS[0]}"
-              VERSION_NAME="${PARTS[1]}"
-              VERSION_CODE="${PARTS[2]%.apk}"
-              
-              echo "APK 名称: $APK_NAME"
-              echo "版本名称: $VERSION_NAME"
-              echo "版本代码: $VERSION_CODE"
-              
-              # 设置输出变量
-              echo "version=$VERSION_CODE" >> "$GITHUB_OUTPUT"
-              echo "build_time=$BUILD_TIME" >> "$GITHUB_OUTPUT"
-              echo "apk_file=$APK_FILE" >> "$GITHUB_OUTPUT"
-              echo "apk_name=$APK_NAME" >> "$GITHUB_OUTPUT"
-              echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
-            else
-              echo "文件名格式不符合预期: $FILENAME"
-              echo "期望格式: apkname_versionname_versioncode.apk"
-              exit 1
-            fi
-          else
-            echo "未找到匹配的 APK 文件"
-            exit 1
-          fi
-
-      - name: Publish Release APK to GitHub Releases
-        if: github.event.inputs.build_type == 'build_and_publish'
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: v${{ steps.extract_version.outputs.version }}
-          name: Release v${{ steps.extract_version.outputs.version }}
-          files: |
-            ${{ steps.extract_version.outputs.apk_file }}
-            
-      - name: Publish Release APK to GitHub Beta Build Releases
-        if: github.event.inputs.build_type == 'build_and_beta_publish'
-        id: beta_release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: beta-v${{ steps.extract_version.outputs.version }}-${{ github.run_number }}
-          name: Beta Build v${{ steps.extract_version.outputs.version }} (${{ steps.extract_version.outputs.build_time }})
-          files: |
-            ${{ steps.extract_version.outputs.apk_file }}
-          prerelease: true
