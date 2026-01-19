@@ -57,6 +57,7 @@ function base_question.getAdapter(question_pagetool,pos)
       loadglide(views.图像,data.图像)
 
       views.card.onClick=function()
+        nTView=views.card
         newActivity("answer",{question_id,tostring(data.id内容)})
       end
     end,

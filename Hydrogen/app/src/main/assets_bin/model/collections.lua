@@ -151,6 +151,7 @@ function base_collections.getAdapter(collection_pagetool,pos)
       views.预览内容.Text=data.预览内容
 
       views.card.onClick=function()
+        nTView=views.card
         点击事件判断(data.id内容,data.标题)
       end
 

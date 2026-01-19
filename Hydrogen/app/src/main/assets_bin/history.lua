@@ -168,6 +168,7 @@ history_list.onItemLongClick=function(l,v,c,b)
 end
 
 history_list.onItemClick=function(l,v,c,b)
+  nTView=v
   点击事件判断(v.Tag.id内容.text)
 end
 

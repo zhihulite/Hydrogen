@@ -80,6 +80,7 @@ function base.getAdapter(people_pagetool,pos)
       loadglide(views.图像,data.图像)
 
       views.card.onClick=function()
+        nTView=views.card
         if tostring(data.id内容):find("更多") then
           local id内容=data.id内容:gsub("更多","")
           newActivity("people_more",{用户id,id内容})

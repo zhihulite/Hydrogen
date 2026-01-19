@@ -120,6 +120,7 @@ function base.getAdapter(people_list_pagetool,pos)
       loadglide(views.图像,data.图像)
       _peoplelist.onbind(views,data)
       views.card.onClick=function()
+        nTView=views.card
         newActivity("people",{data.id内容})
       end
     end,

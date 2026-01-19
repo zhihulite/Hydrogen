@@ -77,6 +77,7 @@ function base.getAdapter(topic_pagetool,pos)
       end
 
       views.card.onClick=function()
+        nTView=views.card
         onclick(data)
       end
     end,

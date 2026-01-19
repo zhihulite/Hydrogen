@@ -40,6 +40,7 @@ function base.getAdapter(people_column_pagetool,pos)
       views.活动.text=data.活动
       loadglide(views.图像,data.图像)
       views.card.onClick=function()
+        nTView=views.card
         点击事件判断(data.id内容,data.标题)
       end
     end,
