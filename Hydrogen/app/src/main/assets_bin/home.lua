@@ -446,11 +446,69 @@ optmenu={}
 loadmenu(bnv.getMenu(), menu, optmenu, 3)
 bnv.setLabelVisibilityMode(1)
 
-page_home.setAdapter(pagadp)
 local startindex=pageinfo_keys[starthome]
+local isFirstLoad = true
+
+local startindex=pageinfo_keys[starthome]
+local isFirstLoad = true
+
+local function onHomePageChange(position)
+  local home_item=home_items[position+1]
+  
+  -- 首次加载或正常切换页面时调用
+  home_pageinfo[home_item].refer()
+  isFirstLoad = false
+
+  for i=0,bnv.getMenu().size()-1 do
+    bnv.getMenu().getItem(i).setChecked(false)
+  end
+
+  bnv.getMenu().getItem(position).setChecked(true)
+  _title.text=(bnv.getMenu().getItem(position).getTitle())
+end
+
+local NavlastClickTime = 0
+local NavlastClickedItem
+
+function bnv.onNavigationItemSelected(item)
+  local itemTitle = item.getTitle();
+  local realItem = (itemTitle == "主页") and "推荐" or itemTitle
+
+  local currentTime = SystemClock.uptimeMillis()
+  local pos=pageinfo_keys[realItem]
+
+  if NavlastClickedItem == realItem and currentTime - NavlastClickTime < 200 then
+    home_pageinfo[realItem].getrecy().smoothScrollToPosition(0)
+   else
+    NavlastClickTime = currentTime
+    NavlastClickedItem = realItem
+    page_home.setCurrentItem(pos)
+  end
+end
+
+page_home.addOnPageChangeListener(ViewPager.OnPageChangeListener {
+
+  onPageScrolled=function(position, positionOffset, positionOffsetPixels)
+  end;
+
+  onPageSelected=onHomePageChange;
+
+  onPageScrollStateChanged=function(state)
+
+  end
+});
+
+page_home.setAdapter(pagadp)
 page_home.setCurrentItem(startindex,false)
-_title.text=(bnv.getMenu().getItem(startindex).getTitle())
-bnv.getMenu().getItem(startindex).setChecked(true)
+
+-- 如果 startindex 为 0，ViewPager 不会触发 onPageSelected，需要手动触发逻辑函数
+if startindex == 0 then
+  task(100, function()
+    if isFirstLoad then
+      onHomePageChange(0)
+    end
+  end)
+end
 
 edgeToedge(mainLay,bnv,function()
   --[[local layoutParams = 侧滑头.LayoutParams;
@@ -465,52 +523,6 @@ edgeToedge(mainLay,bnv,function()
   bottombar.setLayoutParams(layoutParams);]]
   --初始化主页()
 end)
-
-local NavlastClickTime = 0
-local NavlastClickedItem
-
-function bnv.onNavigationItemSelected(item)
-  item = item.getTitle();
-  if item =="主页" then
-    item="推荐"
-  end
-
-  local currentTime = SystemClock.uptimeMillis()
-  local pos=pageinfo_keys[item]
-
-  if lastClickedItem == item and currentTime - lastClickTime < 200 then
-    home_pageinfo[item].getrecy().smoothScrollToPosition(0)
-   else
-    lastClickTime = currentTime
-    lastClickedItem = item
-    page_home.setCurrentItem(pos)
-  end
-end
-
-page_home.addOnPageChangeListener(ViewPager.OnPageChangeListener {
-
-  onPageScrolled=function(position, positionOffset, positionOffsetPixels)
-  end;
-
-  onPageSelected=function(position)
-    local pos=position+1
-    local home_item=home_items[pos]
-    home_pageinfo[home_item].refer()
-
-    for i=0,bnv.getChildCount() do
-      bnv.getMenu().getItem(i).setChecked(false)
-    end
-
-    bnv.getMenu().getItem(position).setChecked(true)
-    _title.text=(bnv.getMenu().getItem(position).getTitle())
-
-  end;
-
-  onPageScrollStateChanged=function(state)
-
-  end
-});
-
 
 function 切换布局(layoutName)
   local pageConfig = {
