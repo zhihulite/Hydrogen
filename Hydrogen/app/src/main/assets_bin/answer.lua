@@ -19,21 +19,28 @@ import "com.google.android.material.appbar.AppBarLayout"
 
 问题id, 回答id, pre_data = ...
 
--- 预加载逻辑：利用传入的 pre_data 瞬间渲染第一页的非正文信息
-if type(pre_data) == "table" then
-  task(1, function()
-    if pre_data.author then
-      username.Text = pre_data.author.name
-      userheadline.Text = (pre_data.author.headline == "" and "Ta还没有签名哦~" or pre_data.author.headline)
-      loadglide(usericon, pre_data.author.avatar_url)
-    end
-    -- 更新底栏计数（如果有）
-    vote_count.Text = tostring(pre_data.voteup_count or vote_count.Text)
-    comment_count.Text = tostring(pre_data.comment_count or comment_count.Text)
-  end)
-end
+-- 核心优化：在布局渲染前立即设置窗口背景色，防止 Activity 启动瞬间白屏
+import "android.graphics.drawable.ColorDrawable"
+activity.getWindow().setBackgroundDrawable(ColorDrawable(转0x(backgroundc)))
 
 设置视图("layout/answer")
+
+-- 优化：ViewPager2 容器也需要背景色
+pg.setBackgroundColor(转0x(backgroundc))
+
+-- 优化：将预加载逻辑移到设置视图之后，取消 task(1) 延迟，实现瞬间渲染
+if type(pre_data) == "table" then
+  if pre_data.author then
+    username.Text = pre_data.author.name
+    userheadline.Text = (pre_data.author.headline == "" and "Ta还没有签名哦~" or pre_data.author.headline)
+    loadglide(usericon, pre_data.author.avatar_url)
+  end
+  -- 更新底栏计数（如果有）
+  vote_count.Text = tostring(pre_data.voteup_count or vote_count.Text)
+  comment_count.Text = tostring(pre_data.comment_count or comment_count.Text)
+end
+
+edgeToedge(nil,nil,function()
 --设置toolbar(toolbar)
 
 edgeToedge(nil,nil,function()
@@ -60,6 +67,10 @@ touchSlopField.setAccessible(true);
 local touchSlop = touchSlopField.get(recyclerView);
 touchSlopField.set(recyclerView, int(touchSlop*tonumber(activity.getSharedData("scroll_sense"))));--通过获取原有的最小滑动距离 *n来增加此值
 
+-- 解决标题闪烁：确保 toolbar 初始背景色和透明度正确
+root_card.setBackgroundColor(转0x(backgroundc))
+all_root.setAlpha(0) -- 这里保留，但我们确保它是紧跟在设置视图后的，后面获取数据后会立即更新
+
 --解决快速滑动出现的bug 点击停止滑动
 local AppBarLayoutBehavior=luajava.bindClass "com.hydrogen.AppBarLayoutBehavior"
 --appbar.LayoutParams.behavior=AppBarLayoutBehavior(this,nil)
@@ -67,22 +78,25 @@ IArgbEvaluator=ArgbEvaluator.newInstance()
 波纹({fh,_more,mark,comment,thank,voteup},"圆主题")
 波纹({all_root},"方自适应")
 设置toolbar(root_card)
-all_root.alpha = 0
 import "model.answer"
 
 回答容器=answer:new(回答id)
 
-task(1, function()
-  answer:getinfo(回答id, function(tab)
-    local info_text = "点击查看全部" .. tab.answer_count .. "个回答 >"
-    all_answer.Text = info_text
-    all_answer_expand.Text = info_text
-    问题id = tab.id
-    _title.Text = tab.title
-    expand_title.Text = tab.title
-    if tab.answer_count == 1 and 回答容器 then
-      回答容器.isleft = true
-    end
+-- 优化：直接获取信息，避免多余的 1ms 延迟
+answer:getinfo(回答id, function(tab)
+  local info_text = "点击查看全部" .. tab.answer_count .. "个回答 >"
+  all_answer.Text = info_text
+  all_answer_expand.Text = info_text
+  问题id = tab.id
+  _title.Text = tab.title
+  expand_title.Text = tab.title
+  -- 强制应用一次背景色，防止字符串解析问题导致的透明或白色
+  root_card.setBackgroundColor(转0x(backgroundc))
+  title_bar_expand.setBackgroundColor(转0x(backgroundc))
+  
+  if tab.answer_count == 1 and 回答容器 then
+    回答容器.isleft = true
+  end
     
     local function openQuestion()
       local target_id = 问题id or 回答容器.id内容:match("(.+)分割")
@@ -242,7 +256,6 @@ function 数据添加(t,回答id)
       end
     end,
     onPageStarted=function(view,url,favicon)
-      t.content.setVisibility(8)
       userinfo.visibility=0
       -- 延迟显示加载动画，避免快速切换时的闪烁
       task(200, function()
@@ -319,8 +332,10 @@ function 数据添加(t,回答id)
     end,
   })
 
+  t.content.setBackgroundColor(0)
+  if t.root then t.root.setBackgroundColor(转0x(backgroundc)) end
+
   t.content.loadUrl("https://www.zhihu.com/appview/answer/"..回答id)
-  t.content.setVisibility(0)
 end
 
 local function 更新底栏(data)
@@ -429,6 +444,7 @@ pg.adapter=BaseViewPage2Adapter(this)
 function addAnswer(index)
   local ids={}
   local 加入view=loadlayout("layout/answer_list",ids)
+  加入view.setBackgroundColor(转0x(backgroundc))
   数据表[加入view.id]={
     data={},
     ids=ids
