@@ -89,10 +89,20 @@ for _, item in ipairs(settings_config) do
   elseif item.type == "toggle" then
     table.insert(data, { type = 3, subtitle = item.subtitle, status = { Checked = getSetting(item.key) }, _key = item.key })
   elseif item.type == "slider" then
+    local step = item.step or 1
+    local value = getNumberSetting(item.key, item.from)
+    -- 对旧数据进行步长对齐处理，防止数值不匹配 stepSize 导致的崩溃
+    local snappedValue = math.floor((value - item.from) / step + 0.5) * step + item.from
+    -- 确保对齐后的值在有效范围内
+    if snappedValue < item.from then
+      snappedValue = item.from
+     elseif snappedValue > item.to then
+      snappedValue = item.to
+    end
     table.insert(data, {
       type = 4, subtitle = item.subtitle, _key = item.key,
       slider = {
-        valueFrom = item.from, value = getNumberSetting(item.key, item.from), valueTo = item.to, stepSize = item.step or 1,
+        valueFrom = item.from, value = snappedValue, valueTo = item.to, stepSize = step,
         LabelFormatter = { getFormattedValue = function(v) return string.format(item.format, v) end }
       }
     })
