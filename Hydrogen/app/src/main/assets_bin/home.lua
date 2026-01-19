@@ -421,7 +421,10 @@ home_pageinfo={
       if isclear then follow_pagetool:clearItem() end
       follow_pagetool:refer(nil,nil,true)
     end,
-    getrecy=function() return follow_pagetool:getItem() end
+    getrecy=function()
+      local list,sr = follow_pagetool:getItem()
+      return list
+    end
   }
 }
 

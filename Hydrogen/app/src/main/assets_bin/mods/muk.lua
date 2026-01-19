@@ -55,29 +55,45 @@ import "android.animation.ObjectAnimator"
 import "android.view.animation.*"
 
 function addAutoHideListener(recs,views)
-  for j,rec in pairs(recs)
-    for i,ee in pairs(views)
-      bottombarBehavior=import "com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
-      ee.layoutParams.setBehavior(bottombarBehavior())
-
-      rec.addOnScrollListener(RecyclerView.OnScrollListener{
-        onScrolled=function(v,s,j)
-          if j>0 then
-            ee.layoutParams.getBehavior().slideDown(ee)
-          end
-          if j<0 then
-            ee.layoutParams.getBehavior().slideUp(ee)
-          end
-        end,
-        onScrollStateChanged=function(v,s)
-          if !(v.canScrollVertically(1))
-            ee.layoutParams.getBehavior().slideDown(ee)
-           elseif !(v.canScrollVertically(-1))
-            ee.layoutParams.getBehavior().slideUp(ee)
-          end
-        end
-      })
+  local appbar
+  -- 先尝试从 views 的父容器中找 AppBarLayout
+  local parent = views[1].getParent()
+  if parent then
+    for i=0, parent.getChildCount()-1 do
+      local child = parent.getChildAt(i)
+      if luajava.instanceof(child, luajava.bindClass("com.google.android.material.appbar.AppBarLayout")) then
+        appbar = child
+        break
+      end
     end
+  end
+
+  -- 如果没找到，尝试往更上一层找（CoordinatorLayout 结构）
+  if not appbar and parent then
+    local grandParent = parent.getParent()
+    if grandParent then
+      for i=0, grandParent.getChildCount()-1 do
+        local child = grandParent.getChildAt(i)
+        if luajava.instanceof(child, luajava.bindClass("com.google.android.material.appbar.AppBarLayout")) then
+          appbar = child
+          break
+        end
+      end
+    end
+  end
+
+  if appbar then
+    appbar.addOnOffsetChangedListener(luajava.bindClass("com.google.android.material.appbar.AppBarLayout$OnOffsetChangedListener")({
+      onOffsetChanged=function(v,verticalOffset)
+        local totalScrollRange = v.getTotalScrollRange()
+        -- 计算移动比例 0 为完全显示，1 为完全隐藏
+        local factor = -verticalOffset / totalScrollRange
+        for i,ee in pairs(views)
+          -- 实时设置位移，不使用动画，达到像素级跟随
+          ee.setTranslationY(ee.getHeight() * factor)
+        end
+      end
+    }))
   end
 end
 
@@ -106,24 +122,32 @@ function 设置视图(t)
   end
 
   if thisFragment
-    thisFragment.setContainerView(loadlayout(t))
+    thisFragment.container.setBackgroundColor(0x99000000)
+    local lay = loadlayout(t)
+    if lay.id == "mainLay" then
+      lay.setBackgroundColor(0)
+    end
+    if nOView~=nil then
+      ViewCompat.setTransitionName(lay, "t")
+    end
+    thisFragment.setContainerView(lay)
     if nOView~=nil
       local backward=MaterialContainerTransform(activity,false)
       .setStartView(thisFragment.container)
       .setEndView(nOView)
       .setPathMotion(MaterialArcMotion())
-      --.setScrimColor(0x00000000)
+      .setScrimColor(0x99000000)
       .addTarget(nOView)
       .setStartShapeAppearanceModel(OldWindowShape)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
-      --thisFragment.startPostponedEnterTransition()
+      thisFragment.startPostponedEnterTransition()
      else
       local backward = MaterialSharedAxis(MaterialSharedAxis.Z, false)
       .addTarget(thisFragment.container)
       .addTarget(thisFragment.container)
       --.addTarget(ff)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
-
+      thisFragment.startPostponedEnterTransition()
     end
    else
     activity.setContentView(loadlayout(t))
@@ -181,13 +205,12 @@ function newActivity(f,b,c)
       end
     end
     fragment=MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,nOView=nTView,OldWindowShape=WindowShape.build()} )
-    --.postponeEnterTransition()
+    fragment.postponeEnterTransition()
     local forward=MaterialContainerTransform(activity,true)
     .setStartView(nTView)
-    .setEndView(ff)
     .setPathMotion(MaterialArcMotion())
     .setEndShapeAppearanceModel(WindowShape.build())
-    .addTarget(ff)
+    .setScrimColor(0x99000000)
     --.setAllContainerColors(转0x(backgroundc))
     --.setFadeMode(3)
     --backward = MaterialSharedAxis(MaterialSharedAxis.Z, false);
@@ -201,7 +224,9 @@ function newActivity(f,b,c)
    else
     backward = MaterialSharedAxis(MaterialSharedAxis.Z, false);
     forward = MaterialSharedAxis(MaterialSharedAxis.Z, true);
-    t.add(ff.id,MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,}).setEnterTransition(forward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward))
+    local fragment = MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,})
+    fragment.postponeEnterTransition()
+    t.add(ff.id,fragment.setEnterTransition(forward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward))
 
   end
   t.addToBackStack(nil)
