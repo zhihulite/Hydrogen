@@ -102,13 +102,7 @@ function Page_Tool:initPage()
       thissr.setColorSchemeColors({转0x(primaryc)});
       thissr.setOnRefreshListener({
         onRefresh=function()
-          self:clearItem(pos,true)
-          self:refer(pos,true)
-          Handler().postDelayed(Runnable({
-            run=function()
-              thissr.setRefreshing(false);
-            end,
-          }),1000)
+          self:refer(pos,true,false,true)
         end,
       });
     end
@@ -278,8 +272,7 @@ function Page_Tool:setOnTabListener(callback)
           end,
         }),1050)
       end
-      self:clearItem(pos,true)
-      referfunc(pos,true)
+      self:refer(pos,true,false,true)
     end,
   });
   return self
@@ -311,7 +304,7 @@ function Page_Tool:createfunc()
 
   local needlogin=self.needlogin
 
-  self.referfunc=function (pos,isprev)
+  self.referfunc=function (pos,isprev,isrefresh)
     local pagedata=self.pagedata
 
     if pos==nil then
@@ -330,7 +323,7 @@ function Page_Tool:createfunc()
 
     local isprev=pagedata[pos]["isprev"]
 
-    if pagedata[pos].isend then
+    if pagedata[pos].isend and not isrefresh then
       return 提示("已经到底了")
     end
 
@@ -359,71 +352,102 @@ function Page_Tool:createfunc()
     end
 
     zHttp.get(posturl,head,function(code,content)
-      thissr.setRefreshing(false);
       if code==200 then
         pagedata[pos]["isprev"]=false
         local data=luajson.decode(content)
-
-        if data.paging then
-          pagedata[pos].isend=data.paging.is_end
-          pagedata[pos].prev=data.paging.previous
-          pagedata[pos].nexturl=data.paging.next
-
-          if pagedata[pos].isend==false then
-            pagedata[pos]["canload"]=true
-          end
-        end
-
-        local is_first_load = pagedata[pos].isfirst
         local adpdata=self:getItemData(pos)
-        if pagedata[pos].isfirst then
-          pagedata[pos].isfirst=false
-          if self.firstfunc then
-            self.firstfunc(data,adpdata,pos)
-          end
-        end
 
-        if pagedata[pos].needcheck then
-          --延迟 防止获取不准确
-          self.view.postDelayed(Runnable{
-            run=function()
-              if checkIfRecyclerViewIsFullPage(thispage) then
-                if pagedata[pos]["canload"] then
-                  self.referfunc(pos,isprev)
-                  System.gc()
-                end
-               else
-                pagedata[pos].needcheck=false
-              end
+        local function updateData()
+          if isrefresh then
+            table.clear(adpdata)
+            thispage.adapter.notifyDataSetChanged()
+            thispage.removeAllViews();
+            thispage.getRecycledViewPool().clear();
+            pagedata[pos].isend=false
+            pagedata[pos].isfirst=true
+            pagedata[pos].needcheck=true
+          end
+
+          if data.paging then
+            pagedata[pos].isend=data.paging.is_end
+            pagedata[pos].prev=data.paging.previous
+            pagedata[pos].nexturl=data.paging.next
+
+            if pagedata[pos].isend==false then
+              pagedata[pos]["canload"]=true
             end
-          }, 50);
-        end
-
-        local old_size=#adpdata
-
-        local func=self.funcs[pos]
-        if data.data then
-          for _,v in ipairs(data.data) do
-            func(v,adpdata)
           end
+
+          local is_first_load = pagedata[pos].isfirst
+          if pagedata[pos].isfirst then
+            pagedata[pos].isfirst=false
+            if self.firstfunc then
+              self.firstfunc(data,adpdata,pos)
+            end
+          end
+
+          if pagedata[pos].needcheck then
+            --延迟 防止获取不准确
+            self.view.postDelayed(Runnable{
+              run=function()
+                if checkIfRecyclerViewIsFullPage(thispage) then
+                  if pagedata[pos]["canload"] then
+                    self.referfunc(pos,isprev)
+                    System.gc()
+                  end
+                 else
+                  pagedata[pos].needcheck=false
+                end
+              end
+            }, 50);
+          end
+
+          local old_size=#adpdata
+
+          local func=self.funcs[pos]
+          if data.data then
+            for _,v in ipairs(data.data) do
+              func(v,adpdata)
+            end
+           else
+            func(data,adpdata)
+          end
+
+          -- 只有在非首次加载且确实到末尾时才提示
+          if pagedata[pos].isend and not is_first_load then
+            提示("没有新内容了")
+          end
+
+          if isrefresh then
+            thispage.adapter.notifyDataSetChanged()
+            thispage.animate().alpha(1).setDuration(100).withEndAction(Runnable{
+              run=function()
+                thissr.setRefreshing(false);
+              end
+            }).start()
+           else
+            local add_count=#adpdata-old_size
+            --notifyItemRangeInserted第一个参数是开始插入的位置 adp数据的下标是0 table下标是1 所以直接使用table的长度即可
+            thispage.adapter.notifyItemRangeInserted(old_size,add_count)
+            thissr.setRefreshing(false);
+          end
+        end
+
+        if isrefresh then
+          thispage.animate().alpha(0).setDuration(100).withEndAction(Runnable{
+            run=updateData
+          }).start()
          else
-          func(data,adpdata)
+          updateData()
         end
-
-        -- 只有在非首次加载且确实到末尾时才提示
-        if pagedata[pos].isend and not is_first_load then
-          提示("没有新内容了")
-        end
-
-        local add_count=#adpdata-old_size
-
-        --notifyItemRangeInserted第一个参数是开始插入的位置 adp数据的下标是0 table下标是1 所以直接使用table的长度即可
-        thispage.adapter.notifyItemRangeInserted(old_size,add_count)
-
+       else
+        thissr.setRefreshing(false);
       end
     end)
 
-    thissr.setRefreshing(true)
+    if isrefresh or pagedata[pos].isfirst then
+      thissr.setRefreshing(true)
+    end
     pagedata[pos]["canload"]=false
 
   end
@@ -440,13 +464,13 @@ function Page_Tool:getCurrentItem()
   return viewpager.getCurrentItem()+1-self.addpos
 end
 
-function Page_Tool:refer(index,isprev,isinit)
+function Page_Tool:refer(index,isprev,isinit,isrefresh)
   local index=index or self:getCurrentItem()
   local thispage,thissr=self:getItem(index)
   if index==0 or (isinit and self:getItem(index).adapter.getItemCount()>1) then
     return self
   end
-  self.referfunc(index,isprev)
+  self.referfunc(index,isprev,isrefresh)
   return self
 end
 

@@ -9,46 +9,65 @@ end
 
 function base:getData(isclear,isinit)
 
-  if isclear then
-    table.clear(self.myhotdata)
-    self.view.removeAllViews();
-    self.view.getRecycledViewPool().clear();
-    self.view.adapter.notifyDataSetChanged()
-  end
-
   if isinit and self.view.adapter.getItemCount()>0 then
     return self
   end
 
   zHttp.get("https://www.zhihu.com/api/v3/feed/topstory/hot-lists/total?limit=50&mobile=true",head,function(code,content)
-    self.sr.setRefreshing(false)
     if code==200 then--判断网站状态
       local data=luajson.decode(content).data
 
-      for i,v in ipairs(data)
-        local 排行=i
-        local v=v.target
-        local 热榜图片=v.image_area.url
-        local 标题=v.title_area.text
-        local 热度=v.metrics_area.text
-        local id内容=v.link.url
+      local function updateData()
+        if isclear then
+          table.clear(self.myhotdata)
+          self.view.removeAllViews();
+          self.view.getRecycledViewPool().clear();
+        end
 
-        local add={}
-        add.标题=标题
-        add.热度=热度
-        add.排行=排行
-        add.id内容=id内容
-        add.热图片={
-          src=热榜图片,
-          Visibility=#热榜图片>0 and 0 or 8
-        }
+        for i,v in ipairs(data)
+          local 排行=i
+          local v=v.target
+          local 热榜图片=v.image_area.url
+          local 标题=v.title_area.text
+          local 热度=v.metrics_area.text
+          local id内容=v.link.url
 
-        table.insert(self.myhotdata,add)
+          local add={}
+          add.标题=标题
+          add.热度=热度
+          add.排行=排行
+          add.id内容=id内容
+          add.热图片={
+            src=热榜图片,
+            Visibility=#热榜图片>0 and 0 or 8
+          }
 
+          table.insert(self.myhotdata,add)
+
+        end
+        if isclear then
+          self.view.adapter.notifyDataSetChanged()
+          self.view.animate().alpha(1).setDuration(100).withEndAction(Runnable{
+            run=function()
+              self.sr.setRefreshing(false)
+            end
+          }).start()
+         else
+          --notifyItemRangeInserted第一个参数是开始插入的位置 adp数据的下标是0 table下标是1 所以直接使用table的长度即可
+          self.view.adapter.notifyItemRangeInserted(0,#self.myhotdata)
+          self.sr.setRefreshing(false)
+        end
       end
-      --notifyItemRangeInserted第一个参数是开始插入的位置 adp数据的下标是0 table下标是1 所以直接使用table的长度即可
-      self.view.adapter.notifyItemRangeInserted(0,#self.myhotdata)
+
+      if isclear then
+        self.view.animate().alpha(0).setDuration(100).withEndAction(Runnable{
+          run=updateData
+        }).start()
+       else
+        updateData()
+      end
      else
+      self.sr.setRefreshing(false)
       --错误时的操作
     end
   end)
