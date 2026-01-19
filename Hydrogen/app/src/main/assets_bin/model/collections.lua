@@ -178,7 +178,6 @@ function base_collections:initpage(view,sr)
   :initPage()
   :createfunc()
   :setUrlItem(collections_base:getUrl())
-  :refer()
 end
 
 return base_collections

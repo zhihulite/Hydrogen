@@ -24,6 +24,10 @@ peopeo_list_item=获取适配器项目布局("people/people_list")
 people_list_base=require "model.people_list":new(people_id,类型)
 people_list_pagetool=people_list_base:initpage(simple_recy,simplesr)
 
+task(1, function()
+  if people_list_pagetool then people_list_pagetool:refer() end
+end)
+
 task(1,function()
   if 类型:find("block") then
     a=MUKPopu({

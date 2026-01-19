@@ -430,7 +430,6 @@ function base:initpage(view,sr,item_layout)
   :initPage()
   :createfunc()
   :setUrlItem(self:getUrlByType())
-  :refer()
 
 end
 

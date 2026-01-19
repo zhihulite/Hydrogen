@@ -90,6 +90,11 @@ if not comment_type:find("local") then
   local comment_item = 获取适配器项目布局("comment/comment")
   comment_pagetool = comment_base:initpage(comment_recy, commentsr, comment_item)
   
+  -- 利用 task(1) 让请求在下一帧立即开始，与动画并行
+  task(1, function()
+    if comment_pagetool then comment_pagetool:refer() end
+  end)
+  
   send.onClick = function()
     发送评论(comment_type == "comments" and comment_id or "", comment_type == "comments" and "回复该子评论")
   end

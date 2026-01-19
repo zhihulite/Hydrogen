@@ -71,10 +71,11 @@ task(1, function()
     end
     
     local function openQuestion()
-      if 问题id==nil or 问题id=="null" then
+      local target_id = 问题id or 回答容器.id内容:match("(.+)分割")
+      if target_id == nil or target_id == "null" then
         return 提示("加载中")
       end
-      newActivity("question",{问题id})
+      newActivity("question", {target_id})
     end
     
     all_root.onClick = openQuestion
@@ -439,6 +440,14 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{
     setDtlTranslation(0, true)
     if 回答容器 then 回答容器:updateLR() end
     
+    -- 异步预取：当用户切换到当前页时，提前准备好下一页的 ID 数据（不渲染）
+    task(200, function()
+      if 回答容器 and not 回答容器.isright and pg.adapter.getItemCount() == pos + 1 then
+        -- 仅拉取 ID 信息，为可能的滑动做准备
+        回答容器:getNextId()
+      end
+    end)
+
     -- 同步 AppBar 状态与当前 WebView 的滚动位置
     local scroll_y = currentWebView.getScrollY()
     local translation = -scroll_y
@@ -486,15 +495,18 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{
   end
 })
 
-pg.setCurrentItem(1,false)
-local item = pg.adapter.getItem(pg.getCurrentItem())
-local current_mviews = 数据表[item.id]
-if current_mviews then
-  currentWebView = current_mviews.ids.content
-  if not current_mviews.load then
-    加载页(current_mviews, false, pg.getCurrentItem())
+-- 优化：首屏加载与 Activity 启动动画并行
+task(1, function()
+  local item = pg.adapter.getItem(pg.getCurrentItem())
+  local current_mviews = 数据表[item.id]
+  if current_mviews then
+    currentWebView = current_mviews.ids.content
+    if not current_mviews.load then
+      加载页(current_mviews, false, pg.getCurrentItem())
+    end
   end
-end
+end)
+
 
 
 function onDestroy()

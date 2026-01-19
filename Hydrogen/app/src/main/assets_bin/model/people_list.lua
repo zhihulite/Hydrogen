@@ -175,7 +175,6 @@ function base:initpage(view,sr)
   :initPage()
   :createfunc()
   :setUrlItem(self:getUrl(self.type))
-  :refer()
 end
 
 return base
