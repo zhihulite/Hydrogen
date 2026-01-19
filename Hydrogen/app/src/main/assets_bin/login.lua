@@ -40,6 +40,8 @@ local function checkLoginStatus(view)
     if code == 200 then
       local data = luajson.decode(content)
       activity.setSharedData("idx", data.id)
+      local cookieManager = CookieManager.getInstance();
+      cookieManager.flush();
       提示("登录成功")
       activity.finish()
      else
