@@ -424,7 +424,7 @@ end
 
 function 点击事件判断(myid,title)
   if tostring(myid):find("问题分割") or not(tostring(myid):find("分割")) then
-    newActivity("question",{tostring(myid):match("问题分割(.+)") or myid})
+    newActivity("question",{tostring(myid):match("问题分割(.+)") or myid, title})
    elseif tostring(myid):find("文章分割") then
     newActivity("column",{tostring(myid):match("文章分割(.+)"),tostring(myid):match("分割(.+)")})
    elseif tostring(myid):find("视频分割") then

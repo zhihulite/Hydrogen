@@ -17,7 +17,21 @@ import "com.google.android.material.progressindicator.LinearProgressIndicator"
 import "androidx.core.view.ViewCompat"
 import "com.google.android.material.appbar.AppBarLayout"
 
-问题id, 回答id = ...
+问题id, 回答id, pre_data = ...
+
+-- 预加载逻辑：利用传入的 pre_data 瞬间渲染第一页的非正文信息
+if type(pre_data) == "table" then
+  task(1, function()
+    if pre_data.author then
+      username.Text = pre_data.author.name
+      userheadline.Text = (pre_data.author.headline == "" and "Ta还没有签名哦~" or pre_data.author.headline)
+      loadglide(usericon, pre_data.author.avatar_url)
+    end
+    -- 更新底栏计数（如果有）
+    vote_count.Text = tostring(pre_data.voteup_count or vote_count.Text)
+    comment_count.Text = tostring(pre_data.comment_count or comment_count.Text)
+  end)
+end
 
 设置视图("layout/answer")
 --设置toolbar(toolbar)
@@ -75,7 +89,7 @@ task(1, function()
       if target_id == nil or target_id == "null" then
         return 提示("加载中")
       end
-      newActivity("question", {target_id})
+      newActivity("question", {target_id, _title.Text})
     end
     
     all_root.onClick = openQuestion
@@ -389,10 +403,11 @@ function 加载页(data, isleftadd, pos)
       local item = pg.adapter.getItem(current_pos)
       local mview = 数据表[item.id]
       if mview and mview.data and mview.data.author then
-        local author_id = mview.data.author.id
-        if author_id ~= "0" then
+        local author = mview.data.author
+        if author.id ~= "0" then
           nTView = usericon
-          newActivity("people", {author_id})
+          -- 传递 ID 以及已知的简要信息
+          newActivity("people", {author.id, author})
          else
           提示("回答作者已设置匿名")
         end

@@ -3,7 +3,18 @@ import "android.widget.*"
 import "android.view.*"
 import "mods.muk"
 
-people_id=...
+people_id, pre_data = ...
+
+-- 如果有传入预置数据，第一时间渲染 UI
+if type(pre_data) == "table" then
+  task(1, function()
+    if _title then _title.text = pre_data.name end
+    if people_name then people_name.text = pre_data.name end
+    if people_sign then people_sign.text = (pre_data.headline ~= "" and pre_data.headline or "加载中...") end
+    if 图像 then loadglide(图像, pre_data.avatar_url or pre_data.avatar_url_template) end
+    if card then card.Visibility = 0 end
+  end)
+end
 
 import "com.google.android.material.tabs.TabLayout"
 

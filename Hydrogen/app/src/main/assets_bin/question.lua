@@ -6,7 +6,14 @@ import "android.text.Html$TagHandler"
 import "android.text.Html$ImageGetter"
 import "androidx.core.widget.NestedScrollView"
 
-question_id=...
+question_id, pre_title = ...
+
+-- 立即应用传入的标题
+if pre_title then
+  task(1, function()
+    if title then title.text = pre_title end
+  end)
+end
 
 设置视图("layout/question")
 设置toolbar(toolbar)
