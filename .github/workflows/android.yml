@@ -2,7 +2,7 @@ name: Android Build
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "Reset" ]
   workflow_dispatch:
 
 jobs:
