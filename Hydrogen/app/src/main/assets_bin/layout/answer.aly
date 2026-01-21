@@ -93,64 +93,6 @@
         backgroundColor=res.color.attr.colorSurfaceVariant;
       };]=]
           },
-          {
-            LinearLayout;
-            layout_height="wrap";
-            layout_width="wrap",
-            layout_margin="16dp";
-            layout_marginTop="4dp";
-            layout_marginLeft="8dp",
-            layout_marginBottom="0dp";
-            id="userinfo",
-
-            {
-              LinearLayout,
-              layout_width="wrap";
-              layout_height="fill";
-              {
-                CircleImageView,
-                layout_margin="8dp";
-                layout_width="42sp",
-                layout_height="42sp",
-                layout_gravity="left|center",
-                id="usericon",
-              },
-              {
-                LinearLayout,
-                layout_width="wrap";
-                layout_height="wrap";
-                orientation="vertical",
-
-                {
-                  TextView,
-                  layout_width="wrap",
-                  Typeface=字体("product-Bold");
-                  layout_marginTop="8dp",
-                  layout_marginRight="21dp",
-                  gravity="left|center",
-                  textColor=textc,
-                  id="username",
-                  textSize="16sp",
-                  lineHeight=标题行高;
-
-                },
-                {
-                  TextView,
-                  Typeface=字体("product");
-                  layout_width="wrap",
-                  layout_marginRight="21dp",
-                  layout_marginTop="4dp",
-                  layout_marginBottom="10dp",
-                  gravity="left|bottom",
-                  maxLines=1,
-                  textColor=textc,
-                  id="userheadline",
-                  textSize="12sp",
-                  lineHeight=内容行高;
-                },
-              },
-            };
-          },
         },
         {
           MaterialToolbar;

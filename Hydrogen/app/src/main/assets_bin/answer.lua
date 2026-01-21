@@ -47,15 +47,6 @@ pg.setOffscreenPageLimit(2)
 
 -- 优化：将预加载逻辑移到设置视图之后，取消 task(1) 延迟，实现瞬间渲染
 if type(pre_data) == "table" then
-  if pre_data.author then
-    username.Text = pre_data.author.name
-    userheadline.Text = (pre_data.author.headline == "" and "Ta还没有签名哦~") or pre_data.author.headline
-    loadglide(usericon, pre_data.author.avatar_url)
-    userinfo.onClick = function()
-      nTView = usericon
-      newActivity("people", {pre_data.author.id, pre_data.author})
-    end
-  end
   -- 更新底栏计数
   vote_count.Text = tostring(pre_data.voteup_count or vote_count.Text)
   comment_count.Text = tostring(pre_data.comment_count or comment_count.Text)
@@ -91,6 +82,14 @@ local function getCurrentMView()
   local item = adapter.getItem(pos)
   if not item then return nil end
   return 数据表[item.id]
+end
+
+-- 简化获取当前页面信息的辅助函数
+local function get_current_info()
+  local mview = getCurrentMView()
+  local data = mview and mview.data
+  local author = data and data.author
+  return mview, data, author, author and author.name or "未知作者", data and data.id
 end
 
 local function set_question_info(tab)
@@ -167,6 +166,17 @@ function onResume()
   mainLay.setLayerType(View.LAYER_TYPE_NONE,nil)
 end
 
+local function 更新WebViewPadding(mview)
+  if not mview or not mview.ids.content then return end
+  local userinfo_h = mview.ids.userinfo.getHeight()
+  if userinfo_h > 0 then
+    local density = activity.getResources().getDisplayMetrics().density
+    -- 核心：paddingTop = 总高度 - 负偏移量 (12px)
+    local total_h_dp = userinfo_h / density - 12
+    mview.ids.content.evaluateJavascript("document.body.style.paddingTop = '"..total_h_dp.."px'", nil)
+  end
+end
+
 local function 统一滑动跟随(view,x,y,lx,ly)
   if view ~= currentWebView then return end
   
@@ -184,6 +194,12 @@ local function 统一滑动跟随(view,x,y,lx,ly)
   appbar.setTranslationY(translation)
   root_card.setTranslationY(-translation)
   
+  local mview = get_current_info()
+  if mview and mview.ids.userinfo then
+    -- 仅偏移作者栏，WebView 容器保持固定在屏幕，解决底部遮挡问题
+    mview.ids.userinfo.setTranslationY(translation)
+  end
+
   -- 4. 处理透明度渐变
   local progress = math.min(1, math.abs(translation) / cached_header_height)
   all_root.setAlpha(progress)
@@ -198,10 +214,9 @@ local function 统一滑动跟随(view,x,y,lx,ly)
 end
 
 comment.onClick=function()
-  local mview = getCurrentMView()
-  local 回答id = mview and mview.data.id
+  local mview, data, author, name, 回答id = get_current_info()
   if not 回答id then return 提示("加载中") end
-  local 保存路径=内置存储文件("Download/".._title.Text.."/"..username.Text)
+  local 保存路径=内置存储文件("Download/".._title.Text.."/"..name)
   ViewCompat.setTransitionName(comment,"t")
   nTView=comment_card
   newActivity("comment",{回答id,"answers",保存路径})
@@ -248,12 +263,17 @@ local last_appbar_height = 0
 appbar.getViewTreeObserver().addOnGlobalLayoutListener(ViewTreeObserver.OnGlobalLayoutListener{
   onGlobalLayout=function()
     local height_px = appbar.getHeight()
-    if height_px > 0 and height_px ~= last_appbar_height and currentWebView then
+    if height_px > 0 and height_px ~= last_appbar_height then
       last_appbar_height = height_px
       cached_header_height = 0 -- 重置缓存
-      local density = activity.getResources().getDisplayMetrics().density
-      local height_dp = height_px / density
-      currentWebView.evaluateJavascript("document.body.style.paddingTop = '"..(height_dp - 20).."px'", nil)
+      
+      -- 更新所有已加载页面的 userinfo padding
+      for k, v in pairs(数据表 or {}) do
+        if v.ids and v.ids.userinfo then
+          v.ids.userinfo.setPadding(dp2px(16), height_px, dp2px(16), 0)
+          v.ids.userinfo.post(function() 更新WebViewPadding(v) end)
+        end
+      end
     end
   end
 })
@@ -277,7 +297,7 @@ function 数据添加(t,回答id,viewId)
       end
     end,
     onPageStarted=function(view,url,favicon)
-      userinfo.visibility=0
+      if t.userinfo then t.userinfo.visibility=0 end
       -- 延迟显示加载动画，避免快速切换时的闪烁
       view.postDelayed(function()
         if t.progress and t.content.getVisibility() == 8 then
@@ -292,14 +312,8 @@ function 数据添加(t,回答id,viewId)
       if t.progress then t.progress.setVisibility(8) end
       
       -- 注入 Padding-Top
-      view.post(function()
-        local height_px = appbar.getHeight()
-        if height_px > 0 then
-          local density = activity.getResources().getDisplayMetrics().density
-          local height_dp = height_px / density
-          view.evaluateJavascript("document.body.style.paddingTop = '"..(height_dp - 20).."px'", nil)
-        end
-      end)
+      local mview = 数据表[viewId] or {ids=t}
+      view.post(function() 更新WebViewPadding(mview) end)
 
       if 全局主题值=="Night" then 夜间模式回答页(view) else 初始化背景(view) end
       if this.getSharedData("eruda") == "true" then 加载js(view,获取js("eruda")) end
@@ -313,7 +327,7 @@ function 数据添加(t,回答id,viewId)
           view.evaluateJavascript("window.scrollRestorer.restoreScrollPosition()", {onReceiveValue=function(b)
             view.evaluateJavascript("window.scrollRestorerPos", {onReceiveValue=function(pos_val)
               local 保存滑动位置 = tonumber(pos_val) or 0
-              if 保存滑动位置 > userinfo.height then
+              if t.userinfo and 保存滑动位置 > t.userinfo.height then
                 setDtlTranslation(getDtlMaxTranslation())
                 
                 local currentPos = pg.getCurrentItem()
@@ -360,6 +374,9 @@ function 数据添加(t,回答id,viewId)
 
   t.content.setBackgroundColor(0)
   if t.root then t.root.setBackgroundColor(backgroundc_int) end
+  if appbar.getHeight() > 0 then
+    t.userinfo.setPadding(dp2px(16), appbar.getHeight(), dp2px(16), 0)
+  end
   t.content.loadUrl("https://www.zhihu.com/appview/answer/"..回答id)
 end
 
@@ -393,14 +410,15 @@ function 初始化页(mviews)
   this.getLuaState().setGlobal("currentFragment")
 
   local data = mviews.data
+  local ids = mviews.ids
   if mviews.load == true and data and data.author then
-    username.Text = data.author.name
-    userheadline.Text = (data.author.headline == "" and "Ta还没有签名哦~") or data.author.headline
-    loadglide(usericon, data.author.avatar_url)
+    ids.username.Text = data.author.name
+    ids.userheadline.Text = (data.author.headline == "" and "Ta还没有签名哦~") or data.author.headline
+    loadglide(ids.usericon, data.author.avatar_url)
     更新底栏(data)
 
-    userinfo.onClick = function()
-      nTView = usericon
+    ids.userinfo.onClick = function()
+      nTView = ids.usericon
       newActivity("people", {data.author.id, data.author})
     end
 
@@ -409,8 +427,8 @@ function 初始化页(mviews)
       return true
     end
   elseif mviews.load == "loading" then
-    username.Text = "内容加载中..."
-    userheadline.Text = "请稍等片刻~"
+    ids.username.Text = "内容加载中..."
+    ids.userheadline.Text = "请稍等片刻~"
   end
 end
 
@@ -601,10 +619,8 @@ function onDestroy()
 end
 
 voteup.onClick=function()
-  local mview = getCurrentMView()
-  local data = mview and mview.data
-  if not data or not data.id then return 提示("加载中") end
-  local 回答id = data.id
+  local _, data, _, _, 回答id = get_current_info()
+  if not 回答id then return 提示("加载中") end
   local is_up = not data.点赞状态
   local type_str = is_up and "up" or "neutral"
   
@@ -621,10 +637,8 @@ voteup.onClick=function()
 end
 
 thank.onClick=function()
-  local mview = getCurrentMView()
-  local data = mview and mview.data
-  if not data or not data.id then return 提示("加载中") end
-  local 回答id = data.id
+  local _, data, _, _, 回答id = get_current_info()
+  if not 回答id then return 提示("加载中") end
   local is_thank = not data.感谢状态
   
   local url = "https://www.zhihu.com/api/v4/zreaction"
@@ -717,7 +731,8 @@ task(1,function()
   local function 获取分享文本(url)
     local format = "【回答】【%s】%s: %s"
     local answer_id = url:match("answer/(.+)")
-    return string.format(format, _title.Text, username.Text, "https://www.zhihu.com/question/"..问题id.."/answer/"..answer_id)
+    local _, _, _, name = get_current_info()
+    return string.format(format, _title.Text, name, "https://www.zhihu.com/question/"..问题id.."/answer/"..answer_id)
   end
 
   a=MUKPopu({
@@ -785,8 +800,9 @@ task(1,function()
               import "java.io.File"
               import "java.io.FileOutputStream"
               import "androidx.core.content.FileProvider"
+              local _, _, _, name = get_current_info()
               local dir = this.getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString()
-              local file = File(dir, "知乎回答-".._title.Text.."-来自-"..username.Text..".jpg")
+              local file = File(dir, "知乎回答-".._title.Text.."-来自-"..name..".jpg")
               local fos = FileOutputStream(file)
               bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
               fos.flush()
@@ -810,32 +826,32 @@ task(1,function()
       },
       {
         src=图标("chat_bubble"),text="查看评论",onClick=function()
-          local mview = getCurrentMView()
-          local 回答id = mview and mview.data and mview.data.id
+          local _, data, _, name, 回答id = get_current_info()
           if not 回答id then return 提示("加载中") end
-          local 保存路径 = 内置存储文件("Download/".._title.Text.."/"..username.Text)
+          local 保存路径 = 内置存储文件("Download/".._title.Text.."/"..name)
           newActivity("comment", {回答id, "answers", 保存路径})
         end
       },
       {
         src=图标("get_app"),text="保存到本地",onClick=function()
           if not get_write_permissions() then return end
-          local mview = getCurrentMView()
+          local mview, data, author, name, 回答id = get_current_info()
           if not mview then return end
-          local pgids = mview.ids
-          local 保存路径 = 内置存储文件("Download/".._title.Text.."/"..username.Text)
+          local headline = author and author.headline or "Ta还没有签名哦~"
+          local 保存路径 = 内置存储文件("Download/".._title.Text.."/"..name)
           local detail = string.format('question_id="%s"\nanswer_id="%s"\nthanks_count="%s"\nvote_count="%s"\nfavlists_count="%s"\ncomment_count="%s"\nauthor="%s"\nheadline="%s"\n', 
-            问题id, 回答id, thanks_count.Text, vote_count.Text, favlists_count.Text, comment_count.Text, username.Text, userheadline.Text)
+            问题id, 回答id, thanks_count.Text, vote_count.Text, favlists_count.Text, comment_count.Text, name, headline)
           写入文件(保存路径.."/detail.txt", detail)
-          newActivity("saveweb", {pgids.content.getUrl(), 保存路径, detail})
+          newActivity("saveweb", {mview.ids.content.getUrl(), 保存路径, detail})
         end,
         onLongClick=function()
           local content = 获取当前WebView()
           if content then
             content.evaluateJavascript('getmd()', {onReceiveValue=function(b)
+                local _, _, _, name = get_current_info()
                 提示("请选择一个保存位置")
                 saf_writeText = b
-                createDocumentLauncher.launch(_title.Text.."_"..username.Text..".md")
+                createDocumentLauncher.launch(_title.Text.."_"..name..".md")
             end})
           end
         end
@@ -852,8 +868,7 @@ task(1,function()
       },
       {
         src=图标("book"),text="举报",onClick=function()
-          local mview = getCurrentMView()
-          local 回答id = mview and mview.data and mview.data.id
+          local _, _, _, _, 回答id = get_current_info()
           if not 回答id then return 提示("加载中") end
           local url = "https://www.zhihu.com/report?id="..回答id.."&type=answer"
           newActivity("browser", {url.."&source=android&ab_signature=", "举报"})
