@@ -20,6 +20,8 @@ local Path = luajava.bindClass "android.graphics.Path"
 local ArgbEvaluator = luajava.bindClass "android.animation.ArgbEvaluator"
 local AppBarLayoutBehavior = luajava.bindClass "com.hydrogen.AppBarLayoutBehavior"
 
+local last_toast_time = 0
+
 -- 初始化参数
 问题id, 回答id, pre_data = ...
 
@@ -108,6 +110,7 @@ local function set_question_info(tab)
   
   if answer_count == 1 and 回答容器 then
     回答容器.isleft = true
+    回答容器.isright = true
   end
     
   local function openQuestion()
@@ -552,19 +555,14 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{
   onPageScrolled=function(pos,positionOffset,positionOffsetPixels)
     if positionOffsetPixels==0 then
       if 回答容器 then 回答容器:updateLR() end
-      local adapter = pg.getAdapter()
-      if adapter and adapter.getItemCount()==pos+1 then
-        -- 核心修复：只有当前页加载成功且确认到头才弹回，防止误判
-        local item = adapter.getItem(pos)
-        local mviews = 数据表[item.id]
-        if mviews and mviews.load == true and 回答容器.isright then
-          pg.setCurrentItem(pos-1,true)
-          return 提示("已经没有更多内容啦")
-        end
-       elseif pos==0 then
-        if 回答容器 and 回答容器.isleft then
-          pg.setCurrentItem(1,true)
-          return 提示("已经到最左了")
+    elseif positionOffset > 0 and 回答容器 and 回答容器.isright then
+      local item = pg.adapter.getItem(pos)
+      local mviews = item and 数据表[item.id]
+      if mviews and mviews.load == true then
+        pg.setCurrentItem(pos, false)
+        if last_toast_time + 2000 < os.time() * 1000 then
+          提示("已经没有更多内容啦")
+          last_toast_time = os.time() * 1000
         end
       end
     end
