@@ -12,6 +12,9 @@ if type(pre_data) == "table" then
     if people_name then people_name.text = pre_data.name end
     if people_sign then people_sign.text = (pre_data.headline ~= "" and pre_data.headline or "加载中...") end
     if 图像 then loadglide(图像, pre_data.avatar_url or pre_data.avatar_url_template) end
+    if _voteup_count and pre_data.voteup_count then _voteup_count.Text = numtostr(pre_data.voteup_count) .. "个获赞" end
+    if _fans and pre_data.follower_count then _fans.Text = numtostr(pre_data.follower_count) .. "个粉丝" end
+    if _follow and pre_data.following_count then _follow.Text = numtostr(pre_data.following_count) .. "个关注" end
     if card then card.Visibility = 0 end
   end)
 end

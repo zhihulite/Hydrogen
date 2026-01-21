@@ -6,12 +6,34 @@ import "android.text.Html$TagHandler"
 import "android.text.Html$ImageGetter"
 import "androidx.core.widget.NestedScrollView"
 
-question_id, pre_title = ...
+question_id, pre_data = ...
 
--- 立即应用传入的标题
-if pre_title then
+-- 立即应用传入的数据
+if type(pre_data) == "table" then
   task(1, function()
-    if title then title.text = pre_title end
+    if title then title.text = pre_data.title or pre_data.name end
+    if _comment then _comment.Text = tostring(pre_data.comment_count or "") end
+    if _star then _star.Text = tostring(pre_data.follower_count or "") end
+    if _title then _title.Text = "共" .. tostring(pre_data.answer_count or "") .. "个回答" end
+
+    if pre_data.excerpt and #pre_data.excerpt > 0 then
+      if description_text then description_text.Text = pre_data.excerpt end
+      if openroot then openroot.visibility = 0 end
+    elseif description_card then
+      description_card.visibility = 8
+    end
+
+    if _root then _root.Visibility = 0 end
+
+    if pre_data.author then
+      if loadglide and people_image then loadglide(people_image, pre_data.author.avatar_url) end
+      if askername then askername.text = pre_data.author.name end
+      if askerheadline then askerheadline.text = pre_data.author.headline ~= "" and pre_data.author.headline or "暂无签名" end
+    end
+  end)
+elseif type(pre_data) == "string" then
+  task(1, function()
+    if title then title.text = pre_data end
   end)
 end
 
@@ -201,6 +223,7 @@ task(1, function()
       end
 
       loadglide(people_image, tab.author.avatar_url)
+      提问者数据 = tab.author
       askername.text = tab.author.name
       askerheadline.text = tab.author.headline ~= "" and tab.author.headline or "暂无签名"
       用户id = tab.author.id

@@ -13,8 +13,31 @@ import "com.google.android.material.floatingactionbutton.ExtendedFloatingActionB
 
 local id,类型=...
 
-if 类型==nil or 类型:match("%d") then
+local pre_data
+if type(类型) == "table" then
+  pre_data = 类型
+  类型 = pre_data.type or "文章"
+  if 类型 == "article" then 类型 = "文章"
+  elseif 类型 == "pin" then 类型 = "想法"
+  elseif 类型 == "zvideo" then 类型 = "视频"
+  end
+end
+
+if 类型==nil or (type(类型) == "string" and 类型:match("%d")) then
   类型="文章"
+end
+
+if pre_data then
+  task(1, function()
+    if pre_data.author then
+      author_id = pre_data.author.id
+      author_name = pre_data.author.name
+    end
+    page_title = pre_data.title
+    if page_title and _title then
+      _title.text = page_title
+    end
+  end)
 end
 
 初始化历史记录数据()

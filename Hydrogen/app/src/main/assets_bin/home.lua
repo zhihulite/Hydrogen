@@ -740,7 +740,7 @@ function getuserinfo()
       local udids = headers.get("x-udid")
       if udids and not udids.isEmpty() then activity.setSharedData("udid", udids.get(0)) end
 
-      侧滑头.onClick = function() newActivity("people", {data.id}) end
+      侧滑头.onClick = function() newActivity("people", {data.id, data}) end
       loadglide(头像id, data.avatar_url, false)
       名字id.Text = data.name
       签名id.Text = (#data.headline:gsub(" ", "") > 0) and data.headline or "你还没有签名呢"

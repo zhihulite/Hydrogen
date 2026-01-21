@@ -448,28 +448,45 @@ function numtostr(num)
 end
 
 function 点击事件判断(myid,title,extra)
+  local target_data = extra
+  if type(extra) == "table" then
+    if extra.target then
+      target_data = extra.target
+    end
+  end
+
   if tostring(myid):find("问题分割") or not(tostring(myid):find("分割")) then
-    newActivity("question",{tostring(myid):match("问题分割(.+)") or myid, title})
+    local qid = tostring(myid):match("问题分割(.+)") or myid
+    local qdata = target_data
+    if target_data and target_data.question then
+      qdata = target_data.question
+    end
+    newActivity("question",{qid, qdata or title})
    elseif tostring(myid):find("文章分割") then
-    newActivity("column",{tostring(myid):match("文章分割(.+)"),tostring(myid):match("分割(.+)")})
+    newActivity("column",{tostring(myid):match("文章分割(.+)"), target_data or tostring(myid):match("分割(.+)")})
    elseif tostring(myid):find("视频分割") then
-    newActivity("column",{tostring(myid):match("视频分割(.+)"),"视频"})
+    newActivity("column",{tostring(myid):match("视频分割(.+)"), target_data or "视频"})
    elseif tostring(myid):find("想法分割") then
-    newActivity("column",{tostring(myid):match("想法分割(.+)"),"想法"})
+    newActivity("column",{tostring(myid):match("想法分割(.+)"), target_data or "想法"})
    elseif tostring(myid):find("直播分割") then
-    newActivity("column",{tostring(myid):match("直播分割(.+)"),"直播"})
+    newActivity("column",{tostring(myid):match("直播分割(.+)"), target_data or "直播"})
    elseif tostring(myid):find("圆桌分割") then
-    newActivity("column",{tostring(myid):match("圆桌分割(.+)"),"圆桌"})
+    newActivity("column",{tostring(myid):match("圆桌分割(.+)"), target_data or "圆桌"})
    elseif tostring(myid):find("专题分割") then
-    newActivity("column",{tostring(myid):match("专题分割(.+)"),"专题"})
+    newActivity("column",{tostring(myid):match("专题分割(.+)"), target_data or "专题"})
    elseif tostring(myid):find("视频合集详情分割") then
     newActivity("people_more",{tostring(myid):match("视频合集详情分割(.+)"),"视频合集详情"})
    elseif tostring(myid):find("话题分割") then
-    newActivity("topic",{tostring(myid):match("话题分割(.+)")})
+    newActivity("topic",{tostring(myid):match("话题分割(.+)"), target_data})
    elseif tostring(myid):find("用户分割") then
-    newActivity("people",{tostring(myid):match("用户分割(.+)")})
+    local uid = tostring(myid):match("用户分割(.+)")
+    local udata = target_data
+    if target_data and target_data.author then
+      udata = target_data.author
+    end
+    newActivity("people",{uid, udata})
    elseif tostring(myid):find("专栏分割") then
-    newActivity("people_column",{tostring(myid):match("专栏分割(.+)")})
+    newActivity("people_column",{tostring(myid):match("专栏分割(.+)"), target_data})
 
    else
     newActivity("answer",{tostring(myid):match("(.+)分割"),tostring(myid):match("分割(.+)"),extra})

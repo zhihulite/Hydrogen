@@ -53,7 +53,7 @@ if type(pre_data) == "table" then
     loadglide(usericon, pre_data.author.avatar_url)
     userinfo.onClick = function()
       nTView = usericon
-      newActivity("people", {pre_data.author.id})
+      newActivity("people", {pre_data.author.id, pre_data.author})
     end
   end
   -- 更新底栏计数
@@ -401,7 +401,7 @@ function 初始化页(mviews)
 
     userinfo.onClick = function()
       nTView = usericon
-      newActivity("people", {data.author.id})
+      newActivity("people", {data.author.id, data.author})
     end
 
     comment.onLongClick = function()

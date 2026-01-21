@@ -89,6 +89,7 @@ function base.resolvedata(v, data)
     评论 = (v.child_comment_count and v.child_comment_count > 0) and tostring(v.child_comment_count) or "false",
     id内容 = tostring(v.id),
     作者id = author.id,
+    author = author,
     预览内容 = myspan,
     标题 = name,
     图像 = author.avatar_url,
@@ -144,7 +145,7 @@ local function 多选菜单(data, views)
             end)
         end}).setNegativeButton("取消", nil).show()
     end},
-    {"查看主页", function() newActivity("people", {data.作者id}) end}
+    {"查看主页", function() newActivity("people", {data.作者id, data.author}) end}
   }
 
   if isstart then
@@ -353,7 +354,7 @@ function base.getAdapter(comment_pagetool,pos)
 
       views.author_lay.onClick=function()
         nTView=views.图像
-        newActivity("people",{data.作者id})
+        newActivity("people",{data.作者id, data.author})
       end
 
       views.card.onTouch=function(v,event)

@@ -7,8 +7,19 @@ edgeToedge(nil,nil,function() local layoutParams = mainLay.LayoutParams;
   layoutParams.setMargins(layoutParams.leftMargin, 状态栏高度, layoutParams.rightMargin,layoutParams.bottomMargin);
   mainLay.setLayoutParams(layoutParams); end)
 设置toolbar(toolbar)
-topic_id=...
+topic_id, pre_data = ...
 波纹({fh,_more},"圆主题")
+
+if type(pre_data) == "table" then
+  task(1, function()
+    _title.text = pre_data.name
+    if loadglide then
+      loadglide(_image, pre_data.avatar_url, false)
+      loadglide(_bigimage, pre_data.avatar_url, false)
+    end
+    _excerpt.text = (pre_data.introduction == "" or pre_data.introduction == nil) and "暂无话题描述" or pre_data.introduction
+  end)
+end
 
 初始化历史记录数据()
 

@@ -17,6 +17,7 @@ function base.getfuncs()
       add.id内容=id内容
       add.标题=标题
       add.底部内容=底部内容
+      add.testdata=v
       table.insert(data,add)
     end,
     --收藏夹
@@ -24,12 +25,12 @@ function base.getfuncs()
       local add={}
       local 图片
       图片=v.creator.avatar_url
-      local add={}
       add.图像=图片
       add.预览内容="由 "..v.creator.name.." 创建"
       add.标题=v.title
       add.关注数=math.floor(v.follower_count).."人关注"
       add.id内容=tostring(v.id)
+      add.testdata=v
       table.insert(data,add)
     end,
     --话题
@@ -43,6 +44,7 @@ function base.getfuncs()
       add.预览内容=预览内容
       add.标题=标题
       add.id内容="话题分割"..v.id
+      add.testdata=v
       table.insert(data,add)
     end,
     --专栏
@@ -59,6 +61,7 @@ function base.getfuncs()
       add.标题=标题
       add.id内容=id内容
       add.底部内容=底部内容
+      add.testdata=v
       table.insert(data,add)
     end,
     --用户
@@ -82,6 +85,7 @@ function base.getfuncs()
         add.id内容=用户id
         add.图像=头像
         add.预览内容=签名
+        add.testdata=v
         table.insert(data,add)
       end
     end,
@@ -101,6 +105,7 @@ function base.getfuncs()
       add.图像=头像
       add.预览内容=预览内容
       add.底部内容=底部内容
+      add.testdata=v
       table.insert(data,add)
     end,
     --圆桌
@@ -118,6 +123,7 @@ function base.getfuncs()
       add.id内容=id内容
       add.预览内容=预览内容
       add.底部内容=底部内容
+      add.testdata=v
       table.insert(data,add)
     end
   }
@@ -129,7 +135,7 @@ function base.getAdapter(followcontent_pagetool,pos)
   local data=followcontent_pagetool:getItemData(pos)
   local itemc=table.clone(获取适配器项目布局("simple/card"))
   local onclick=function(data)
-    点击事件判断(data.id内容)
+    点击事件判断(data.id内容, data.标题, data.testdata)
   end
   switch pos
    case 1
@@ -149,7 +155,7 @@ function base.getAdapter(followcontent_pagetool,pos)
    case 5
     itemc=获取适配器项目布局("people/people_list")
     onclick=function(data)
-      newActivity("people",{data.id内容})
+      newActivity("people",{data.id内容, data.testdata})
     end
   end
 
