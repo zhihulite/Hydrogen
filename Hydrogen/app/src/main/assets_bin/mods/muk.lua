@@ -795,6 +795,21 @@ function dec2hex(n)
   return hex_str
 end
 
+function 转0x(j,isAndroid)
+  if #j==7 then
+    jj=j:match("#(.+)")
+    jjj=tonumber("0xff"..jj)
+   else
+    jj=j:match("#(.+)")
+    jjj=tonumber("0x"..jj)
+  end
+  -- 如果安卓的颜色值大于2^31-1，那么它是一个负数，需要减去2^32
+  if isAndroid and jjj > 2^31 - 1 then
+    jjj = tointeger(jjj - 2^32)
+  end
+  return jjj
+end
+
 function 主题(str)
   全局主题值=str
   if 全局主题值=="Day" then
@@ -812,6 +827,10 @@ function 主题(str)
     ripplec="#559E9E9E"
     cardedge=dec2hex(res.color.attr.colorSurfaceContainerLow)
     oricardedge=dec2hex(res.color.attr.colorOutlineVariant)
+
+    primaryc_int=转0x(primaryc,true)
+    backgroundc_int=转0x(backgroundc,true)
+    stextc_int=转0x(stextc,true)
 
     if 获取主题夜间模式() == true then
       if Boolean.valueOf(this.getSharedData("Setting_Auto_Night_Mode"))==true then
@@ -842,6 +861,11 @@ function 主题(str)
     cardedge=dec2hex(res.color.attr.colorSurfaceContainer)
     oricardedge=dec2hex(res.color.attr.colorOutlineVariant)
     barc=dec2hex(res.color.attr.colorSurfaceContainerLow)
+
+    primaryc_int=转0x(primaryc,true)
+    backgroundc_int=转0x(backgroundc,true)
+    stextc_int=转0x(stextc,true)
+
     pcall(function()
       local _window = activity.getWindow();
       _window.setBackgroundDrawable(ColorDrawable(0xff222222));
@@ -880,21 +904,6 @@ end
 
 activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS).setStatusBarColor(0);
 
-
-function 转0x(j,isAndroid)
-  if #j==7 then
-    jj=j:match("#(.+)")
-    jjj=tonumber("0xff"..jj)
-   else
-    jj=j:match("#(.+)")
-    jjj=tonumber("0x"..jj)
-  end
-  -- 如果安卓的颜色值大于2^31-1，那么它是一个负数，需要减去2^32
-  if isAndroid and jjj > 2^31 - 1 then
-    jjj = tointeger(jjj - 2^32)
-  end
-  return jjj
-end
 
 function 提示(t)
 

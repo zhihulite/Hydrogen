@@ -8,7 +8,7 @@
 local base={--表初始化
   getid=nil,
   pageinfo={},
-
+  used_ids={}, -- 记录已分发的 ID 防止循环
 }
 
 
@@ -16,6 +16,7 @@ function base:new(id)--类的new方法
   local child=table.clone(self)
   -- 移除 tonumber，知乎 ID 必须作为字符串处理以防精度丢失
   child.getid=tostring(id) --这里的id是回答页id
+  child.used_ids = {} -- 初始为空，由加载逻辑标记
   return child
 end
 
@@ -33,28 +34,32 @@ function base:getinfo(id,cb)
 end
 
 
-function base:getAnswer(id,cb)
+function base:getAnswer(id,cb,silent)
   local include='?include=author%2Ccontent%2Cvoteup_count%2Ccomment_count%2Cfavlists_count%2Cthanks_count%2Cpagination_info%2Cad_track_url%2Ccontent%2Ccreated_time%2Cupdated_time%2Creshipment_settings%2Cmark_infos%2Ccopyright_applications_count%2Cis_collapsed%2Ccollapse_reason%2Cannotation_detail%2Cis_normal%2Ccollaboration_status%2Creview_info%2Creward_info%2Crelationship.voting%2Crelationship.is_author%3Bsuggest_edit.unnormal_details%3Bcommercial_info%2Crelevant_info%2Csearch_words%2Cpagination_info%2Cfavlists_count%2Ccomment_count%2Cexcerpt%2Cattachment'
   local url="https://www.zhihu.com/api/v4/answers/"..tostring(id)..include
   zHttp.get(url,head,function(a,b)
     if a==200 then
       cb(luajson.decode(b))
      elseif a==404 then
-      if self.pageinfo[tostring(id)] then
-        AlertDialog.Builder(this)
-        .setTitle("提示")
-        .setMessage("发生错误 不存在该回答 已尝试跳转下个回答 如还无法访问 可点击上方标题进入问题详情页")
-        .setCancelable(false)
-        .setPositiveButton("我知道了",nil)
-        .show()
-        cb(false)
+      if silent~=true then
+        if self.pageinfo[tostring(id)] then
+          AlertDialog.Builder(this)
+          .setTitle("提示")
+          .setMessage("发生错误 不存在该回答 已尝试跳转下个回答 如还无法访问 可点击上方标题进入问题详情页")
+          .setCancelable(false)
+          .setPositiveButton("我知道了",nil)
+          .show()
+          cb(false)
+         else
+          AlertDialog.Builder(this)
+          .setTitle("提示")
+          .setMessage("发生错误 不存在该回答 可点击上方标题进入问题详情页")
+          .setCancelable(false)
+          .setPositiveButton("我知道了",nil)
+          .show()
+        end
        else
-        AlertDialog.Builder(this)
-        .setTitle("提示")
-        .setMessage("发生错误 不存在该回答 可点击上方标题进入问题详情页")
-        .setCancelable(false)
-        .setPositiveButton("我知道了",nil)
-        .show()
+        cb(false)
       end
     end
   end)
@@ -71,20 +76,22 @@ function base:updateLR()
   end
 end
 
-function base:getNextId(z)
-  local getid=tostring(self.getid)
-  local pageinfo=self.pageinfo
+function base:getNextId(z, from_id)
+  local base_id = tostring(from_id or self.getid)
+  local pageinfo = self.pageinfo
 
-  if pageinfo[getid] then
-    if z then
-      local prev_ids=pageinfo[getid].prev_ids
-      getid=tostring(prev_ids[#prev_ids])
-     else
-      local next_ids=pageinfo[getid].next_ids
-      getid=tostring(next_ids[1])
+  if pageinfo[base_id] then
+    local ids = z and pageinfo[base_id].prev_ids or pageinfo[base_id].next_ids
+    if ids and #ids > 0 then
+      for _, id in ipairs(ids) do
+        local sid = tostring(id)
+        if not self.used_ids[sid] then
+          return sid
+        end
+      end
     end
   end
-  return getid
+  return nil
 end
 
 function base:getOneData(cb,z) --获取一条数据
