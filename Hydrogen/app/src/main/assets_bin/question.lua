@@ -26,7 +26,7 @@ if type(pre_data) == "table" then
     if _root then _root.Visibility = 0 end
 
     if pre_data.author then
-      if loadglide and people_image then loadglide(people_image, pre_data.author.avatar_url) end
+      if loadglide and usericon then loadglide(usericon, pre_data.author.avatar_url) end
       if askername then askername.text = pre_data.author.name end
       if askerheadline then askerheadline.text = pre_data.author.headline ~= "" and pre_data.author.headline or "暂无签名" end
     end
@@ -222,7 +222,7 @@ task(1, function()
         _follow.text = "未关注"
       end
 
-      loadglide(people_image, tab.author.avatar_url)
+      loadglide(usericon, tab.author.avatar_url)
       提问者数据 = tab.author
       askername.text = tab.author.name
       askerheadline.text = tab.author.headline ~= "" and tab.author.headline or "暂无签名"
