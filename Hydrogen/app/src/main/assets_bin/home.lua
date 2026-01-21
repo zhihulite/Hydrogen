@@ -510,7 +510,7 @@ if startindex == 0 then
   end)
 end
 
-edgeToedge(mainLay,bnv,function()
+edgeToedge({mainLay, 侧滑头},bnv,function()
   --[[local layoutParams = 侧滑头.LayoutParams;
   layoutParams.setMargins(layoutParams.leftMargin, 状态栏高度, layoutParams.rightMargin,layoutParams.bottomMargin);
   侧滑头.setLayoutParams(layoutParams);
