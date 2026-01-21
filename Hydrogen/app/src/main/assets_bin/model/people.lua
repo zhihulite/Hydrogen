@@ -85,7 +85,7 @@ function base.getAdapter(people_pagetool,pos)
           local id内容=data.id内容:gsub("更多","")
           newActivity("people_more",{用户id,id内容})
          else
-          点击事件判断(data.id内容,data.标题)
+          点击事件判断(data.id内容,data.标题,data.testdata)
         end
       end
     end,
@@ -236,6 +236,7 @@ function base.resolvedata(v,data)
   add.id内容=id内容
   add.标题=标题
   add.图像=头像
+  add.testdata=v
   table.insert(data,add)
 end
 

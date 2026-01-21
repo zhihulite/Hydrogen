@@ -40,6 +40,7 @@ function 问题详情(code)
     Elevation="4dp";
     BackgroundColor=转0x(backgroundc);
     id="ztbj";
+    paddingTop=状态栏高度;
     {
       CardView;
       layout_gravity="center",

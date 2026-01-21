@@ -91,6 +91,7 @@ local function resolve_moments_feed(v,data)
   add.动作=动作
   add.时间=时间
   add.图像=头像
+  add.testdata=v
   if data then
     table.insert(data,add)
   end
@@ -181,6 +182,7 @@ local function resolve_feed_item_index_group(v,data)
   add.动作=动作
   add.时间=时间
   add.图像=头像
+  add.testdata=v
   if data then
     table.insert(data,add)
   end
@@ -274,7 +276,7 @@ local function 加载主页关注折叠adp(data,views)
       end
       views.card.onClick=function()
         nTView=views.card
-        点击事件判断(data.id内容,data.标题)
+        点击事件判断(data.id内容,data.标题,data.testdata)
       end
     end,
   })
@@ -365,7 +367,7 @@ function base.getAdapter(follow_pagetool,pos)
       --子项目点击事件
       views.card.onClick=function(v)
         nTView=views.card
-        点击事件判断(data.id内容,data.标题)
+        点击事件判断(data.id内容,data.标题,data.testdata)
       end
 
     end,

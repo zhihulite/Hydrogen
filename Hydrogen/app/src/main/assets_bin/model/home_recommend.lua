@@ -101,6 +101,7 @@ function base.resolvedata(v,data)
   add.评论数=评论数
   add.点赞数=点赞数
   add.id内容=id内容
+  add.testdata=v
 
   local extradata= {
     isread=isread,
@@ -173,7 +174,7 @@ function base.getAdapter(home_pagetool,pos)
         end
 
         nTView=views.card
-        点击事件判断(data.id内容,data.标题)
+        点击事件判断(data.id内容,data.标题,data.testdata)
       end
 
       views.card.onLongClick=function(view)

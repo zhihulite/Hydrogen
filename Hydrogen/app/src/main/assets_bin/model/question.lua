@@ -58,7 +58,7 @@ function base_question.getAdapter(question_pagetool,pos)
 
       views.card.onClick=function()
         nTView=views.card
-        newActivity("answer",{question_id,tostring(data.id内容)})
+        newActivity("answer",{question_id,tostring(data.id内容),data.testdata})
       end
     end,
   }))
@@ -83,6 +83,7 @@ function base_question.resolvedata(v,data)
   add.id内容=v.id..""
   add.预览内容=Html.fromHtml(v.excerpt or "无")
   add.图像=图片
+  add.testdata=v
   table.insert(data,add)
 end
 

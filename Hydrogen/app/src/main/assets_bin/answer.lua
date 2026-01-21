@@ -49,6 +49,10 @@ if type(pre_data) == "table" then
     username.Text = pre_data.author.name
     userheadline.Text = (pre_data.author.headline == "" and "Ta还没有签名哦~") or pre_data.author.headline
     loadglide(usericon, pre_data.author.avatar_url)
+    userinfo.onClick = function()
+      nTView = usericon
+      newActivity("people", {pre_data.author.id})
+    end
   end
   -- 更新底栏计数
   vote_count.Text = tostring(pre_data.voteup_count or vote_count.Text)
@@ -87,9 +91,9 @@ local function getCurrentMView()
   return 数据表[item.id]
 end
 
--- 优化：直接获取信息，避免多余的 1ms 延迟
-answer:getinfo(回答id, function(tab)
-  local info_text = "点击查看全部" .. tab.answer_count .. "个回答 >"
+local function set_question_info(tab)
+  local answer_count = tab.answer_count or tab.answerCount or 0
+  local info_text = "点击查看全部" .. answer_count .. "个回答 >"
   all_answer.Text = info_text
   all_answer_expand.Text = info_text
   问题id = tab.id
@@ -102,7 +106,7 @@ answer:getinfo(回答id, function(tab)
   all_root.setAlpha(0)
   all_root_expand.setAlpha(1)
   
-  if tab.answer_count == 1 and 回答容器 then
+  if answer_count == 1 and 回答容器 then
     回答容器.isleft = true
   end
     
@@ -117,7 +121,17 @@ answer:getinfo(回答id, function(tab)
   all_root.onClick = openQuestion
   all_root_expand.onClick = openQuestion
   all_answer_expand.onClick = openQuestion
-end)
+end
+
+-- 优化：如果 pre_data 中已经包含问题信息，则直接设置，避免多余的 API 请求
+if type(pre_data) == "table" and pre_data.question then
+  set_question_info(pre_data.question)
+else
+  -- 优化：直接获取信息，避免多余的 1ms 延迟
+  answer:getinfo(回答id, function(tab)
+    set_question_info(tab)
+  end)
+end
 
 local dtl_translation = 0
 local currentWebView
@@ -381,6 +395,11 @@ function 初始化页(mviews)
     userheadline.Text = (data.author.headline == "" and "Ta还没有签名哦~") or data.author.headline
     loadglide(usericon, data.author.avatar_url)
     更新底栏(data)
+
+    userinfo.onClick = function()
+      nTView = usericon
+      newActivity("people", {data.author.id})
+    end
 
     comment.onLongClick = function()
       提示(data.comment_count.."条评论")

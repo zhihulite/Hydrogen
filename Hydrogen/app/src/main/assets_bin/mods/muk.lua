@@ -447,7 +447,7 @@ function numtostr(num)
   return tostring(num)
 end
 
-function 点击事件判断(myid,title)
+function 点击事件判断(myid,title,extra)
   if tostring(myid):find("问题分割") or not(tostring(myid):find("分割")) then
     newActivity("question",{tostring(myid):match("问题分割(.+)") or myid, title})
    elseif tostring(myid):find("文章分割") then
@@ -472,7 +472,7 @@ function 点击事件判断(myid,title)
     newActivity("people_column",{tostring(myid):match("专栏分割(.+)")})
 
    else
-    newActivity("answer",{tostring(myid):match("(.+)分割"),tostring(myid):match("分割(.+)")})
+    newActivity("answer",{tostring(myid):match("(.+)分割"),tostring(myid):match("分割(.+)"),extra})
   end
 end
 

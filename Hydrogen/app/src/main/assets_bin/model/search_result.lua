@@ -49,7 +49,7 @@ function base.getAdapter(search_result_pagetool,pos)
       views.预览内容.text=data.预览内容
       views.card.onClick=function()
         nTView=views.card
-        点击事件判断(data.id内容,data.标题)
+        点击事件判断(data.id内容,data.标题,data.testdata)
       end
     end,
   }))
@@ -112,6 +112,7 @@ function base.resolvedata(v,data)
     add.点赞数=""
   end
   add.活动=活动
+  add.testdata=v
   table.insert(data,add)
 end
 

@@ -41,7 +41,7 @@ function base.getAdapter(people_column_pagetool,pos)
       loadglide(views.图像,data.图像)
       views.card.onClick=function()
         nTView=views.card
-        点击事件判断(data.id内容,data.标题)
+        点击事件判断(data.id内容,data.标题,data.testdata)
       end
     end,
   }))
@@ -80,6 +80,7 @@ function base.resolvedata(v,data)
   add.点赞数=点赞数..""
   add.评论数=评论数..""
   add.图像=头像
+  add.testdata=v
   table.insert(data,add)
 end
 
