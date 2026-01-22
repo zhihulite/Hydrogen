@@ -11,7 +11,7 @@ topic_id, pre_data = ...
 波纹({fh,_more},"圆主题")
 
 if type(pre_data) == "table" then
-  task(1, function()
+  taskUI(function()
     _title.text = pre_data.name
     if loadglide then
       loadglide(_image, pre_data.avatar_url, false)
@@ -80,7 +80,7 @@ topic_page.setAdapter(pagadp)
 
 local base_topic=require "model.topic":new(topic_id)
 
-task(1, function()
+taskUI(function()
   base_topic:getData(function(data)
     if not data then return end
     _title.text=data.name
@@ -89,7 +89,7 @@ task(1, function()
     _excerpt.text = (data.introduction == "") and "暂无话题描述" or data.introduction
     
     -- 保存历史记录
-    task(100, function()
+    taskUI(100, function()
       初始化历史记录数据()
       保存历史记录(topic_id, data.name, data.introduction, "话题")
     end)
@@ -141,7 +141,7 @@ pop={
   }
 }
 
-task(10,function()
+taskUI(10,function()
   a=MUKPopu(pop)
 end)
 

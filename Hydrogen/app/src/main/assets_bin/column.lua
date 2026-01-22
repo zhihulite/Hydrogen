@@ -28,7 +28,7 @@ if 类型==nil or (type(类型) == "string" and 类型:match("%d")) then
 end
 
 if pre_data then
-  task(1, function()
+  taskUI(function()
     if pre_data.author then
       author_id = pre_data.author.id
       author_name = pre_data.author.name
@@ -62,7 +62,7 @@ end
 
 
 if 类型=="本地" then
-  task(1,function()
+  taskUI(function()
     _title.text="本地内容"
 
     local file_path=id:gsub(内置存储文件("Download"),"")
@@ -119,7 +119,7 @@ function 刷新()
         page_title = data.title
         _title.text = page_title
         保存路径 = data.savepath
-        task(100, function()
+        taskUI(100, function()
           保存历史记录(base_column.id, data.title, data.excerpt_title or data.excerpt or "", base_column.type)
         end)
       else
@@ -426,7 +426,7 @@ if 类型=="本地" then
   }
 end
 
-task(1,function()
+taskUI(function()
   a=MUKPopu(pop)
 
   if 类型=="视频" then

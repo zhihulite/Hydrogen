@@ -130,7 +130,7 @@ data = {
         --在listview的写法
         local progress=获取listview顶部布局(send).Tag.progress
         progress.setVisibility(0)
-        task(300,function()
+        taskUI(300,function()
           send.setVisibility(0) progress.setVisibility(8)
           local 单选列表={"使用Gitee Issues反馈","使用Github Issues反馈","使用QQ反馈"}
           local dofun={

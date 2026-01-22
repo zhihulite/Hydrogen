@@ -10,7 +10,7 @@ question_id, pre_data = ...
 
 -- 立即应用传入的数据
 if type(pre_data) == "table" then
-  task(1, function()
+  taskUI(function()
     if title then title.text = pre_data.title or pre_data.name end
     if _comment then _comment.Text = tostring(pre_data.comment_count or "") end
     if _star then _star.Text = tostring(pre_data.follower_count or "") end
@@ -32,7 +32,7 @@ if type(pre_data) == "table" then
     end
   end)
 elseif type(pre_data) == "string" then
-  task(1, function()
+  taskUI(function()
     if title then title.text = pre_data end
   end)
 end
@@ -183,7 +183,7 @@ end
 question_base=require "model.question":new(question_id)
 
 -- 并行发起问题详情获取和列表初始化
-task(1, function()
+taskUI(function()
   question_base:getData(function(tab)
     if not tab then return end
 
@@ -203,7 +203,7 @@ task(1, function()
     _root.Visibility = 0
 
     -- 非核心 UI 和逻辑移入任务
-    task(100, function()
+    taskUI(100, function()
       for k, v in pairs(tab.topics) do
         tags.ids.load.parent.visibility = 0
         tags:addTab(v.name, function() newActivity("topic", {v.id}) end, 2)
@@ -279,7 +279,7 @@ function onDestroy()
   show.destroy()
 end
 
-task(1,function()
+taskUI(function()
   a=MUKPopu({
     tittle="问题",
     list={

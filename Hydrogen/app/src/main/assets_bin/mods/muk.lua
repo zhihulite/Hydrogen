@@ -539,6 +539,20 @@ function debounce(func,delay)
   end
 end
 
+---在 UI 线程延迟执行（替代繁重的 task 函数，避免创建线程和子状态机）
+---@param delay number 延迟时间（毫秒），可选，默认为 0
+---@param func function 需要执行的函数
+function taskUI(delay, func)
+  if type(delay) == "function" then
+    func = delay
+    delay = 0
+  end
+  if delay == 0 then
+    handler.post(Runnable{run=func})
+  else
+    handler.postDelayed(Runnable{run=func}, delay)
+  end
+end
 
 function tokb(m)
   if m<=1024 then
@@ -2723,7 +2737,7 @@ end
 setHead()
 
 function 清理内存()
-  task(1,function()
+  taskUI(function()
 
     import "androidx.core.content.ContextCompat"
     local datadir=tostring(ContextCompat.getDataDir(activity))

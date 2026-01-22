@@ -8,7 +8,7 @@ import "com.google.android.material.tabs.TabLayout"
 
 id,title=...
 
-task(1,function()
+taskUI(function()
   a=MUKPopu({
     tittle=title,
     list={

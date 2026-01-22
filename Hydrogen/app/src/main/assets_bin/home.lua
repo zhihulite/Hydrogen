@@ -20,7 +20,7 @@ import "androidx.core.view.WindowInsetsCompat"
 --导入 MyViewPager
 MyViewPager = require "views/MyViewPager"
 
-task(1, function()
+taskUI(function()
   local cookie = 获取Cookie("https://www.zhihu.com/")
   if not cookie or not cookie:find("d_c0") then
     Http.get("https://www.zhihu.com/", function(code, content) end)
@@ -95,15 +95,15 @@ nav.setNavigationItemSelectedListener(NavigationView.OnNavigationItemSelectedLis
      case "关注"
       followcontent_pagetool:refer(nil,nil,true)
      case "本地"
-      task(300,function()newActivity("local_list")end)
+      taskUI(300,function()newActivity("local_list")end)
      case "设置"
-      task(300,function()newActivity("settings")end)
+      taskUI(300,function()newActivity("settings")end)
      case "历史"
-      task(300,function()newActivity("history")end)
+      taskUI(300,function()newActivity("history")end)
      case "通知"
-      task(300,function()newActivity("browser",{"https://www.zhihu.com/notifications"})end)
+      taskUI(300,function()newActivity("browser",{"https://www.zhihu.com/notifications"})end)
      case "更多"
-      task(20,function()
+      taskUI(20,function()
         local more_options = {"通知","私信","设置","屏蔽用户管理","圆桌","专题"}
         local more_urls = {"https://www.zhihu.com/notifications","https://www.zhihu.com/messages","https://www.zhihu.com/settings/account","屏蔽用户管理","https://www.zhihu.com/appview/roundtable","https://www.zhihu.com/appview/special"}
         local jumpurl
@@ -503,7 +503,7 @@ page_home.setCurrentItem(startindex,false)
 
 -- 如果 startindex 为 0，ViewPager 不会触发 onPageSelected，需要手动触发逻辑函数
 if startindex == 0 then
-  task(100, function()
+  taskUI(100, function()
     if isFirstLoad then
       onHomePageChange(0)
     end
@@ -566,7 +566,7 @@ function 切换布局(layoutName)
       onClick = function()
         if not getLogin() then return 提示("你可能需要登录") end
         nTView = _ask
-        task(20, function() newActivity("scan", {"https://www.zhihu.com/messages", "提问"}) end)
+        taskUI(20, function() newActivity("scan", {"https://www.zhihu.com/messages", "提问"}) end)
       end,
       menu = {
         { src=图标("email"), text="反馈", onClick=function() 跳转页面("feedback") end },
@@ -591,7 +591,7 @@ end
 
 
 --日报、收藏、关注内容等次要组件延迟初始化以加速主页呈现
-task(100, function()
+taskUI(100, function()
   --日报
   daily_pagetool=require "model.home_daily"
   :new()
@@ -757,8 +757,8 @@ function getuserinfo()
 end
 
 -- 提前发起并发请求
-task(1, getuserinfo)
-task(10, 加载主页tab)
+taskUI(getuserinfo)
+taskUI(10, 加载主页tab)
 
 
 local opentab={}
@@ -883,7 +883,7 @@ if activity.getSharedData("自动清理缓存")=="true" then
   清理内存()
 end
 
-task(1,function()
+taskUI(function()
   a=MUKPopu({
     tittle="菜单",
     list={
@@ -930,13 +930,13 @@ end
 
 if this.getIntent() then
   --如果本身有intent 就传递给onNewIntent做初始化
-  task(1,function()
+  taskUI(function()
     onNewIntent(this.getIntent())
   end)
 end
 
 if not(this.getSharedData("hometip0.02")) then
-  task(50,function()
+  taskUI(50,function()
     if _drawer.isDrawerOpen(Gravity.LEFT) then
       --如果左侧侧滑显示，关闭左侧侧滑并阻止返回键
       _drawer.closeDrawer(Gravity.LEFT)

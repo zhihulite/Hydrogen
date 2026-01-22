@@ -10,7 +10,7 @@ edgeToedge(nil,nil,function() local layoutParams = toolbar.LayoutParams;
   toolbar.setLayoutParams(layoutParams); end)
 collections_base=require "model.collections":new(collections_id)
 
-task(1, function()
+taskUI(function()
   collections_base:getData(function(tab)
     if not tab then return end
     _title.Text=tab.title
@@ -55,7 +55,7 @@ end)
 
 collection_pagetool=collections_base:initpage(collection_recy,collectionsr)
 
-task(1, function()
+taskUI(function()
   if collection_pagetool then collection_pagetool:refer() end
 end)
 

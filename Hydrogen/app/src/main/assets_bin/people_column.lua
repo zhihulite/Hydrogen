@@ -19,7 +19,7 @@ peple_column_item=获取适配器项目布局("people/people_column")
 people_list_column_base=require "model.people_column":new(id)
 :initpage(simple_recy,simplesr)
 
-task(1,function()
+taskUI(function()
   a=MUKPopu({
     tittle=_title.text,
     list={

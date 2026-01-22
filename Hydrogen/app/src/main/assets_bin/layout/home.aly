@@ -118,7 +118,7 @@
             tooltip="搜索",
             layout_margin="8dp";
             onClick=function()
-              task(20,function()
+              taskUI(20,function()
                 newActivity("search",{})
               end)
             end;

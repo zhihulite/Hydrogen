@@ -59,7 +59,7 @@ if this.getSharedData("关闭热门搜索")=="true" then
     if code==200 then
       local data=luajson.decode(content)
       for k,v in ipairs(data.top_search.words) do
-        task(50,function()adp.add{id内容=v.query,标题=v.display_query}end)
+        taskUI(50,function()adp.add{id内容=v.query,标题=v.display_query}end)
       end
      else
       提示("获取热门搜索失败 "..content)
@@ -85,7 +85,7 @@ array_adp=ArrayAdapter(activity,android.R.layout.simple_list_item_1)
 suggest_list.setAdapter(array_adp)
 suggest_list.onItemClick=function(l,v,p,s)--列表点击事件
   搜索(tostring(v.Text))
-  task(300,function()
+  taskUI(300,function()
     search_editor.text=""
   end)
 end
@@ -106,7 +106,7 @@ search_editor.addTextChangedListener{
         if code==200 then
           local data=luajson.decode(content)
           for k,v in ipairs(data.suggest) do
-            task(50,function()array_adp.add(v.query)end)
+            taskUI(50,function()array_adp.add(v.query)end)
           end
          else
           提示("获取搜索关键词失败 "..content)

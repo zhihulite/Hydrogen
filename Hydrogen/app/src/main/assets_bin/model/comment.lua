@@ -1,5 +1,5 @@
 local zemojip={}
-task(1, function()
+taskUI(function()
   local zemoji_mod = require "model.zemoji":getZemoji().zemoji
   for ii, j in pairs(zemoji_mod) do
     table.insert(zemojip, {ii=ii, i=表情(ii)})
@@ -236,7 +236,7 @@ function base.getAdapter(comment_pagetool,pos)
          else
           if views.赞.tag=="t"
             views.赞.tag="off"
-            task(200,function()
+            taskUI(200,function()
               赞set=AnimatorSet()
               赞set.setInterpolator(AnticipateOvershootInterpolator(0.1))
               赞set.setDuration(200)
@@ -269,7 +269,7 @@ function base.getAdapter(comment_pagetool,pos)
          else
           if views.评论.tag=="t"
             views.评论.tag="off"
-            task(200,function()
+            taskUI(200,function()
               评论set=AnimatorSet()
               评论set.setInterpolator(AnticipateOvershootInterpolator(0.1))
               评论set.setDuration(200)

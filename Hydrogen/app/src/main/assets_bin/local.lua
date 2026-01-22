@@ -28,7 +28,7 @@ if xxx:match("article") or xxx:match("pin") then
   return
 end
 
-task(1,function()
+taskUI(function()
   local loaduri = Uri.fromFile(File(filedir)).toString();
   t.content.loadUrl(loaduri)
 end)
@@ -57,7 +57,7 @@ detector.setOnDoubleTapListener {
   onDoubleTap=function()
     t.content.scrollTo(0, 0)
     isDoubleTap=true
-    task(timeOut,function()isDoubleTap=false end)
+    taskUI(timeOut,function()isDoubleTap=false end)
   end
 }
 
@@ -67,7 +67,7 @@ end
 
 all_root.onClick=function(v)
   if not isDoubleTap then
-    task(timeOut,function()
+    taskUI(timeOut,function()
       if not isDoubleTap then
         local questionid=xxx:match[[question_id="(.-)"]]
         activity.newActivity("question",{questionid})
@@ -197,7 +197,7 @@ ActivityResultCallback{
     end
 end});
 
-task(1,function()
+taskUI(function()
   a=MUKPopu({
     tittle="回答",
     list={

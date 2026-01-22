@@ -65,7 +65,7 @@ local function initLocalComments(is_chat)
     }
   end
 
-  task(1, function()
+  taskUI(function()
     if is_chat then
       local file = io.open(comment_id, "r")
       if file then
@@ -114,8 +114,8 @@ if not comment_type:find("local") then
   local comment_item = 获取适配器项目布局("comment/comment")
   comment_pagetool = comment_base:initpage(comment_recy, commentsr, comment_item)
   
-  -- 利用 task(1) 让请求在下一帧立即开始，与动画并行
-  task(1, function()
+  -- 利用 taskUI 让请求在下一帧立即开始，与动画并行
+  taskUI(function()
     if comment_pagetool then comment_pagetool:refer() end
   end)
   
@@ -136,7 +136,7 @@ comment_recy.addOnScrollListener(RecyclerView.OnScrollListener{
 edgeToedge(mainLay, {send, comment_recy})
 波纹({fh, _more}, "圆主题")
 
-task(1, function()
+taskUI(function()
   local menu_list = {
     {src=图标("format_align_left"), text="按时间顺序", onClick=function()
         comment_pagetool:setUrlItem(comment_base:getUrlByType("ts")):clearItem():refer(nil,nil,true)

@@ -173,7 +173,7 @@ history_list.onItemClick=function(l,v,c,b)
 end
 
 
-task(1,function()
+taskUI(function()
   a=MUKPopu({
     tittle="历史记录",
     list={
@@ -210,7 +210,7 @@ task(1,function()
             关闭对话框(an)
             清除历史记录()
             提示("已清除,即将重启")
-            task(200,function()
+            taskUI(200,function()
               import "android.os.Process"
               local intent =activity.getBaseContext().getPackageManager().getLaunchIntentForPackage(activity.getBaseContext().getPackageName());
               intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);

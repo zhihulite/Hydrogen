@@ -244,6 +244,6 @@ pop={
 }
 
 
-task(1,function()
+taskUI(function()
   a=MUKPopu(pop)
 end)

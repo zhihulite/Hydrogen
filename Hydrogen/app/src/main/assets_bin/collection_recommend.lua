@@ -18,7 +18,7 @@ collection_recommend_item=获取适配器项目布局("collections/collection_re
 collection_recommend_pagetool=require "model.collection_recommend":new(id)
 :initpage(simple_recy,simplesr)
 
-task(1,function()
+taskUI(function()
   a=MUKPopu({
     tittle=_title.text,
     list={

@@ -7,7 +7,7 @@ people_id, pre_data = ...
 
 -- 如果有传入预置数据，第一时间渲染 UI
 if type(pre_data) == "table" then
-  task(1, function()
+  taskUI(function()
     if _title then _title.text = pre_data.name end
     if people_name then people_name.text = pre_data.name end
     if people_sign then people_sign.text = (pre_data.headline ~= "" and pre_data.headline or "加载中...") end
@@ -39,7 +39,7 @@ end
 local base_people = require "model.people":new(people_id)
 
 -- 并行发起用户信息和 Tab 列表请求
-task(1, function()
+taskUI(function()
   base_people:getData(function(data, self)
     if not data then
       if _title then _title.Text = "获取用户信息失败" end
@@ -71,7 +71,7 @@ task(1, function()
     end
 
     -- 非核心 UI 逻辑延迟处理
-    task(100, function()
+    taskUI(100, function()
       保存历史记录(用户id, 名字, 签名, "用户")
       
       if fans then
@@ -210,7 +210,7 @@ end
 
 波纹({fh,_more},"圆主题")
 
-task(1,function()
+taskUI(function()
   a=MUKPopu({
     tittle="用户",
     list={

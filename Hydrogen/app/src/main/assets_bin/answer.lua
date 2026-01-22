@@ -588,7 +588,7 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{
 })
 
 -- 优化：首屏加载
-task(1, function()
+taskUI(function()
   local mview = getCurrentMView()
   if mview then
     currentWebView = mview.ids.content
@@ -714,7 +714,7 @@ ActivityResultCallback{
     end
 end});
 
-task(1,function()
+taskUI(function()
   local function 获取当前WebView()
     local mview = getCurrentMView()
     return mview and mview.ids.content
@@ -769,13 +769,13 @@ task(1,function()
                 process=function()
                   webView.evaluateJavascript("getScreenshot()", {onReceiveValue=function(b)
                       if b:find("process") then
-                        task(200, process)
+                        taskUI(200, process)
                        else
                         func(base64ToBitmap(b))
                       end
                   end})
                 end
-                task(300, process)
+                taskUI(300, process)
             end})
           end
 
