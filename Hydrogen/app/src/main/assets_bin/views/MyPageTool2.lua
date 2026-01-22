@@ -128,14 +128,19 @@ function Page_Tool:initPage()
           Glide.with(this).pauseRequests();
          elseif newState == RecyclerView.SCROLL_STATE_IDLE then
           Glide.with(this).resumeRequests();
+        end
+      end,
+      onScrolled=function(recyclerView, dx, dy)
+        if dy > 0 then
           local lastVisiblePosition = manager.findLastVisibleItemPosition();
-          if lastVisiblePosition >= manager.getItemCount() - 1 and pagedata[pos]["canload"] then
+          if lastVisiblePosition >= manager.getItemCount() - 5 and pagedata[pos]["canload"] then
             local pos=self:getCurrentItem()
             self.referfunc(pos,false)
             System.gc()
           end
         end
-    end});
+      end
+    });
   end
 
   --变量添加

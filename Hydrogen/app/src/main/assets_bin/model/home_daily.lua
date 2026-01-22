@@ -165,13 +165,21 @@ function base:initpage(view,sr)
   self.view.addOnScrollListener(RecyclerView.OnScrollListener{
     onScrollStateChanged=function(recyclerView,newState)
       if newState == RecyclerView.SCROLL_STATE_IDLE then
+        Glide.with(this).resumeRequests();
+       elseif newState == RecyclerView.SCROLL_STATE_DRAGGING or newState == RecyclerView.SCROLL_STATE_SETTLING then
+        Glide.with(this).pauseRequests();
+      end
+    end,
+    onScrolled=function(recyclerView, dx, dy)
+      if dy > 0 then
         local lastVisiblePosition = manager.findLastVisibleItemPosition();
-        if lastVisiblePosition >= manager.getItemCount() - 1 and self.可以加载日报 then
+        if lastVisiblePosition >= manager.getItemCount() - 5 and self.可以加载日报 then
           self:getData(false)
           System.gc()
         end
       end
-  end});
+    end
+  });
 
 
   return self
