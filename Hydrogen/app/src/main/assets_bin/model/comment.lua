@@ -26,7 +26,7 @@ end
 local function MyClickableSpan(url)
   return ClickableSpan{
     onClick=function(v)
-      if v.Text:find("图片") or v.Text:find("动图") then
+      if v.Text:find("图片") or v.Text:find("动图") or url:lower():match("%.(jpg|gif|bmp|png|webp|jpeg)$") or url:find("zhimg.com") then
         this.setSharedData("imagedata", luajson.encode({["0"]=url, ["1"]=1}))
         activity.newActivity("image")
         return true
@@ -65,8 +65,8 @@ function base.resolvedata(v, data)
       local url = span.getURL()
       style.setSpan(MyClickableSpan(url), style.getSpanStart(span), style.getSpanEnd(span), Spannable.SPAN_EXCLUSIVE_INCLUSIVE)
       if url:lower():match("%.(jpg|gif|bmp|png|webp|jpeg)$") then has_img = url end
+      style.removeSpan(span)
     end
-    style.removeSpan(spans)
     myspan = style
    else
     myspan = Html.fromHtml(content)

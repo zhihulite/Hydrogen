@@ -15,7 +15,11 @@ function 检查链接(url, needExecute)
   if url:find("^zhihu://") then
     return 检查意图(url, needExecute)
    elseif url:find("^https?://") and not url:find("zhihu.com") then
-    if needExecute then return false end
+    if needExecute then return true end
+    if url:lower():match("%.(jpg|gif|bmp|png|webp|jpeg)$") or url:find("zhimg.com") then
+      this.setSharedData("imagedata", luajson.encode({["0"]=url, ["1"]=1}))
+      return newActivity("image")
+    end
     return newActivity("browser", {url})
   end
 
@@ -157,9 +161,10 @@ function 检查链接(url, needExecute)
 
   local encoded = url:match("target=([^&]+)")
   if encoded then 
-    return newActivity("browser", {encoded:gsub("%%(%x%x)", function(h)
-        return string.char(tonumber(h, 16))
-    end)})
+    local decoded = encoded:gsub("%%(%x%x)", function(h)
+      return string.char(tonumber(h, 16))
+    end)
+    return 检查链接(decoded, needExecute)
   end
 
   if needExecute then return false end

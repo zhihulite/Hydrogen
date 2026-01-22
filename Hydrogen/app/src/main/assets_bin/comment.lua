@@ -14,6 +14,30 @@ import "com.google.android.material.floatingactionbutton.FloatingActionButton"
 comment_id, comment_type, 保存路径, 父回复id = ...
 设置视图("layout/comment")
 
+local function MyClickableSpan(url)
+  return ClickableSpan{
+    onClick=function(v)
+      检查链接(url)
+    end,
+    updateDrawState=function(v)
+      v.setColor(v.linkColor)
+      v.setUnderlineText(true)
+    end
+  }
+end
+
+local function replaceURLSpans(spanned)
+  if not spanned then return spanned end
+  local style = SpannableStringBuilder(spanned)
+  local spans = luajava.astable(style.getSpans(0, style.length(), URLSpan))
+  for _, span in ipairs(spans) do
+    local url = span.getURL()
+    style.setSpan(MyClickableSpan(url), style.getSpanStart(span), style.getSpanEnd(span), Spannable.SPAN_EXCLUSIVE_INCLUSIVE)
+    style.removeSpan(span)
+  end
+  return style
+end
+
 local function initLocalComments(is_chat)
   internetnet.setVisibility(8)
   local list_view = is_chat and localcomment or local_comment_list
@@ -25,7 +49,7 @@ local function initLocalComments(is_chat)
   if is_chat then local_comment_list.setVisibility(0); localcomment.setVisibility(0) end
 
   local function addComment(name, content, id, has_replies)
-    local span = content:find("http") and setstyle(Html.fromHtml(content)) or Html.fromHtml(content)
+    local span = content:find("http") and replaceURLSpans(Html.fromHtml(content)) or Html.fromHtml(content)
     sadapter.add{
       标题 = name,
       预览内容 = {
