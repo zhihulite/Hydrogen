@@ -201,116 +201,97 @@ end
 
 
 nav.addHeaderView(loadlayout {
-  LinearLayout;
-  layout_height="-1";
+  MaterialCardView;
+  layout_height="wrap";
+  CardBackgroundColor=cardedge,
+  Elevation="0";
   layout_width="-1";
-  orientation="vertical";
+  radius=cardradius;
+  StrokeColor=cardedge;
+  StrokeWidth=0,
+  clickable=true,
+  id="侧滑头";
   {
-    MaterialCardView;
-    layout_height="wrap";
-    CardBackgroundColor=cardedge,
-    Elevation="0";
+    LinearLayout;
+    layout_height="-1";
     layout_width="-1";
-    radius=cardradius;
-    StrokeColor=cardedge;
-    StrokeWidth=0,
-    clickable=true,
-    id="侧滑头";
+    orientation="vertical";
+    fitsSystemWindows=true,
     {
-      LinearLayout;
-      layout_height="-1";
+      RelativeLayout;
       layout_width="-1";
-      orientation="vertical";
-      fitsSystemWindows=true,
+      layout_height="wrap";
+      layout_marginTop="16dp";
+      layout_marginLeft="16dp";
+      layout_marginRight="16dp";
       {
-        LinearLayout;
-        layout_margin="16dp";
-        orientation="horizontal";
-        layout_width="-1";
-        {
-          CircleImageView;
-          layout_height="48dp";
-          layout_gravity="left";
-          src="logo",
-          id="头像id",
-          layout_width="48dp";
-          layout_weight="-1",
-        };
-        {
-          LinearLayout;
-          layout_marginRight="56dp";
-          layout_marginTop="16dp";
-          orientation="horizontal";
-          gravity="right",
-          id="sign_out";
-          Visibility=4;
-          layout_width="-1";
-          {
-            ImageView;
-            ColorFilter=textc;
-            src=图标("exit");
-            id="注销",
-            layout_width="25dp";
-            layout_height="25dp",
-            onClick=function()
-              双按钮对话框("注销","你确定要注销吗","手滑了","确定",function(an) 关闭对话框(an)end,function(an)
-                --避免head刷新不及时
-                local head = {
-                  ["cookie"] = 获取Cookie("https://www.zhihu.com/")
-                }
-                Http.get("https://www.zhihu.com/logout",head,function(code,content)
-                end)
-                清除所有cookie()
-                -- 重新获取游客Cookie以防止 zse96 加密失败
-                Http.get("https://www.zhihu.com/", function(code, content) end)
-                activity.setSharedData("signdata",nil)
-                activity.setSharedData("idx",nil)
-                activity.setSharedData("udid",nil)
-                关闭对话框(an)
-                渐变跳转页面("home")
-                activity.finish()
-              end)
-            end
-          };
-        };
+        CircleImageView;
+        layout_height="48dp";
+        src="logo",
+        id="头像id",
+        layout_width="48dp";
+        layout_alignParentLeft=true;
       };
       {
-        LinearLayout;
-        orientation="vertical";
-        {
-          TextView;
-          layout_marginTop="10dp";
-          layout_height="30dp";
-          layout_width="-2";
-          Text="未登录，点击登录",
-          id="名字id",
-          textColor=primaryc;
-          textSize="15sp";
-          paddingLeft="16dp";
-          layout_marinBottom="15dp",
-          Typeface=字体("product-Bold");
-          SingleLine=true;
-          gravity="center|left";
-        };
-
-        {
-          TextView;
-          layout_width="-2";
-          Text="获取失败";
-          textColor=primaryc;
-          id="签名id",
-          textSize="15sp";
-          paddingLeft="16dp";
-
-          Typeface=字体("product");
-          SingleLine=true;
-          gravity="center|left";
-        };
-        {
-          TextView;
-          layout_height="3dp";
-        };
+        ImageView;
+        ColorFilter=textc;
+        src=图标("exit");
+        id="sign_out",
+        layout_width="25dp";
+        layout_height="25dp";
+        layout_alignParentRight=true;
+        layout_centerVertical=true;
+        layout_marginRight="24dp", 
+        Visibility=4;
+        onClick=function()
+          双按钮对话框("注销","你确定要注销吗","手滑了","确定",function(an) 关闭对话框(an)end,function(an)
+            --避免head刷新不及时
+            local head = {
+              ["cookie"] = 获取Cookie("https://www.zhihu.com/")
+            }
+            Http.get("https://www.zhihu.com/logout",head,function(code,content)
+            end)
+            清除所有cookie()
+            -- 重新获取游客Cookie以防止 zse96 加密失败
+            Http.get("https://www.zhihu.com/", function(code, content) end)
+            activity.setSharedData("signdata",nil)
+            activity.setSharedData("idx",nil)
+            activity.setSharedData("udid",nil)
+            关闭对话框(an)
+            渐变跳转页面("home")
+            activity.finish()
+          end)
+        end
       };
+    };
+    {
+      TextView;
+      layout_marginTop="10dp";
+      layout_height="30dp";
+      layout_width="-1";
+      layout_marginLeft="16dp";
+      layout_marginRight="16dp";
+      Text="未登录，点击登录",
+      id="名字id",
+      textColor=primaryc;
+      textSize="15sp";
+      Typeface=字体("product-Bold");
+      SingleLine=true;
+      gravity="center|left";
+    };
+    {
+      TextView;
+      layout_width="-1";
+      layout_marginLeft="16dp";
+      layout_marginRight="16dp";
+      layout_marginBottom="16dp";
+      Text="获取失败";
+      textColor=primaryc;
+      id="签名id",
+      textSize="15sp";
+      Typeface=字体("product");
+      SingleLine=true;
+      gravity="center|left";
     };
   };
 })

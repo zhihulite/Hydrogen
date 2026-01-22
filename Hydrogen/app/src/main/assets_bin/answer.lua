@@ -186,18 +186,20 @@ local function 统一滑动跟随(view,x,y,lx,ly)
     if cached_header_height == 0 then cached_header_height = dp2px(100) end
   end
   
-  -- 2. 计算当前应该偏移的距离
-  local scroll_y = view.getScrollY()
-  local translation = -scroll_y
+  local translation = -y -- 直接使用 y 坐标避免 getScrollY() 调用
   
   -- 3. 执行偏移
   appbar.setTranslationY(translation)
   root_card.setTranslationY(-translation)
   
-  local mview = get_current_info()
-  if mview and mview.ids.userinfo then
-    -- 仅偏移作者栏，WebView 容器保持固定在屏幕，解决底部遮挡问题
-    mview.ids.userinfo.setTranslationY(translation)
+  -- 优化：使用局部变量缓存当前页面的 ids，避免在滚动中执行复杂的查找函数
+  if not currentMViewIds then
+    local mview = getCurrentMView()
+    currentMViewIds = mview and mview.ids
+  end
+
+  if currentMViewIds and currentMViewIds.userinfo then
+    currentMViewIds.userinfo.setTranslationY(translation)
   end
 
   -- 4. 处理透明度渐变
@@ -540,6 +542,7 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{
     if not mviews then return end
     
     currentWebView = mviews.ids.content
+    currentMViewIds = mviews.ids -- 切换页面时更新缓存的 ids
     setDtlTranslation(0, true)
     
     -- 1. 刷新当前页

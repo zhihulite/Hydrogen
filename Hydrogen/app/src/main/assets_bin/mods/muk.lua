@@ -2940,7 +2940,7 @@ function loadglide(view,url,ischeck,size)
     })
     .into(view)
   end
-  glid_manager.clearMemory();
+  -- glid_manager.clearMemory(); -- 移除强制清理内存缓存，避免滑动卡顿
 end
 
 local mybase64=require("base64")
