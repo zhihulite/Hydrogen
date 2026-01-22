@@ -536,13 +536,22 @@ function 发送评论(id,title)
         heightmax=dp2px(260)
       end
       if isShowing then
-        local WindowInsets = luajava.bindClass "android.view.WindowInsets"
-        view.windowInsetsController.hide(WindowInsets.Type.ime())
+        if Build.VERSION.SDK_INT >= 30 then
+          local WindowInsets = luajava.bindClass "android.view.WindowInsets"
+          view.windowInsetsController.hide(WindowInsets.Type.ime())
+         else
+          local imm = this.getSystemService(Context.INPUT_METHOD_SERVICE)
+          imm.hideSoftInputFromWindow(view.getWindowToken(), 0)
+        end
         isZemo=true
        else
-        local WindowInsets = luajava.bindClass "android.view.WindowInsets"
-        view.windowInsetsController.show(WindowInsets.Type.ime())
-
+        if Build.VERSION.SDK_INT >= 30 then
+          local WindowInsets = luajava.bindClass "android.view.WindowInsets"
+          view.windowInsetsController.show(WindowInsets.Type.ime())
+         else
+          local imm = this.getSystemService(Context.INPUT_METHOD_SERVICE)
+          imm.showSoftInput(send_edit, InputMethodManager.SHOW_IMPLICIT)
+        end
       end
     end,
   })
@@ -559,12 +568,12 @@ function 发送评论(id,title)
   .behavior.setMaxWidth(dp2px(600))
 
   local view=bottomSheetDialog.window.getDecorView()
-  view.setOnApplyWindowInsetsListener(View.OnApplyWindowInsetsListener{
+  local OnApplyWindowInsetsListener = luajava.bindClass "androidx.core.view.OnApplyWindowInsetsListener"
+  ViewCompat.setOnApplyWindowInsetsListener(view, OnApplyWindowInsetsListener{
     onApplyWindowInsets=function(v,i)
-      local WindowInsets = luajava.bindClass "android.view.WindowInsets"
-      local status = i.getInsets(WindowInsets.Type.statusBars())
-      local nav = i.getInsets(WindowInsets.Type.navigationBars())
-      local ime = i.getInsets(WindowInsets.Type.ime())
+      local status = i.getInsets(WindowInsetsCompat.Type.statusBars())
+      local nav = i.getInsets(WindowInsetsCompat.Type.navigationBars())
+      local ime = i.getInsets(WindowInsetsCompat.Type.ime())
       local layoutParams = sendlay.LayoutParams;
       layoutParams.setMargins(layoutParams.leftMargin, layoutParams.rightMargin, layoutParams.rightMargin,nav.bottom);
       sendlay.setLayoutParams(layoutParams);
@@ -579,7 +588,7 @@ function 发送评论(id,title)
         layoutParams.height=-2
         root.setLayoutParams(layoutParams);
       end
-      isShowing=i.isVisible(WindowInsets.Type.ime())
+      isShowing=i.isVisible(WindowInsetsCompat.Type.ime())
       return i
     end
   })
