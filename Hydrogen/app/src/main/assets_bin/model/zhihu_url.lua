@@ -11,20 +11,25 @@ function urlDecode(s)
   return s
 end
 
+-- 性能优化：缓存常用的正则表达式模式
+local IMAGE_PATTERN = "%.(jpg|gif|bmp|png|webp|jpeg)$"
+local URL_SPLIT_PATTERN = "([^%?]+)%??(.*)"
+local DIGIT_PATTERN = "(%d+)"
+
 function 检查链接(url, needExecute)
   if url:find("^zhihu://") then
     return 检查意图(url, needExecute)
    elseif url:find("^https?://") and not url:find("zhihu.com") then
     if needExecute then return true end
-    if url:lower():match("%.(jpg|gif|bmp|png|webp|jpeg)$") or url:find("zhimg.com") then
+    if url:lower():match(IMAGE_PATTERN) or url:find("zhimg.com") then
       this.setSharedData("imagedata", luajson.encode({["0"]=url, ["1"]=1}))
       return newActivity("image")
     end
     return newActivity("browser", {url})
   end
 
-  -- 拆分 base 和 query
-  local base, query = url:match("([^%?]+)%??(.*)")
+  -- 性能优化：使用缓存的正则模式
+  local base, query = url:match(URL_SPLIT_PATTERN)
   if not base then return end
 
   -- 先匹配最具体的路径 避免误判
@@ -179,7 +184,7 @@ function 检查意图(url, needExecute)
    elseif not url:find("^zhihu://") then
     return false
   end
-  local base, query = url:match("([^%?]+)%??(.*)")
+  local base, query = url:match(URL_SPLIT_PATTERN)
   if not base then return end
 
   local id = base:match("answers/(%d+)") or base:match("answer/(%d+)")

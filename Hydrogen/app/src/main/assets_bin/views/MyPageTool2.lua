@@ -2,6 +2,9 @@
 --author huaji
 --time 2024-2-1
 --self:对象本身
+-- 性能优化：缓存常用的 JNI 类绑定
+local MyLinearLayoutManager = luajava.bindClass("com.hydrogen.MyLinearLayoutManager")
+
 local Page_Tool={
   canclick={},
   ids={},
@@ -109,8 +112,7 @@ function Page_Tool:initPage()
 
     if not thispage.getLayoutManager() then
       --自定义LinearLayoutManager尝试解决闪退问题
-      local MyLinearLayoutManager=luajava.bindClass("com.hydrogen.MyLinearLayoutManager")(this,RecyclerView.VERTICAL,false)
-      thispage.setLayoutManager(MyLinearLayoutManager)
+      thispage.setLayoutManager(MyLinearLayoutManager(this,RecyclerView.VERTICAL,false))
     end
 
     local manager=thispage.getLayoutManager()
@@ -136,7 +138,6 @@ function Page_Tool:initPage()
           if lastVisiblePosition >= manager.getItemCount() - 5 and pagedata[pos]["canload"] then
             local pos=self:getCurrentItem()
             self.referfunc(pos,false)
-            System.gc()
           end
         end
       end
@@ -398,7 +399,6 @@ function Page_Tool:createfunc()
                 if checkIfRecyclerViewIsFullPage(thispage) then
                   if pagedata[pos]["canload"] then
                     self.referfunc(pos,isprev)
-                    System.gc()
                   end
                  else
                   pagedata[pos].needcheck=false

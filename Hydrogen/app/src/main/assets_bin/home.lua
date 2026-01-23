@@ -191,7 +191,8 @@ mmenu = {
 loadmenu(nav.getMenu(), mmenu)
 
 import "androidx.appcompat.widget.Toolbar"
-for i=0,toolbar.getChildCount() do
+-- 性能优化：修复循环边界检查，避免越界
+for i=0,toolbar.getChildCount()-1 do
   local view = toolbar.getChildAt(i);
   if luajava.instanceof(view,TextView) then
     local textView = view;

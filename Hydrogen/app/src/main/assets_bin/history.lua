@@ -111,22 +111,41 @@ function addItemData(item)
   adp.add(add)
 end
 
+-- 性能优化：缓存历史记录数据，减少重复遍历
+local cached_history_data = nil
+local cached_history_by_type = {}
+
 function 加载历史记录()
   local find_type=find_type
   if find_type=="全部" or find_type==nil then
     find_type=""
   end
   adp.clear()
+  -- 性能优化：缓存历史记录数据
+  if not cached_history_data then
+    cached_history_data = 获取历史记录()
+  end
+  
   local _,err=pcall(function()
-    for _,item ipairs(获取历史记录()) do
-      local 类型=item.type
-      if 类型:find(find_type) then
+    -- 性能优化：如果是空类型（全部），直接遍历
+    if find_type == "" then
+      for _,item in ipairs(cached_history_data) do
         addItemData(item)
+      end
+     else
+      -- 性能优化：只遍历匹配的类型
+      for _,item in ipairs(cached_history_data) do
+        local 类型=item.type
+        if 类型:find(find_type) then
+          addItemData(item)
+        end
       end
     end
   end)
   if _==false then
     提示("获取数据异常 请先清理历史记录")
+    -- 清除缓存以便下次重试
+    cached_history_data = nil
   end
 end
 
@@ -144,7 +163,9 @@ histab:showTab(1)
 
 function checktitle(str)
   adp.clear()
-  for _,item ipairs(获取历史记录()) do
+  -- 性能优化：使用缓存的数据
+  local search_data = cached_history_data or 获取历史记录()
+  for _,item in ipairs(search_data) do
     local 过滤内容=item.toString()
     if 过滤内容:find(str) then
       addItemData(item)

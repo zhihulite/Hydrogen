@@ -16,6 +16,9 @@ function base:new(id,type)
   return child
 end
 
+-- 性能优化：缓存常用的正则表达式模式
+local IMAGE_PATTERN = "%.(jpg|gif|bmp|png|webp|jpeg)$"
+
 function base:getUrlByType(sortby)
   if self.type ~= "comments" then
     return string.format("https://api.zhihu.com/comment_v5/%s/%s/root_comment?order_by=%s", self.type, self.id, sortby or "score")
@@ -26,7 +29,7 @@ end
 local function MyClickableSpan(url)
   return ClickableSpan{
     onClick=function(v)
-      if v.Text:find("图片") or v.Text:find("动图") or url:lower():match("%.(jpg|gif|bmp|png|webp|jpeg)$") or url:find("zhimg.com") then
+      if v.Text:find("图片") or v.Text:find("动图") or url:lower():match(IMAGE_PATTERN) or url:find("zhimg.com") then
         this.setSharedData("imagedata", luajson.encode({["0"]=url, ["1"]=1}))
         activity.newActivity("image")
         return true
@@ -64,7 +67,7 @@ function base.resolvedata(v, data)
     for _, span in ipairs(spans) do
       local url = span.getURL()
       style.setSpan(MyClickableSpan(url), style.getSpanStart(span), style.getSpanEnd(span), Spannable.SPAN_EXCLUSIVE_INCLUSIVE)
-      if url:lower():match("%.(jpg|gif|bmp|png|webp|jpeg)$") then has_img = url end
+      if url:lower():match(IMAGE_PATTERN) then has_img = url end
       style.removeSpan(span)
     end
     myspan = style
@@ -72,7 +75,8 @@ function base.resolvedata(v, data)
     myspan = Html.fromHtml(content)
   end
 
-  if content:find("%[.-%]") then
+  -- 性能优化：只有当内容包含表情符号格式时才进行匹配
+  if content:find("%[.-%]") and zemoji then
     for i, d in pairs(zemoji) do
       Spannable_Image(myspan, "\\["..i.."\\]", d)
     end
@@ -438,6 +442,9 @@ function 发送评论(id,title)
   if not(getLogin()) then
     return 提示("请登录后使用本功能")
   end
+  -- 性能优化：将 JNI 类绑定移到函数开始，避免在条件分支中重复绑定
+  local WindowInsets = Build.VERSION.SDK_INT >= 30 and luajava.bindClass "android.view.WindowInsets" or nil
+  
   local stitle = title or "输入评论"
   local mytext
   local postdata
@@ -537,7 +544,6 @@ function 发送评论(id,title)
       end
       if isShowing then
         if Build.VERSION.SDK_INT >= 30 then
-          local WindowInsets = luajava.bindClass "android.view.WindowInsets"
           view.windowInsetsController.hide(WindowInsets.Type.ime())
          else
           local imm = this.getSystemService(Context.INPUT_METHOD_SERVICE)
@@ -546,7 +552,6 @@ function 发送评论(id,title)
         isZemo=true
        else
         if Build.VERSION.SDK_INT >= 30 then
-          local WindowInsets = luajava.bindClass "android.view.WindowInsets"
           view.windowInsetsController.show(WindowInsets.Type.ime())
          else
           local imm = this.getSystemService(Context.INPUT_METHOD_SERVICE)
@@ -595,7 +600,6 @@ function 发送评论(id,title)
   if Build.VERSION.SDK_INT >30
     view.setWindowInsetsAnimationCallback(luajava.override(WindowInsetsAnimation.Callback,{
       onProgress=function(_,i,animations)
-        local WindowInsets = luajava.bindClass "android.view.WindowInsets"
         local status = i.getInsets(WindowInsets.Type.statusBars())
         local nav = i.getInsets(WindowInsets.Type.navigationBars())
         local ime = i.getInsets(WindowInsets.Type.ime())

@@ -33,14 +33,19 @@ activity.getWindow().setBackgroundDrawable(ColorDrawable(backgroundc_int))
 -- 优化：ViewPager2 容器也需要背景色
 pg.setBackgroundColor(backgroundc_int)
 
--- 优化：缓存反射获取的对象，避免滑动时重复执行反射
-local recyclerViewField = ViewPager2.getDeclaredField("mRecyclerView")
-recyclerViewField.setAccessible(true)
-local pg_recyclerView = recyclerViewField.get(pg)
-local touchSlopField = luajava.bindClass("androidx.recyclerview.widget.RecyclerView").getDeclaredField("mTouchSlop")
-touchSlopField.setAccessible(true)
-local touchSlop = touchSlopField.get(pg_recyclerView)
-touchSlopField.set(pg_recyclerView, int(touchSlop * tonumber(activity.getSharedData("scroll_sense"))))
+-- 性能优化：全局缓存反射字段，避免重复反射
+if not _G.cached_viewpager2_fields then
+  _G.cached_viewpager2_fields = {
+    recyclerViewField = ViewPager2.getDeclaredField("mRecyclerView"),
+    touchSlopField = luajava.bindClass("androidx.recyclerview.widget.RecyclerView").getDeclaredField("mTouchSlop")
+  }
+  _G.cached_viewpager2_fields.recyclerViewField.setAccessible(true)
+  _G.cached_viewpager2_fields.touchSlopField.setAccessible(true)
+end
+
+local pg_recyclerView = _G.cached_viewpager2_fields.recyclerViewField.get(pg)
+local touchSlop = _G.cached_viewpager2_fields.touchSlopField.get(pg_recyclerView)
+_G.cached_viewpager2_fields.touchSlopField.set(pg_recyclerView, int(touchSlop * tonumber(activity.getSharedData("scroll_sense"))))
 
 -- 改革 1：增加离屏预加载数量，确保前后至少有两页在内存中备战
 pg.setOffscreenPageLimit(2)

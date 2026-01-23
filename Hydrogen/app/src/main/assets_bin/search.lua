@@ -32,6 +32,10 @@ function 搜索(text)
   if #(tostring(search_text):gsub(" ",""))<1 then
     提示("请输入您要搜索的内容")
    else
+    -- UI 优化：跳转前隐藏键盘
+    local imm = this.getSystemService(Context.INPUT_METHOD_SERVICE)
+    imm.hideSoftInputFromWindow(search_view.getWindowToken(), 0)
+    
     if this.getSharedData("搜索引擎")==nil
       this.setSharedData("搜索引擎","https://www.zhihu.com/search?type=content&q=")
     end

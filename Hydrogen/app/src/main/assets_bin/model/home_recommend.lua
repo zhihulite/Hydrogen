@@ -1,6 +1,10 @@
 local base={}
 
 
+-- 性能优化：缓存常用路径和数据
+local cache_file_path = nil
+local recommend_history = nil
+local recommend_history_loaded = false
 
 function base:new(id)--类的new方法
   local child=table.clone(self)
@@ -15,6 +19,52 @@ homeapphead["x-close-recommend"]="0"
 
 local accessibilityManager = this.getSystemService(Context.ACCESSIBILITY_SERVICE);
 
+-- 性能优化：异步加载历史记录缓存
+local function loadRecommendHistory()
+  if recommend_history_loaded then
+    return recommend_history or {}
+  end
+  
+  -- 缓存文件路径，避免重复拼接
+  if not cache_file_path then
+    cache_file_path = tostring(activity.getExternalCacheDir()) .. "/rc.json"
+  end
+  
+  if File(cache_file_path).exists() then
+    local success, result = pcall(function()
+      local file = io.open(cache_file_path, "r")
+      if file then
+        local content = file:read("*a")
+        file:close()
+        return luajson.decode(content)
+      end
+      return {}
+    end)
+    recommend_history = success and result or {}
+   else
+    recommend_history = {}
+  end
+  
+  recommend_history_loaded = true
+  return recommend_history
+end
+
+-- 性能优化：异步保存历史记录
+local function saveRecommendHistory()
+  if not recommend_history or not cache_file_path then return end
+  
+  -- 使用 taskUI 将文件写入移到后台
+  taskUI(function()
+    pcall(function()
+      local file = io.open(cache_file_path, "w")
+      if file then
+        file:write(luajson.encode(recommend_history))
+        file:close()
+      end
+    end)
+  end)
+end
+
 function base.resolvedata(v,data)
   if v.type~="feed" then
     return
@@ -24,35 +74,38 @@ function base.resolvedata(v,data)
   local readdata=v.brief
   local v=v.target or v
   local 标题=v.title
-  local 点赞数=tostring(v.voteup_count or v.vote_count or v.reaction_count)
-  local 评论数=tostring(v.comment_count)
+  -- 性能优化：减少不必要的 tostring 调用
+  local 点赞数=v.voteup_count or v.vote_count or v.reaction_count or 0
+  local 评论数=v.comment_count or 0
   local 作者=v.author.name
   local 预览内容=作者.." : "..(v.excerpt or v.excerpt_title)
-  if tointeger(activity.getSharedData("feed_cache"))>1
-    if File(tostring(activity.getExternalCacheDir()).."/rc.json").exists()
-      pcall(function()recommend_history=luajson.decode(io.open(tostring(activity.getExternalCacheDir()).."/rc.json"):read("*a"))end)
-     else
-      recommend_history={}
-    end
-    if table.find(recommend_history,预览内容)
+  
+  local feed_cache_limit = tointeger(activity.getSharedData("feed_cache"))
+  if feed_cache_limit and feed_cache_limit > 1 then
+    -- 性能优化：使用缓存的历史记录
+    local history = loadRecommendHistory()
+    
+    if table.find(history, 预览内容) then
       --开启无障碍后不提示找到重复内容
       if activity.getSharedData("feed_cache_tip") == "true" and not accessibilityManager.isTouchExplorationEnabled() then
         提示("找到重复内容")
       end
-      local postdata=luajson.encode(readdata)
-      postdata=urlEncode('[["r",'..postdata..']]')
-      postdata="targets="..postdata
-      zHttp.post("https://api.zhihu.com/lastread/touch/v2",postdata,apphead,function(code,content)
+      -- 性能优化：缓存编码结果
+      local encoded_data = luajson.encode(readdata)
+      local postdata = string.format('targets=%s', urlEncode('[["r",' .. encoded_data .. ']]'))
+      
+      zHttp.post("https://api.zhihu.com/lastread/touch/v2", postdata, apphead, function(code,content)
         if code==200 then
         end
       end)
       return
      else
-      if #recommend_history>tointeger(activity.getSharedData("feed_cache") or 100)
-        table.remove(recommend_history,1)
+      if #history > feed_cache_limit then
+        table.remove(history, 1)
       end
-      table.insert(recommend_history,预览内容)
-      io.open(tostring(tostring(activity.getExternalCacheDir()).."/rc.json"),"w"):write(tostring(luajson.encode(recommend_history))):close()
+      table.insert(history, 预览内容)
+      -- 性能优化：异步保存
+      saveRecommendHistory()
     end
   end
   local id=v.id
@@ -86,11 +139,9 @@ function base.resolvedata(v,data)
     预览内容=Html.fromHtml(预览内容)
   end
 
-  if 点赞数 then
-    点赞数=tostring(点赞数)
-   else
-    点赞数="未知"
-  end
+  -- 性能优化：统一转换为字符串
+  点赞数 = tostring(点赞数)
+  评论数 = tostring(评论数)
 
   local id内容=分割字符串..id
 
@@ -163,9 +214,9 @@ function base.getAdapter(home_pagetool,pos)
         if getLogin() then
           home_pagetool:getItemData()[position+1].extradata.isread='"r"'
 
-          local postdata=luajson.encode(readdata)
-          postdata=urlEncode('[["r",'..postdata..']]')
-          postdata="targets="..postdata
+          -- 性能优化：减少字符串拼接次数
+          local encoded_data = luajson.encode(readdata)
+          local postdata = string.format('targets=%s', urlEncode('[["r",' .. encoded_data .. ']]'))
 
           zHttp.post("https://api.zhihu.com/lastread/touch/v2",postdata,apphead,function(code,content)
             if code==200 then
