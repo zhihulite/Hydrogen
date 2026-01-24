@@ -48,14 +48,14 @@ function base.resolvedata(v, data)
   local content = v.content:gsub("</p>+$", ""):gsub("^<p>", "")
   local name = author.name
   
+  if v.author_tag and v.author_tag[1] then
+    name = name .. "「" .. v.author_tag[1].text .. "」"
+  end
   if v.reply_to_author then
     name = name .. " -> " .. v.reply_to_author.name
     if v.reply_author_tag and v.reply_author_tag[1] then
       name = name .. "「" .. v.reply_author_tag[1].text .. "」"
     end
-  end
-  if v.author_tag and v.author_tag[1] then
-    name = name .. "「" .. v.author_tag[1].text .. "」"
   end
 
   local myspan
