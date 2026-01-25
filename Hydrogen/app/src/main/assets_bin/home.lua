@@ -742,26 +742,34 @@ end
 taskUI(getuserinfo)
 taskUI(10, 加载主页tab)
 
-
-local opentab={}
+local last_check_time, last_check_text
 function check()
-  if activity.getSharedData("自动打开剪贴板上的知乎链接")~="true" then return end
-  import "android.content.*"
-  local url=activity.getSystemService(Context.CLIPBOARD_SERVICE).getText()
+  if activity.getSharedData("自动打开剪贴板上的知乎链接") ~= "true" then return end
+  import "android.content.Context"
+  local cm = activity.getSystemService(Context.CLIPBOARD_SERVICE)
+  if not cm.hasPrimaryClip() then return end
 
-  url=tostring(url)
+  -- 获取时间戳 (API 26+)
+  local timestamp = 0
+  pcall(function() timestamp = cm.getPrimaryClipDescription().getTimestamp() end)
+  if timestamp > 0 and timestamp == last_check_time then return end
 
-  if opentab[url]~=true then
-    if url:find("zhihu.com") and 检查链接(url,true) then
-      双按钮对话框("提示","检测到剪贴板里含有知乎链接，是否打开？","打开","取消",function(an)关闭对话框(an)
-        opentab[url]=true
-        检查链接(url)
-      end
-      ,function(an)
-        opentab[url]=true
-        关闭对话框(an)
-      end)
-    end
+  -- 获取文本 (兼容性处理)
+  local text = ""
+  pcall(function()
+    local item = cm.getPrimaryClip().getItemAt(0)
+    text = tostring(item.coerceToText(activity) or item.getText() or "")
+  end)
+
+  -- 内容去重或空值检查
+  if text == "" or (timestamp == 0 and text == last_check_text) then return end
+  
+  last_check_time, last_check_text = timestamp, text
+
+  if text:find("zhihu.com") and 检查链接(text, true) then
+    双按钮对话框("提示", "检测到剪贴板里含有知乎链接，是否打开？", "打开", "取消", 
+      function(an) 关闭对话框(an) 检查链接(text) end,
+      function(an) 关闭对话框(an) end)
   end
 end
 
@@ -773,7 +781,8 @@ function onResume()
     islogin=getLogin()
     getuserinfo()
   end
-  check()
+  -- 延迟执行以确保获得 Window 焦点 (Android 10+ 限制)
+  taskUI(500, check)
   设置主题()
   if (oldTheme~=ThemeUtil.getAppTheme()) or _全局主题值~=全局主题值 then
     activity.recreate()
