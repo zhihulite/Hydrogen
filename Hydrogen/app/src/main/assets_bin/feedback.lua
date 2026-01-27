@@ -138,7 +138,7 @@ data = {
               浏览器打开("https://gitee.com/huajicloud/Hydrogen/issues")
             end,
             function()
-              浏览器打开("https://github.com/huajiqaq/Hydrogen/issues")
+              浏览器打开("https://github.com/zhihulite/Hydrogen/issues")
             end,
             function()
               local uri=Uri.parse("mqqwpa://im/chat?chat_type=wpa&uin=3543515846")
