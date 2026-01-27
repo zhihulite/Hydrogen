@@ -29,6 +29,8 @@ end
 local function MyClickableSpan(url)
   return ClickableSpan{
     onClick=function(v)
+      v.Tag={isc=true}
+      v.post(Runnable{run=function() v.Tag=nil end})
       if v.Text:find("图片") or v.Text:find("动图") or url:lower():match(IMAGE_PATTERN) or url:find("zhimg.com") then
         this.setSharedData("imagedata", luajson.encode({["0"]=url, ["1"]=1}))
         activity.newActivity("image")
@@ -376,7 +378,10 @@ function base.getAdapter(comment_pagetool,pos)
         nTView=views.card
         newActivity("comment",{data.id内容,"comments",保存路径,comment_id})
       end
-      views.预览内容.onClick=function()
+      views.预览内容.onClick=function(v)
+        if v.Tag and v.Tag.isc then
+          return
+        end
         views.card.performClick()
       end
       views.card.onLongClick=function(view)
