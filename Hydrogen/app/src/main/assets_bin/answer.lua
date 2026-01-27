@@ -505,6 +505,12 @@ function 加载页(mviews, isleftadd, pos, target_id, silent)
 
     初始化页(mviews)
     
+    -- 如果当前页面就是正在显示的页面，立即记录历史
+    if pos == pg.getCurrentItem() then
+      初始化历史记录数据()
+      保存历史记录(cb.id, cb.question.title, cb.excerpt, "回答")
+    end
+    
     -- 数据就绪后，尝试处理视频逻辑 (修复竞态条件)
     if mviews.ids.processVideo then mviews.ids.processVideo() end
     
@@ -554,6 +560,8 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{
     if mviews.load == true then
       回答容器.getid = mviews.data.id
       初始化页(mviews)
+      初始化历史记录数据()
+      保存历史记录(mviews.data.id, mviews.ids.data.question.title, mviews.ids.data.excerpt, "回答")
     elseif mviews.load == "loading" then
       初始化页(mviews)
     else
@@ -613,6 +621,11 @@ taskUI(function()
         all_root.setAlpha(0)
         all_root_expand.setAlpha(1)
       end
+    end
+    -- 补救首页记录
+    if mview.load == true then
+      初始化历史记录数据()
+      保存历史记录(mview.data.id, mview.ids.data.question.title, mview.ids.data.excerpt, "回答")
     end
   end
 end)

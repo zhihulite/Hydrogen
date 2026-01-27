@@ -70,9 +70,9 @@ taskUI(function()
       people_o.setVisibility(View.VISIBLE)
     end
 
+    保存历史记录(用户id, 名字, 签名, "用户")
     -- 非核心 UI 逻辑延迟处理
     taskUI(100, function()
-      保存历史记录(用户id, 名字, 签名, "用户")
       
       if fans then
         function fans.onClick()

@@ -764,6 +764,7 @@ function 初始化历史记录数据()
 end
 
 function 保存历史记录(id, title, preview, _type)
+  if not MyHistoryManager then 初始化历史记录数据() end
   local id=tostring(id)
   MyHistoryManager.add(id, title, preview, _type)
 end

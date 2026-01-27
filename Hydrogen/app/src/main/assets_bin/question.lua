@@ -202,6 +202,9 @@ taskUI(function()
 
     _root.Visibility = 0
 
+    初始化历史记录数据()
+    保存历史记录(question_id, tab.title, tab.excerpt, "问题")
+
     -- 非核心 UI 和逻辑移入任务
     taskUI(100, function()
       for k, v in pairs(tab.topics) do
@@ -209,8 +212,6 @@ taskUI(function()
         tags:addTab(v.name, function() newActivity("topic", {v.id}) end, 2)
       end
 
-      初始化历史记录数据()
-      保存历史记录(question_id, tab.title, tab.excerpt, "问题")
 
       问题预览 = tab.detail
 
