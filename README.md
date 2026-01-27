@@ -23,7 +23,7 @@ Hydrogen 是一个基于 Androlua+ 开发的项目，为了避免重打包可以
 
 ## 下载安装
 
-最新版 App 请访问[发布页面](https://huajiqaq.github.io/myhydrogen)获取。历史版本可通过[此链接](https://workdrive.zoho.com.cn/folder/8ix3h3e8828db660e4e63acd5dd9e70bf591a)下载。
+最新版 App 请访问[发布页面](https://zhihulite.github.io)获取。历史版本可通过[此链接](https://workdrive.zoho.com.cn/folder/8ix3h3e8828db660e4e63acd5dd9e70bf591a)下载。
 
 - **hydrogen-master.zip**：这是 Hydrogen 最终版 final 7 的源代码。请注意预览或打包时可能会报错。如需解决这些问题，请下载本项目中的 **要插入的 dex** 文件，将其添加至打包的 APK 中。
 - **hydrogen 目录**：包含 Hydrogen 后续维护版本的源码。此版本无需下载 **要插入的 dex** 文件。
