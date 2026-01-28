@@ -14,11 +14,16 @@ import "com.google.android.material.floatingactionbutton.ExtendedFloatingActionB
 local id,类型=...
 
 local pre_data
-if type(类型) == "table" then
-  pre_data = 类型
+if type(类型) == "table" or tostring(类型) == "Lua Table" then
+  if tostring(类型) == "Lua Table" then
+    pre_data = luajava.astable(类型)
+  else
+    pre_data = 类型
+  end
+  
   类型 = pre_data.type or "文章"
   if 类型 == "article" then 类型 = "文章"
-  elseif 类型 == "pin" then 类型 = "想法"
+  elseif 类型 == "pin" or 类型 == "moments_pin" then 类型 = "想法"
   elseif 类型 == "zvideo" then 类型 = "视频"
   end
 end

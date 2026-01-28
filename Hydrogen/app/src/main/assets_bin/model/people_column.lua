@@ -60,7 +60,11 @@ function base.resolvedata(v,data)
     id内容=v.question.id or "null"
     id内容=id内容.."分割"..v.id
     标题=v.question.title
-    预览内容=v.content[1].content
+    if v.content and type(v.content) == "table" and v.content[1] then
+      预览内容=v.content[1].content
+    else
+      预览内容=v.excerpt
+    end
    elseif v.type=="zvideo" then
     活动="添加了视频"
     id内容="视频分割"..v.id

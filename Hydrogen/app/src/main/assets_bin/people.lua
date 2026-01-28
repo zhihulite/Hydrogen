@@ -150,19 +150,19 @@ taskUI(function()
       }
       a = MUKPopu(pop)
     end)
-  end)
-
-  base_people:getTabs(function(self, tabname, urlinfo, answerindex)
-    _G["urlinfo"] = urlinfo
-    people_pagetool = self:initpage(people_vpg, PeotabLayout)
-    people_pagetool:setUrls(urlinfo)
-    :addPage(2, tabname)
-    :createfunc()
-    :setOnTabListener(function(_, pos)
-      _G["pos"] = pos
-      if _sortvis then _sortvis.setVisibility(pos == answerindex and 0 or 8) end
+    
+    base_people:getTabs(function(self, tabname, urlinfo, answerindex)
+      _G["urlinfo"] = urlinfo
+      people_pagetool = self:initpage(people_vpg, PeotabLayout)
+      people_pagetool:setUrls(urlinfo)
+      :addPage(2, tabname)
+      :createfunc()
+      :setOnTabListener(function(_, pos)
+        _G["pos"] = pos
+        if _sortvis then _sortvis.setVisibility(pos == answerindex and 0 or 8) end
+      end)
+      :refer(nil, nil, true)
     end)
-    :refer(nil, nil, true)
   end)
 end)
 

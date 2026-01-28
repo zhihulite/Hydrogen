@@ -317,6 +317,11 @@ function Page_Tool:createfunc()
       pos=1
     end
 
+    if isrefresh and pagedata[pos].isend then
+      pagedata[pos].isend=false
+      pagedata[pos].canload=true
+    end
+
     if not pagedata[pos].canload then
       return
     end
@@ -334,7 +339,9 @@ function Page_Tool:createfunc()
     end
 
     local posturl = pagedata[pos].nexturl
-    if isprev then
+    if isrefresh then
+      posturl = self.urls[pos]
+    elseif isprev then
       --防止prev不存在一直加载的bug或prev为""无法加载
       if pagedata[pos].prev and pagedata[pos].prev~="" then
         posturl = pagedata[pos].prev
@@ -446,7 +453,14 @@ function Page_Tool:createfunc()
           updateData()
         end
        else
-        thissr.setRefreshing(false);
+        pagedata[pos]["isprev"]=false
+        pagedata[pos]["canload"]=true
+        thispage.animate().alpha(1).setDuration(100).withEndAction(Runnable{
+          run=function()
+            thissr.setRefreshing(false);
+          end
+        }).start()
+        提示("加载失败" .. code)
       end
     end)
 

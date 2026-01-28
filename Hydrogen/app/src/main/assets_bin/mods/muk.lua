@@ -1631,7 +1631,7 @@ function MUKPopu(t)
       layout_margin="8dp";
       {
         TextView;
-        Text=t.tittle,
+        Text=tostring(t.tittle or ""),
         gravity="left";
         padding="12dp";
         paddingTop="12dp";
