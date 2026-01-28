@@ -487,6 +487,10 @@ function 点击事件判断(myid,title,extra)
     newActivity("people",{uid, udata})
    elseif tostring(myid):find("专栏分割") then
     newActivity("people_column",{tostring(myid):match("专栏分割(.+)"), target_data})
+   elseif tostring(myid):find("浏览器") then
+    newActivity("browser",{tostring(myid):match("浏览器(.+)")})
+   elseif tostring(myid):find("toast分割") then
+    提示(tostring(myid):match("toast分割(.+)"))
 
    else
     newActivity("answer",{tostring(myid):match("(.+)分割"),tostring(myid):match("分割(.+)"),extra})

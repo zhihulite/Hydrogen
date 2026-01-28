@@ -63,6 +63,17 @@ local function resolve_moments_feed(v,data)
     end
    elseif v.type=="topic" then
     id内容="话题分割"..v.id
+   else
+    -- 处理未知类型（如盐选专栏、付费内容等）
+    if v.url then
+       id内容 = "浏览器" .. v.url
+       标题 = v.title
+       预览内容 = "请点击查看详情"
+    else
+       id内容 = "toast分割当前版本暂不支持该内容"
+       标题 = v.title or "未知内容"
+       预览内容 = "暂不支持，请尝试在浏览器中打开"
+    end
   end
   if 预览内容 then
     if 预览内容~="[视频]" then
