@@ -418,7 +418,7 @@ function 初始化页(mviews)
 
   local data = mviews.data
   local ids = mviews.ids
-  if mviews.load == true and data and data.author then
+  if (mviews.load == true or mviews.load == "preview" or mviews.load == "loading") and data and data.author then
     ids.username.Text = data.author.name
     ids.userheadline.Text = (data.author.headline == "" and "Ta还没有签名哦~") or data.author.headline
     loadglide(ids.usericon, data.author.avatar_url)
@@ -460,8 +460,35 @@ end
 -- 预先添加三个页面，支持预加载
 for i=1,3 do addAnswer() end
 
+-- 优化：使用 pre_data 实现首屏秒开
+if type(pre_data) == "table" and pre_data.author then
+  local first_view = pg.adapter.getItem(0)
+  if first_view then
+    local mviews = 数据表[first_view.id]
+    if mviews then
+      mviews.load = "preview" -- 标记为预览状态，允许后续覆盖加载
+      mviews.data = {
+         id = tostring(pre_data.id),
+         voteup_count = pre_data.voteup_count,
+         comment_count = pre_data.comment_count,
+         thanks_count = pre_data.thanks_count or 0,
+         favlists_count = 0,
+         点赞状态 = false,
+         感谢状态 = false,
+         author = {
+           name = pre_data.author.name,
+           headline = pre_data.author.headline,
+           avatar_url = pre_data.author.avatar_url,
+           id = tostring(pre_data.author.id)
+         }
+      }
+      初始化页(mviews)
+    end
+  end
+end
+
 function 加载页(mviews, isleftadd, pos, target_id, silent)
-  if not target_id or mviews.load then return end
+  if not target_id or (mviews.load and mviews.load ~= "preview") then return end
   mviews.load = "loading"
   mviews.target_id = target_id
   

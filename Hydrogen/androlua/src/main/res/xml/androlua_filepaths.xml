@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <resources>
 	<files-path name="files" path="/" />
-	<external-path name="androlua" path="AndroLua/" />
+	<external-path name="androlua" path="Android/data/com.zhihu.hydrogen.x/cache/AndroLua/" />
 	<external-path name="external" path="/" />
 </resources>

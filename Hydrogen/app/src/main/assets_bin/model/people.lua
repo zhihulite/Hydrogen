@@ -19,8 +19,11 @@ function base:getData(callback)
       self.id=data.id
       self.url_token=data.url_token
       callback(data,self)
-     elseif luajson.decode(content).error then
-      提示(luajson.decode(content).error.message)
+     else
+      local success, result = pcall(luajson.decode, content)
+      if success and result.error then
+        提示(result.error.message)
+      end
       callback(false)
     end
   end)

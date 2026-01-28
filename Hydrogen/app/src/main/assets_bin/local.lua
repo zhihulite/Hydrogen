@@ -113,15 +113,15 @@ userinfo.onClick=function()
 end
 
 
-username.text=xxx:match[[author="(.-)"]]
+username.text=xxx:match[[author="(.-)"]] or "未知作者"
 userheadline.text=xxx:match[[headline="(.-)"]]
-if userheadline.text=="" then
+if userheadline.text=="" or userheadline.text==nil then
   userheadline.text="Ta还没有签名哦~"
 end
 
-thanks_count.text=xxx:match[[thanks_count="(.-)"]]
-favlists_count.text=xxx:match[[favlists_count="(.-)"]] or "未知"
-vote_count.text=xxx:match[[vote_count="(.-)"]]
+thanks_count.text=xxx:match[[thanks_count="(.-)"]] or "0"
+favlists_count.text=xxx:match[[favlists_count="(.-)"]] or "0"
+vote_count.text=xxx:match[[vote_count="(.-)"]] or "0"
 
 comment.onClick=function()
   local 保存路径=内置存储文件("Download/"..title:gsub("/","or").."/"..username.text)
@@ -198,7 +198,7 @@ ActivityResultCallback{
 end});
 
 taskUI(function()
-  a=MUKPopu({
+  mypop=MUKPopu({
     tittle="回答",
     list={
       {
