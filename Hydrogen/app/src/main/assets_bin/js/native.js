@@ -241,7 +241,14 @@ window.zhihuNativeApp = new Proxy({}, {
                     "supportAction": notifySupportStatus,
                     "showAlert": showConfirm,
                     // eslint-disable-next-line no-return-assign
-                    "openURL": data => window.location.href = data.params.url,
+                    "openURL": data => {
+                        console.log("拦截到URL: " + data.params.url);
+                        if (data.params.url.includes("comment")) {
+                             console.log("显示评论");
+                        } else {
+                             window.location.href = data.params.url;
+                        }
+                    },
                     "setShareInfo": setShareInfo,
                     "checkSupportedShareType": checkSupportedShareType,
                     "shareLongImage": shareLongImage,
