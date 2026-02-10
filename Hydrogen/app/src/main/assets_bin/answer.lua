@@ -195,7 +195,6 @@ local function 统一滑动跟随(view,x,y,lx,ly)
   
   -- 3. 执行偏移
   appbar.setTranslationY(translation)
-  root_card.setTranslationY(-translation)
   
   -- 优化：使用局部变量缓存当前页面的 ids，避免在滚动中执行复杂的查找函数
   if not currentMViewIds then
@@ -606,7 +605,6 @@ pg.registerOnPageChangeCallback(OnPageChangeCallback{
     local scroll_y = currentWebView.getScrollY()
     local translation = -scroll_y
     appbar.setTranslationY(translation)
-    root_card.setTranslationY(-translation)
     
     if cached_header_height == 0 then cached_header_height = all_root_expand.getHeight() or dp2px(100) end
     local progress = math.min(1, math.abs(translation) / cached_header_height)
@@ -643,7 +641,6 @@ taskUI(function()
       local scroll_y = currentWebView.getScrollY()
       local translation = -scroll_y
       appbar.setTranslationY(translation)
-      root_card.setTranslationY(-translation)
       if scroll_y == 0 then
         all_root.setAlpha(0)
         all_root_expand.setAlpha(1)
