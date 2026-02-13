@@ -13,8 +13,36 @@ import "com.google.android.material.floatingactionbutton.ExtendedFloatingActionB
 
 local id,类型=...
 
-if 类型==nil or 类型:match("%d") then
+local pre_data
+if type(类型) == "table" or tostring(类型) == "Lua Table" then
+  if tostring(类型) == "Lua Table" then
+    pre_data = luajava.astable(类型)
+  else
+    pre_data = 类型
+  end
+  
+  类型 = pre_data.type or "文章"
+  if 类型 == "article" then 类型 = "文章"
+  elseif 类型 == "pin" or 类型 == "moments_pin" then 类型 = "想法"
+  elseif 类型 == "zvideo" then 类型 = "视频"
+  end
+end
+
+if 类型==nil or (type(类型) == "string" and 类型:match("%d")) then
   类型="文章"
+end
+
+if pre_data then
+  taskUI(function()
+    if pre_data.author then
+      author_id = pre_data.author.id
+      author_name = pre_data.author.name
+    end
+    page_title = pre_data.title
+    if page_title and _title then
+      _title.text = page_title
+    end
+  end)
 end
 
 初始化历史记录数据()
@@ -39,7 +67,7 @@ end
 
 
 if 类型=="本地" then
-  task(1,function()
+  taskUI(function()
     _title.text="本地内容"
 
     local file_path=id:gsub(内置存储文件("Download"),"")
@@ -82,47 +110,41 @@ _title.Text="加载中"
 
 
 function 刷新()
-
-  base_column:getData(function(data,code)
-    if data==false then
-      if code == 404 then
-        _title.Text="页面不存在"
-       else
-        _title.Text="加载失败"
-      end
+  -- 并行发起详情获取和网页加载
+  base_column:getData(function(data, code)
+    if data == false then
+      if code == 404 then _title.Text = "页面不存在" else _title.Text = "加载失败" end
       return 提示("加载页面失败")
     end
-    --针对没有通过请求直接回调的内容的处理
-    if type(data)=="table" then
-      --针对直播需要特殊判断
-      if 类型~="直播" then
-        author_id=data.author.id
-        author_name=data.author.name
-        page_title=data.title
-        _title.text=page_title
-        --软件自己拼接成的保存路径
-        保存路径=data.savepath
-        保存历史记录(base_column.id, data.title, data.excerpt_title or data.excerpt or "", base_column.type)
-       else
-        author_id=data.theater.actor.id
+    
+    if type(data) == "table" then
+      if 类型 ~= "直播" then
+        author_id = data.author.id
+        author_name = data.author.name
+        page_title = data.title
+        _title.text = page_title
+        保存路径 = data.savepath
+        taskUI(100, function()
+          保存历史记录(base_column.id, data.title, data.excerpt_title or data.excerpt or "", base_column.type)
+        end)
+      else
+        author_id = data.theater.actor.id
       end
     end
-    content.setVisibility(8)
-
-    if 类型=="文章" then
-      --omni=mix 防止文章点击赞同提示服务繁忙
-      content.loadUrl(base_column.weburl.."?omni=mix&use_hybrid_toolbar=1")
-     else
-      content.loadUrl(base_column.weburl)
-    end
-
   end)
 
-
-  if 类型=="直播" then
-    followdoc='document.querySelector(".TheaterRoomHeader-actor").childNodes[2]'
+  -- 关键优化：不再等待 getData 回调，立即开始加载网页
+  content.setVisibility(8)
+  local web_url = base_column.weburl
+  if 类型 == "文章" then
+    content.loadUrl(web_url .. "?omni=mix&use_hybrid_toolbar=1")
+  else
+    content.loadUrl(web_url)
   end
 
+  if 类型 == "直播" then
+    followdoc = 'document.querySelector(".TheaterRoomHeader-actor").childNodes[2]'
+  end
 end
 
 MyWebViewUtils:initWebViewClient{
@@ -409,7 +431,7 @@ if 类型=="本地" then
   }
 end
 
-task(1,function()
+taskUI(function()
   a=MUKPopu(pop)
 
   if 类型=="视频" then

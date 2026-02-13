@@ -32,8 +32,12 @@ function 搜索(text)
   if #(tostring(search_text):gsub(" ",""))<1 then
     提示("请输入您要搜索的内容")
    else
+    -- UI 优化：跳转前隐藏键盘
+    local imm = this.getSystemService(Context.INPUT_METHOD_SERVICE)
+    imm.hideSoftInputFromWindow(search_view.getWindowToken(), 0)
+    
     if this.getSharedData("搜索引擎")==nil
-      this.setSharedData("搜索引擎","https://www.bing.com/search?q=site%3Azhihu.com%20")
+      this.setSharedData("搜索引擎","https://www.zhihu.com/search?type=content&q=")
     end
     search_eg=this.getSharedData("搜索引擎")
     newActivity("browser",{search_eg..urlEncode(search_text)})
@@ -59,7 +63,7 @@ if this.getSharedData("关闭热门搜索")=="true" then
     if code==200 then
       local data=luajson.decode(content)
       for k,v in ipairs(data.top_search.words) do
-        task(50,function()adp.add{id内容=v.query,标题=v.display_query}end)
+        taskUI(50,function()adp.add{id内容=v.query,标题=v.display_query}end)
       end
      else
       提示("获取热门搜索失败 "..content)
@@ -85,7 +89,7 @@ array_adp=ArrayAdapter(activity,android.R.layout.simple_list_item_1)
 suggest_list.setAdapter(array_adp)
 suggest_list.onItemClick=function(l,v,p,s)--列表点击事件
   搜索(tostring(v.Text))
-  task(300,function()
+  taskUI(300,function()
     search_editor.text=""
   end)
 end
@@ -106,7 +110,7 @@ search_editor.addTextChangedListener{
         if code==200 then
           local data=luajson.decode(content)
           for k,v in ipairs(data.suggest) do
-            task(50,function()array_adp.add(v.query)end)
+            taskUI(50,function()array_adp.add(v.query)end)
           end
          else
           提示("获取搜索关键词失败 "..content)

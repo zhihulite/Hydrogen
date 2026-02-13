@@ -29,9 +29,9 @@ function base.getAdapter(topic_pagetool,pos)
   local itemc
   local onclick=function(data)
     if data.标题 then
-      点击事件判断(data.id内容,data.标题)
+      点击事件判断(data.id内容,data.标题,data.testdata)
      else
-      点击事件判断(data.id内容)
+      点击事件判断(data.id内容,nil,data.testdata)
     end
   end
   switch pos
@@ -77,6 +77,7 @@ function base.getAdapter(topic_pagetool,pos)
       end
 
       views.card.onClick=function()
+        nTView=views.card
         onclick(data)
       end
     end,
@@ -160,6 +161,7 @@ function base.resolvedata(v,data)
   add.id内容=id
   add.点赞数=voteup_count
   add.底部内容=底部内容
+  add.testdata=v
 
   table.insert(data,add)
 end

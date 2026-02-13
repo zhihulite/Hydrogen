@@ -30,7 +30,7 @@ MyWebViewUtils
 :initNoImageMode()
 :initDownloadListener()
 
-if url:find("https://www.zhihu.com/messages") then
+if url and url:find("https://www.zhihu.com/messages") then
   MyWebViewUtils:setUA("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36")
  else
   MyWebViewUtils:setZhiHuUA()
@@ -39,8 +39,10 @@ end
 
 --解决bing搜索白屏
 local headers = HashMap()
-headers.put("Referer", url)
-content.loadUrl(url, headers)
+if url then
+  headers.put("Referer", url)
+  content.loadUrl(url, headers)
+end
 
 
 _title.text="加载中"
@@ -51,7 +53,10 @@ content.setVisibility(8)
 MyWebViewUtils:initWebViewClient{
   shouldOverrideUrlLoading=function(view,url)--回调参数，v控件，url网址
     if url:find("zhihu.com") and url:find("https://www.zhihu.com/account/unhuman") then
-      view.stopLoading()
+      -- 如果当前页面就是 unhuman 相关的，或者是从外部跳转来的，允许加载
+      if not url:find("need_login=true") then
+        view.stopLoading()
+      end
 
       if url:find("zhihu.com/signin") then
         activity.newActivity("login")
@@ -239,6 +244,6 @@ pop={
 }
 
 
-task(1,function()
+taskUI(function()
   a=MUKPopu(pop)
 end)

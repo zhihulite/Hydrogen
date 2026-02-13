@@ -14,7 +14,11 @@ zse96_encrypt=require "model.zse96_encrypt"
 search_result_pagetool=require "model.search_result":new(搜索内容,类型,id)
 :initpage(simple_recy,simplesr)
 
-task(1,function()
+taskUI(function()
+  if search_result_pagetool then search_result_pagetool:refer() end
+end)
+
+taskUI(function()
   a=MUKPopu({
     tittle=_title.text,
     list={

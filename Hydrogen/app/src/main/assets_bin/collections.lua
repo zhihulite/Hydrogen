@@ -9,50 +9,56 @@ edgeToedge(nil,nil,function() local layoutParams = toolbar.LayoutParams;
   layoutParams.setMargins(layoutParams.leftMargin, 状态栏高度, layoutParams.rightMargin,layoutParams.bottomMargin);
   toolbar.setLayoutParams(layoutParams); end)
 collections_base=require "model.collections":new(collections_id)
-:getData(function(tab)
 
-  collection_pagetool=collections_base:initpage(collection_recy,collectionsr)
+taskUI(function()
+  collections_base:getData(function(tab)
+    if not tab then return end
+    _title.Text=tab.title
 
-  _title.Text=tab.title
+    local isfollow=tab.creator.id~=this.getSharedData("idx")
 
-  local isfollow=tab.creator.id~=this.getSharedData("idx")
-
-  if isfollow then
-    local mview=pop.list[3]
-    mview.onClick=function(text)
-      if text=="关注" then
-        zHttp.post("https://api.zhihu.com/collections/"..collections_id.."/followers","",posthead,function(code,json)
-          if code==200 then
-            mview.src=图标("close")
-            mview.text="取关"
-            提示("已关注")
-            a=MUKPopu(pop)
-          end
-        end)
-       else
-        zHttp.delete("https://api.zhihu.com/collections/"..collections_id.."/followers/"..activity.getSharedData("idx"),head,function(code,json)
-          if code==200 then
-            提示("已取关")
-            mview.src=图标("add")
-            mview.text="关注"
-            a=MUKPopu(pop)
-          end
-        end)
+    if isfollow then
+      local mview=pop.list[3]
+      mview.onClick=function(text)
+        if text=="关注" then
+          zHttp.post("https://api.zhihu.com/collections/"..collections_id.."/followers","",posthead,function(code,json)
+            if code==200 then
+              mview.src=图标("close")
+              mview.text="取关"
+              提示("已关注")
+              a=MUKPopu(pop)
+            end
+          end)
+         else
+          zHttp.delete("https://api.zhihu.com/collections/"..collections_id.."/followers/"..activity.getSharedData("idx"),head,function(code,json)
+            if code==200 then
+              提示("已取关")
+              mview.src=图标("add")
+              mview.text="关注"
+              a=MUKPopu(pop)
+            end
+          end)
+        end
       end
+      table.remove(pop.list,2)
+      if tab.is_following then
+        mview.src=图标("close")
+        mview.text="取关"
+       else
+        mview.src=图标("add")
+        mview.text="关注"
+      end
+      a=MUKPopu(pop)
     end
-    table.remove(pop.list,2)
-    if tab.is_following then
-      mview.src=图标("close")
-      mview.text="取关"
-     else
-      mview.src=图标("add")
-      mview.text="关注"
-    end
-    a=MUKPopu(pop)
-
-  end
-
+  end)
 end)
+
+collection_pagetool=collections_base:initpage(collection_recy,collectionsr)
+
+taskUI(function()
+  if collection_pagetool then collection_pagetool:refer() end
+end)
+
 
 波纹({fh,_more},"圆主题")
 

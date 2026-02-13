@@ -19,8 +19,11 @@ function base:getData(callback)
       self.id=data.id
       self.url_token=data.url_token
       callback(data,self)
-     elseif luajson.decode(content).error then
-      提示(luajson.decode(content).error.message)
+     else
+      local success, result = pcall(luajson.decode, content)
+      if success and result.error then
+        提示(result.error.message)
+      end
       callback(false)
     end
   end)
@@ -80,11 +83,12 @@ function base.getAdapter(people_pagetool,pos)
       loadglide(views.图像,data.图像)
 
       views.card.onClick=function()
+        nTView=views.card
         if tostring(data.id内容):find("更多") then
           local id内容=data.id内容:gsub("更多","")
           newActivity("people_more",{用户id,id内容})
          else
-          点击事件判断(data.id内容,data.标题)
+          点击事件判断(data.id内容,data.标题,data.testdata)
         end
       end
     end,
@@ -235,13 +239,14 @@ function base.resolvedata(v,data)
   add.id内容=id内容
   add.标题=标题
   add.图像=头像
+  add.testdata=v
   table.insert(data,add)
 end
 
 -- 根据用户ID构造各类标签对应的URL配置
 function base:getUrls()
   local people_id = self.id
-  local url_token=self.url_token
+  local url_token = self.url_token or people_id -- 容错：如果 url_token 还没获取到，尝试使用 id
   return {
     activities = "https://www.zhihu.com/api/v3/moments/" .. people_id .. "/activities?limit=20",
     zvideo = "https://www.zhihu.com/api/v4/members/" .. url_token .. "/zvideos?offset=0&limit=20",

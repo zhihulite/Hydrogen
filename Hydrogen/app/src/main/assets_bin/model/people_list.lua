@@ -120,7 +120,8 @@ function base.getAdapter(people_list_pagetool,pos)
       loadglide(views.图像,data.图像)
       _peoplelist.onbind(views,data)
       views.card.onClick=function()
-        newActivity("people",{data.id内容})
+        nTView=views.card
+        newActivity("people",{data.id内容, data.testdata})
       end
     end,
   }))
@@ -129,12 +130,13 @@ end
 
 function base.resolvedata(v,data)
 
-  local 头像,名字,签名,用户id
+  local 头像,名字,签名,用户id,author_data
   if v.type=="people" then
     头像=v.avatar_url
     名字=v.name
     签名=v.headline
     用户id=v.id
+    author_data=v
     if 签名=="" then
       签名="无签名"
     end
@@ -144,6 +146,7 @@ function base.resolvedata(v,data)
     名字=v.member.name
     签名=v.member.headline
     用户id=v.member.id
+    author_data=v.member
     if 签名=="" then
       签名="无签名"
     end
@@ -152,6 +155,7 @@ function base.resolvedata(v,data)
   add.id内容=用户id
   add.标题=名字
   add.图像=头像
+  add.testdata=author_data
   add.following=_peoplelist.showtext(v)
   add.预览内容=签名
   table.insert(data,add)
@@ -175,7 +179,6 @@ function base:initpage(view,sr)
   :initPage()
   :createfunc()
   :setUrlItem(self:getUrl(self.type))
-  :refer()
 end
 
 return base

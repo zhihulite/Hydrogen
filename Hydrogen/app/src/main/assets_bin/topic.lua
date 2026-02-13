@@ -7,8 +7,19 @@ edgeToedge(nil,nil,function() local layoutParams = mainLay.LayoutParams;
   layoutParams.setMargins(layoutParams.leftMargin, 状态栏高度, layoutParams.rightMargin,layoutParams.bottomMargin);
   mainLay.setLayoutParams(layoutParams); end)
 设置toolbar(toolbar)
-topic_id=...
+topic_id, pre_data = ...
 波纹({fh,_more},"圆主题")
+
+if type(pre_data) == "table" then
+  taskUI(function()
+    _title.text = pre_data.name
+    if loadglide then
+      loadglide(_image, pre_data.avatar_url, false)
+      loadglide(_bigimage, pre_data.avatar_url, false)
+    end
+    _excerpt.text = (pre_data.introduction == "" or pre_data.introduction == nil) and "暂无话题描述" or pre_data.introduction
+  end)
+end
 
 初始化历史记录数据()
 
@@ -68,15 +79,21 @@ topic_page.setAdapter(pagadp)
 
 
 local base_topic=require "model.topic":new(topic_id)
-:getData(function(data)
-  _title.text=data.name
-  loadglide(_image,data.avatar_url,false)
-  loadglide(_bigimage,data.avatar_url,false)
-  if data.introduction==""then
-    _excerpt.text="暂无话题描述"
-   else
-    _excerpt.text=data.introduction
-  end
+
+taskUI(function()
+  base_topic:getData(function(data)
+    if not data then return end
+    _title.text=data.name
+    loadglide(_image,data.avatar_url,false)
+    loadglide(_bigimage,data.avatar_url,false)
+    _excerpt.text = (data.introduction == "") and "暂无话题描述" or data.introduction
+    
+    -- 保存历史记录
+    taskUI(100, function()
+      初始化历史记录数据()
+      保存历史记录(topic_id, data.name, data.introduction, "话题")
+    end)
+  end)
 end)
 
 function 获取url(type)
@@ -124,7 +141,7 @@ pop={
   }
 }
 
-task(1,function()
+taskUI(10,function()
   a=MUKPopu(pop)
 end)
 
@@ -146,6 +163,7 @@ topic_pagetool=base_topic:initpage(topic_page,TopictabLayout)
 end)
 
 topic_page.setCurrentItem(1,false)
+
 
 if activity.getSharedData("话题提示0.01")==nil
   AlertDialog.Builder(this)

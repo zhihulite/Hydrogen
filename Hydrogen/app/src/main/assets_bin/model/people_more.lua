@@ -106,6 +106,7 @@ function base.getAdapter(people_more_pagetool,pos)
       end
 
       views.card.onClick=function()
+        nTView=views.card
         点击事件判断(data.id内容)
       end
     end,

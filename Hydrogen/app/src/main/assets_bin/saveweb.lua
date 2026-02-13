@@ -107,7 +107,7 @@ pop={
         写入文件(详情文件夹,写入内容)
         content.saveWebArchive(保存路径.."/mht.mht")
         提示("保存成功 请稍等写入完成［一般2S内完成］")
-        task(1000,function()
+        taskUI(1000,function()
           content.loadUrl(mhtml2html)
           提示("转换中")
         end)
@@ -119,10 +119,9 @@ pop={
       onLongClick=function()
         分享文本(content.getUrl(),true)
     end},
-
   }
 }
 
-task(1,function()
+taskUI(function()
   a=MUKPopu(pop)
 end)

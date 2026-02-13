@@ -77,7 +77,7 @@
       tooltip="更多",
       layout_margin="8dp";
       onClick=function()
-        showpop(_more_lay,a.pop)
+        showpop(_more_lay,mypop.pop)
       end;
     };
     {

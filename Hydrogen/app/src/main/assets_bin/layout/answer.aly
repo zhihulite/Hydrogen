@@ -5,30 +5,40 @@
   elevation="0";
   background=backgroundc;
   id="mainLay";
+  clipChildren=false;
 
   {
-    CoordinatorLayout;
+    FrameLayout;
     id="coord";
     layout_height="fill";
     layout_width="fill";
+    clipChildren=false;
 
     {
-      AppBarLayout;
+      ViewPager2;
+      layout_width="fill";
+      layout_height="fill";
+      clipToPadding=false,
+      id="pg",
+    };
+
+    {
+      LinearLayout;
       id="appbar",
       layout_height="wrap";
       layout_width="fill";
-      --layout_scrollFlags="scroll|enterAlways|snap|exitUntilCollapsed",
-      --layout_scrollEffect="compress",
-      liftable=false,
-      TargetElevation=0;
-      backgroundColor=0x00000000,
+      orientation="vertical";
+      elevation="0dp";
+      clipChildren=false;
+      background=backgroundc,
       {
-        CollapsingToolbarLayout,
+        FrameLayout,
+        layout_height="wrap";
         minHeight="64dp",
         layout_width="fill";
-        layout_scrollFlags="scroll|snap|enterAlways|enterAlwaysCollapsed";
+        --layout_scrollFlags="scroll|snap|enterAlways|enterAlwaysCollapsed";
         --layout_scrollEffect="compress",
-        backgroundColor=0x00000000,
+        background=backgroundc,
         {
           LinearLayout;
           id="title_bar_expand",
@@ -83,79 +93,15 @@
         backgroundColor=res.color.attr.colorSurfaceVariant;
       };]=]
           },
-          {
-            MaterialCardView;
-            layout_height="wrap";
-            layout_width="wrap",
-            --CardBackgroundColor=res.color.attr.colorSurfaceContainerHigh,
-            CardBackgroundColor=0x00000000,
-            Elevation="0";
-            layout_margin="16dp";
-            layout_marginTop="4dp";
-            layout_marginLeft="8dp",
-            layout_marginBottom="0dp";
-            radius="32dp";
-            StrokeColor="42dp";
-            StrokeWidth="1dp",
-            id="userinfo",
-
-            {
-              LinearLayout,
-              layout_width="wrap";
-              layout_height="fill";
-              {
-                CircleImageView,
-                layout_margin="8dp";
-                layout_width="42sp",
-                layout_height="42sp",
-                layout_gravity="left|center",
-                id="usericon",
-              },
-              {
-                LinearLayout,
-                layout_width="wrap";
-                layout_height="wrap";
-                orientation="vertical",
-
-                {
-                  TextView,
-                  layout_width="wrap",
-                  Typeface=字体("product-Bold");
-                  layout_marginTop="8dp",
-                  layout_marginRight="21dp",
-                  gravity="left|center",
-                  textColor=textc,
-                  id="username",
-                  textSize="16sp",
-                  lineHeight=标题行高;
-
-                },
-                {
-                  TextView,
-                  Typeface=字体("product");
-                  layout_width="wrap",
-                  layout_marginRight="21dp",
-                  layout_marginTop="4dp",
-                  layout_marginBottom="10dp",
-                  gravity="left|bottom",
-                  maxLines=1,
-                  textColor=textc,
-                  id="userheadline",
-                  textSize="12sp",
-                  lineHeight=内容行高;
-                },
-              },
-            };
-          },
         },
+      },
+    },
         {
           MaterialToolbar;
           id="toolbar";
           title="qwq",
           --layout_scrollFlags="scroll|snap|enterAlways";
-          layout_collapseMode="pin",
           id="root_card",
-          elevation="0dp";
           layout_width="fill",
           layout_height="wrap",
           backgroundColor=backgroundc,
@@ -245,20 +191,9 @@
             };
           };
         },
-      },
-    },
 
 
-    {
-      ViewPager2;
-      layout_width="fill";
-      layout_height="fill";
-      clipToPadding=false,
-      layout_behavior="@string/appbar_scrolling_view_behavior";
 
-      --layout_marginBottom=dp2px(56);
-      id="pg",
-    };
 
     {luajava.bindClass "com.google.android.material.floatingtoolbar.FloatingToolbarLayout";
       --FrameLayout,
@@ -267,7 +202,6 @@
       layout_height="wrap";
       layout_marginBottom="6dp",
       layout_gravity="bottom|center";
-      layout_behavior=luajava.bindClass "com.google.android.material.behavior.HideBottomViewOnScrollBehavior"(this,nil),
       id="dtl";
       {
         LinearLayout;

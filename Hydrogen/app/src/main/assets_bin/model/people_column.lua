@@ -40,7 +40,8 @@ function base.getAdapter(people_column_pagetool,pos)
       views.活动.text=data.活动
       loadglide(views.图像,data.图像)
       views.card.onClick=function()
-        点击事件判断(data.id内容,data.标题)
+        nTView=views.card
+        点击事件判断(data.id内容,data.标题,data.testdata)
       end
     end,
   }))
@@ -59,7 +60,11 @@ function base.resolvedata(v,data)
     id内容=v.question.id or "null"
     id内容=id内容.."分割"..v.id
     标题=v.question.title
-    预览内容=v.content[1].content
+    if v.content and type(v.content) == "table" and v.content[1] then
+      预览内容=v.content[1].content
+    else
+      预览内容=v.excerpt
+    end
    elseif v.type=="zvideo" then
     活动="添加了视频"
     id内容="视频分割"..v.id
@@ -79,6 +84,7 @@ function base.resolvedata(v,data)
   add.点赞数=点赞数..""
   add.评论数=评论数..""
   add.图像=头像
+  add.testdata=v
   table.insert(data,add)
 end
 

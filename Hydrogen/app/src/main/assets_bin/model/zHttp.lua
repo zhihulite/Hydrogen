@@ -2,23 +2,25 @@ zHttp = {}
 
 function zHttp.setcallback(code,content,raw,headers,url,head,callback,func,data)
   if code==403 then
-    local _ = pcall(function()
+    local decoded_content
+    local success = pcall(function()
       decoded_content=luajson.decode(content)
     end)
-    if decoded_content.error and decoded_content.error.message and decoded_content.error.redirect then
+    if success and decoded_content and decoded_content.error and decoded_content.error.message and decoded_content.error.redirect then
       if not mytip_dia or mytip_dia.isShowing()~=true then
         canload=false
+        local redirect_url = decoded_content.error.redirect
         mytip_dia=AlertDialog.Builder(this)
         .setTitle("提示")
         .setMessage(decoded_content.error.message)
         .setCancelable(true)
         .setPositiveButton("立即跳转",{onClick =function()
-            newActivity("browser",{decoded_content.error.redirect})
+            newActivity("browser",{redirect_url})
             提示("已跳转 成功后请自行退出")
         end})
         .show()
       end
-     elseif decoded_content.error and decoded_content.error.message then
+     elseif success and decoded_content and decoded_content.error and decoded_content.error.message then
       提示(decoded_content.error.message)
     end
    elseif code==401 then

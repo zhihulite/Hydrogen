@@ -9,6 +9,7 @@ end
 
 
 function base_question:getData(callback)
+  if not self.id then return callback(false) end
   local url="https://www.zhihu.com/api/v4/questions/"..self.id.."?include=read_count,answer_count,comment_count,follower_count,detail,excerpt,author,relationship.is_following,topics"
   zHttp.get(url,head
   ,function(code,content)
@@ -23,6 +24,7 @@ function base_question:getData(callback)
 end
 
 function base_question:getUrl(sortby)
+  if not self.id then return "" end
   --2025 501 幽默知乎网页api 不填写url参数无法访问
   return "https://www.zhihu.com/api/v4/questions/"..self.id.."/feeds?include=badge%5B*%5D.topics,comment_count,excerpt,voteup_count,created_time,updated_time,upvoted_followees,voteup_count,media_detail&limit=20".."&order="..(sortby or "default").. "&ws_qiangzhisafe=0"
 end
@@ -57,7 +59,8 @@ function base_question.getAdapter(question_pagetool,pos)
       loadglide(views.图像,data.图像)
 
       views.card.onClick=function()
-        newActivity("answer",{question_id,tostring(data.id内容)})
+        nTView=views.card
+        newActivity("answer",{question_id,tostring(data.id内容),data.testdata})
       end
     end,
   }))
@@ -82,6 +85,7 @@ function base_question.resolvedata(v,data)
   add.id内容=v.id..""
   add.预览内容=Html.fromHtml(v.excerpt or "无")
   add.图像=图片
+  add.testdata=v
   table.insert(data,add)
 end
 

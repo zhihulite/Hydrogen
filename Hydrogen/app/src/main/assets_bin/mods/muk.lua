@@ -4,6 +4,29 @@ import "model.zHttp"
 import "model.zhihu_url"
 luajson=require "json"
 
+local type = type
+local pairs = pairs
+local ipairs = ipairs
+local tostring = tostring
+local tonumber = tonumber
+local math_floor = math.floor
+local string_find = string.find
+local string_match = string.match
+local string_gsub = string.gsub
+local string_format = string.format
+local table_insert = table.insert
+local table_remove = table.remove
+local table_concat = table.concat
+
+local io_open = io.open
+
+local pcall = pcall
+local xpcall = xpcall
+
+local luajava_bindClass = luajava.bindClass
+local luajava_override = luajava.override
+local luajava_astable = luajava.astable
+
 initApp=true
 useCustomAppToolbar=true
 import "jesse205"
@@ -19,9 +42,9 @@ oldDarkActionBar=getSharedData("theme_darkactionbar")
 MyPageTool2 = require "views/MyPageTool2"
 
 --重写SwipeRefreshLayout到自定义view 原SwipeRefreshLayout和滑动组件有bug
-SwipeRefreshLayout = luajava.bindClass "com.hydrogen.view.CustomSwipeRefresh"
+SwipeRefreshLayout = luajava_bindClass "com.hydrogen.view.CustomSwipeRefresh"
 --重写BottomSheetDialog到自定义view 解决横屏显示不全问题
-BottomSheetDialog = luajava.bindClass "com.hydrogen.view.BaseBottomSheetDialog"
+BottomSheetDialog = luajava_bindClass "com.hydrogen.view.BaseBottomSheetDialog"
 
 versionCode=0.612
 layout_dir="layout/item_layout/"
@@ -32,34 +55,50 @@ import "android.animation.ObjectAnimator"
 import "android.view.animation.*"
 
 function addAutoHideListener(recs,views)
-  for j,rec in pairs(recs)
-    for i,ee in pairs(views)
-      bottombarBehavior=import "com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
-      ee.layoutParams.setBehavior(bottombarBehavior())
-
-      rec.addOnScrollListener(RecyclerView.OnScrollListener{
-        onScrolled=function(v,s,j)
-          if j>0 then
-            ee.layoutParams.getBehavior().slideDown(ee)
-          end
-          if j<0 then
-            ee.layoutParams.getBehavior().slideUp(ee)
-          end
-        end,
-        onScrollStateChanged=function(v,s)
-          if !(v.canScrollVertically(1))
-            ee.layoutParams.getBehavior().slideDown(ee)
-           elseif !(v.canScrollVertically(-1))
-            ee.layoutParams.getBehavior().slideUp(ee)
-          end
-        end
-      })
+  local appbar
+  -- 先尝试从 views 的父容器中找 AppBarLayout
+  local parent = views[1].getParent()
+  if parent then
+    for i=0, parent.getChildCount()-1 do
+      local child = parent.getChildAt(i)
+      if luajava.instanceof(child, luajava.bindClass("com.google.android.material.appbar.AppBarLayout")) then
+        appbar = child
+        break
+      end
     end
+  end
+
+  -- 如果没找到，尝试往更上一层找（CoordinatorLayout 结构）
+  if not appbar and parent then
+    local grandParent = parent.getParent()
+    if grandParent then
+      for i=0, grandParent.getChildCount()-1 do
+        local child = grandParent.getChildAt(i)
+        if luajava.instanceof(child, luajava.bindClass("com.google.android.material.appbar.AppBarLayout")) then
+          appbar = child
+          break
+        end
+      end
+    end
+  end
+
+  if appbar then
+    appbar.addOnOffsetChangedListener(luajava.bindClass("com.google.android.material.appbar.AppBarLayout$OnOffsetChangedListener")({
+      onOffsetChanged=function(v,verticalOffset)
+        local totalScrollRange = v.getTotalScrollRange()
+        -- 计算移动比例 0 为完全显示，1 为完全隐藏
+        local factor = -verticalOffset / totalScrollRange
+        for i,ee in pairs(views)
+          -- 实时设置位移，不使用动画，达到像素级跟随
+          ee.setTranslationY(ee.getHeight() * factor)
+        end
+      end
+    }))
   end
 end
 
 function MyLuaFileFragment(a,b,c)
-  return luajava.override(luajava.bindClass("com.hydrogen.MyLuaFileFragment"),{
+  return luajava_override(luajava_bindClass("com.hydrogen.MyLuaFileFragment"),{
     onDestroy=function(super)super()
 
       this.getLuaState().pushNil()
@@ -83,24 +122,32 @@ function 设置视图(t)
   end
 
   if thisFragment
-    thisFragment.setContainerView(loadlayout(t))
+    thisFragment.container.setBackgroundColor(0x99000000)
+    local lay = loadlayout(t)
+    if lay.id == "mainLay" then
+      lay.setBackgroundColor(0)
+    end
+    if nOView~=nil then
+      ViewCompat.setTransitionName(lay, "t")
+    end
+    thisFragment.setContainerView(lay)
     if nOView~=nil
       local backward=MaterialContainerTransform(activity,false)
       .setStartView(thisFragment.container)
       .setEndView(nOView)
       .setPathMotion(MaterialArcMotion())
-      --.setScrimColor(0x00000000)
+      .setScrimColor(0x99000000)
       .addTarget(nOView)
       .setStartShapeAppearanceModel(OldWindowShape)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
-      --thisFragment.startPostponedEnterTransition()
+      thisFragment.startPostponedEnterTransition()
      else
       local backward = MaterialSharedAxis(MaterialSharedAxis.Z, false)
       .addTarget(thisFragment.container)
       .addTarget(thisFragment.container)
       --.addTarget(ff)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
-
+      thisFragment.startPostponedEnterTransition()
     end
    else
     activity.setContentView(loadlayout(t))
@@ -158,13 +205,12 @@ function newActivity(f,b,c)
       end
     end
     fragment=MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,nOView=nTView,OldWindowShape=WindowShape.build()} )
-    --.postponeEnterTransition()
+    fragment.postponeEnterTransition()
     local forward=MaterialContainerTransform(activity,true)
     .setStartView(nTView)
-    .setEndView(ff)
     .setPathMotion(MaterialArcMotion())
     .setEndShapeAppearanceModel(WindowShape.build())
-    .addTarget(ff)
+    .setScrimColor(0x99000000)
     --.setAllContainerColors(转0x(backgroundc))
     --.setFadeMode(3)
     --backward = MaterialSharedAxis(MaterialSharedAxis.Z, false);
@@ -178,7 +224,9 @@ function newActivity(f,b,c)
    else
     backward = MaterialSharedAxis(MaterialSharedAxis.Z, false);
     forward = MaterialSharedAxis(MaterialSharedAxis.Z, true);
-    t.add(ff.id,MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,}).setEnterTransition(forward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward))
+    local fragment = MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,})
+    fragment.postponeEnterTransition()
+    t.add(ff.id,fragment.setEnterTransition(forward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward))
 
   end
   t.addToBackStack(nil)
@@ -209,92 +257,82 @@ function 关闭页面()
   end]]
 end
 
-function edgeToedge(顶栏,底栏,callback)
+local ViewCompat = luajava_bindClass "androidx.core.view.ViewCompat"
+local WindowInsetsCompat = luajava_bindClass "androidx.core.view.WindowInsetsCompat"
+local OnApplyWindowInsetsListener = luajava_bindClass "androidx.core.view.OnApplyWindowInsetsListener"
 
+function edgeToedge(顶栏,底栏,callback)
   import "androidx.activity.EdgeToEdge"
   EdgeToEdge.enable(this);
 
-  import "androidx.core.view.OnApplyWindowInsetsListener"
-  local ViewCompat = luajava.bindClass "androidx.core.view.ViewCompat"
-  local WindowInsetsCompat = luajava.bindClass "androidx.core.view.WindowInsetsCompat"
   local view=window.getDecorView()
 
   local function init()
     local windowInsets = ViewCompat.getRootWindowInsets(view);
+    if not windowInsets then return end
+    
     状态栏高度=windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
     | WindowInsetsCompat.Type.displayCutout()
     | WindowInsetsCompat.Type.ime()).top;
     导航栏高度=windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
     | WindowInsetsCompat.Type.displayCutout()).bottom;
 
-
     if 顶栏 then
-      if type(顶栏)~=type({})
-        顶栏={顶栏}
-      end
-      for i,顶栏 in pairs(顶栏)
-        local bottompadding=顶栏.getPaddingBottom()
+      local 顶栏列表 = type(顶栏) == "table" and 顶栏 or {顶栏}
+      for _, 控件 in pairs(顶栏列表)
+        local bottompadding = 控件.getPaddingBottom()
         if not 底栏 then
-          bottompadding=bottompadding+导航栏高度
+          bottompadding = bottompadding + 导航栏高度
         end
-        ViewCompat.setOnApplyWindowInsetsListener(顶栏,OnApplyWindowInsetsListener{
-          onApplyWindowInsets=function(顶栏,windowInsets,initPadding)
-            状态栏高度=windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
+        ViewCompat.setOnApplyWindowInsetsListener(控件, OnApplyWindowInsetsListener{
+          onApplyWindowInsets=function(v, insets, initPadding)
+            状态栏高度 = insets.getInsets(WindowInsetsCompat.Type.systemBars()
             | WindowInsetsCompat.Type.displayCutout()).top;
 
-            顶栏.setPadding(
-            顶栏.getPaddingLeft(),
-            状态栏高度,
-            顶栏.getPaddingRight(),
-            bottompadding
+            v.setPadding(
+              v.getPaddingLeft(),
+              状态栏高度,
+              v.getPaddingRight(),
+              bottompadding
             );
-            return windowInsets
+            return insets
           end
         })
       end
     end
 
-    if type(底栏)~=type(false) then
-      if type(底栏)~=type({})
-        底栏={底栏}
-      end
-      for i,底栏 in pairs(底栏)
-        ViewCompat.setOnApplyWindowInsetsListener(底栏,OnApplyWindowInsetsListener{
-          onApplyWindowInsets=function(底栏,windowInsets,initPadding)
-            导航栏高度=windowInsets.getInsets(WindowInsetsCompat.Type.systemBars()
+    if type(底栏) ~= "boolean" and 底栏 then
+      local 底栏列表 = type(底栏) == "table" and 底栏 or {底栏}
+      for _, 控件 in pairs(底栏列表)
+        ViewCompat.setOnApplyWindowInsetsListener(控件, OnApplyWindowInsetsListener{
+          onApplyWindowInsets=function(v, insets, initPadding)
+            导航栏高度 = insets.getInsets(WindowInsetsCompat.Type.systemBars()
             | WindowInsetsCompat.Type.displayCutout()).bottom;
-            底栏.setPadding(
-            底栏.getPaddingLeft(),
-            底栏.getPaddingTop(),
-            底栏.getPaddingRight(),
-            导航栏高度
+            v.setPadding(
+              v.getPaddingLeft(),
+              v.getPaddingTop(),
+              v.getPaddingRight(),
+              导航栏高度
             );
-            return windowInsets
+            return insets
           end
         })
       end
     end
+
     if callback then
-      ViewCompat.setOnApplyWindowInsetsListener(view,OnApplyWindowInsetsListener{
-        onApplyWindowInsets=function(底栏,windowInsets,initPadding)
+      ViewCompat.setOnApplyWindowInsetsListener(view, OnApplyWindowInsetsListener{
+        onApplyWindowInsets=function(v, insets, initPadding)
           callback()
-          return windowInsets
+          return insets
         end
       })
     end
   end
 
-  --[[ViewCompat.setOnApplyWindowInsetsListener(view,ViewCompat.OnApplyWindowInsetsListener{
-    onApplyWindowInsets=function(v,windowInsets,initPadding)
-      init()
-      return WindowInsetsCompat.CONSUMED
-    end
-  })]]
-  local attachedToWindow = view.isAttachedToWindow();
-  if attachedToWindow then
+  if view.isAttachedToWindow() then
     init()
-   else
-
+  else
     view.addOnAttachStateChangeListener(View.OnAttachStateChangeListener({
       onViewAttachedToWindow=function(v)
         init()
@@ -303,8 +341,6 @@ function edgeToedge(顶栏,底栏,callback)
       end
     }))
   end
-
-
 end
 
 
@@ -313,8 +349,8 @@ function base64ToBitmap(encodedImage)
   local prefix = "data:image/png;base64,"
   local imageData = string.sub(encodedImage, #prefix + 1)
 
-  local Base64 = luajava.bindClass "android.util.Base64"
-  local BitmapFactory = luajava.bindClass "android.graphics.BitmapFactory"
+  local Base64 = luajava_bindClass "android.util.Base64"
+  local BitmapFactory = luajava_bindClass "android.graphics.BitmapFactory"
 
   local decodedImage = Base64.decode(imageData, Base64.DEFAULT)
   return BitmapFactory.decodeByteArray(decodedImage, 0, #decodedImage)
@@ -338,7 +374,7 @@ function findDirectoryUpward(startPath)
     end
 
     -- 移除最后一个目录
-    path = string.gsub(path,'[^/]+/?$', '')
+    path = string_gsub(path,'[^/]+/?$', '')
     -- 检查是否已经到达根目录
     if path == '/' then
       break
@@ -358,8 +394,8 @@ logopng=srcLuaDir.."/logo.png"
 
 function 设置toolbar属性(toolbar,title)
 
-  local PorterDuffColorFilter=luajava.bindClass "android.graphics.PorterDuffColorFilter"
-  local PorterDuff=luajava.bindClass "android.graphics.PorterDuff"
+  local PorterDuffColorFilter=luajava_bindClass "android.graphics.PorterDuffColorFilter"
+  local PorterDuff=luajava_bindClass "android.graphics.PorterDuff"
   local bitmap=loadbitmap(图标("arrow_back"))
   local imgdp = 26
   local imgpx=TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, imgdp, activity.Resources.DisplayMetrics)
@@ -375,7 +411,7 @@ function 设置toolbar属性(toolbar,title)
   toolbar.title=title
 
   import "androidx.appcompat.widget.Toolbar"
-  local AppCompatTextView=luajava.bindClass "androidx.appcompat.widget.AppCompatTextView"
+  local AppCompatTextView=luajava_bindClass "androidx.appcompat.widget.AppCompatTextView"
   for i=0,toolbar.getChildCount()-1 do
     local view = toolbar.getChildAt(i);
     if luajava.instanceof(view,AppCompatTextView) then
@@ -398,7 +434,7 @@ function get_number_and_following(str)
   -- 使用正则表达式匹配数字和后续内容，直到遇到空格或字符串结束
   for s in string.gmatch(str, "%-?%d+%.?%d?[^%s]*") do
     -- 将匹配到的内容插入到table中
-    table.insert(result, s)
+    table_insert(result, s)
   end
   -- 返回table
   return result
@@ -406,37 +442,58 @@ end
 
 function numtostr(num)
   if num>10000 then
-    num=tostring(math.floor(num/10000)).."万"
+    num=tostring(math_floor(num/10000)).."万"
   end
   return tostring(num)
 end
 
-function 点击事件判断(myid,title)
+function 点击事件判断(myid,title,extra)
+  local target_data = extra
+  if type(extra) == "table" then
+    if extra.target then
+      target_data = extra.target
+    end
+  end
+
   if tostring(myid):find("问题分割") or not(tostring(myid):find("分割")) then
-    newActivity("question",{tostring(myid):match("问题分割(.+)") or myid})
+    local qid = tostring(myid):match("问题分割(.+)") or myid
+    local qdata = target_data
+    if target_data and target_data.question then
+      qdata = target_data.question
+    end
+    newActivity("question",{qid, qdata or title})
    elseif tostring(myid):find("文章分割") then
-    newActivity("column",{tostring(myid):match("文章分割(.+)"),tostring(myid):match("分割(.+)")})
+    newActivity("column",{tostring(myid):match("文章分割(.+)"), target_data or tostring(myid):match("分割(.+)")})
    elseif tostring(myid):find("视频分割") then
-    newActivity("column",{tostring(myid):match("视频分割(.+)"),"视频"})
+    newActivity("column",{tostring(myid):match("视频分割(.+)"), target_data or "视频"})
    elseif tostring(myid):find("想法分割") then
-    newActivity("column",{tostring(myid):match("想法分割(.+)"),"想法"})
+    newActivity("column",{tostring(myid):match("想法分割(.+)"), target_data or "想法"})
    elseif tostring(myid):find("直播分割") then
-    newActivity("column",{tostring(myid):match("直播分割(.+)"),"直播"})
+    newActivity("column",{tostring(myid):match("直播分割(.+)"), target_data or "直播"})
    elseif tostring(myid):find("圆桌分割") then
-    newActivity("column",{tostring(myid):match("圆桌分割(.+)"),"圆桌"})
+    newActivity("column",{tostring(myid):match("圆桌分割(.+)"), target_data or "圆桌"})
    elseif tostring(myid):find("专题分割") then
-    newActivity("column",{tostring(myid):match("专题分割(.+)"),"专题"})
+    newActivity("column",{tostring(myid):match("专题分割(.+)"), target_data or "专题"})
    elseif tostring(myid):find("视频合集详情分割") then
     newActivity("people_more",{tostring(myid):match("视频合集详情分割(.+)"),"视频合集详情"})
    elseif tostring(myid):find("话题分割") then
-    newActivity("topic",{tostring(myid):match("话题分割(.+)")})
+    newActivity("topic",{tostring(myid):match("话题分割(.+)"), target_data})
    elseif tostring(myid):find("用户分割") then
-    newActivity("people",{tostring(myid):match("用户分割(.+)")})
+    local uid = tostring(myid):match("用户分割(.+)")
+    local udata = target_data
+    if target_data and target_data.author then
+      udata = target_data.author
+    end
+    newActivity("people",{uid, udata})
    elseif tostring(myid):find("专栏分割") then
-    newActivity("people_column",{tostring(myid):match("专栏分割(.+)")})
+    newActivity("people_column",{tostring(myid):match("专栏分割(.+)"), target_data})
+   elseif tostring(myid):find("浏览器") then
+    newActivity("browser",{tostring(myid):match("浏览器(.+)")})
+   elseif tostring(myid):find("toast分割") then
+    提示(tostring(myid):match("toast分割(.+)"))
 
    else
-    newActivity("answer",{tostring(myid):match("(.+)分割"),tostring(myid):match("分割(.+)")})
+    newActivity("answer",{tostring(myid):match("(.+)分割"),tostring(myid):match("分割(.+)"),extra})
   end
 end
 
@@ -486,16 +543,30 @@ function debounce(func,delay)
   end
 end
 
+---在 UI 线程延迟执行（替代繁重的 task 函数，避免创建线程和子状态机）
+---@param delay number 延迟时间（毫秒），可选，默认为 0
+---@param func function 需要执行的函数
+function taskUI(delay, func)
+  if type(delay) == "function" then
+    func = delay
+    delay = 0
+  end
+  if delay == 0 then
+    handler.post(Runnable{run=func})
+  else
+    handler.postDelayed(Runnable{run=func}, delay)
+  end
+end
 
 function tokb(m)
   if m<=1024 then
     return m.."B"
    elseif m<=(1024^2) then
-    return (math.floor((m/1024*100)+0.5)/100).."KB"
+    return (math_floor((m/1024*100)+0.5)/100).."KB"
    elseif m<=(1024^3) then
-    return (math.floor((m/(1024^2)*100)+0.5)/100).."MB"
+    return (math_floor((m/(1024^2)*100)+0.5)/100).."MB"
    elseif m<=(1024^4) then
-    return (math.floor((m/(1024^3)*100)+0.5)/100).."GB"
+    return (math_floor((m/(1024^3)*100)+0.5)/100).."GB"
   end
 end
 
@@ -541,7 +612,7 @@ end
 
 function processTable(userdataTable)
   if type(userdataTable)=="userdata"
-    userdataTable=luajava.astable(userdataTable)
+    userdataTable=luajava_astable(userdataTable)
   end
   local resultTable = {}
 
@@ -549,7 +620,7 @@ function processTable(userdataTable)
     if type(value) == "userdata" then
       local valueType = tostring(value)
       if valueType == "Lua Table" then
-        local convertedTable = luajava.astable(value)
+        local convertedTable = luajava_astable(value)
         resultTable[key] = processTable(convertedTable)
        else
         resultTable[key] = value
@@ -590,23 +661,25 @@ if rccolumn==0
 end
 function 写入文件(路径,内容)
   xpcall(function()
-    local 文件夹路径=tostring(File(tostring(路径)).getParentFile())
-    if not(文件夹是否存在(文件夹路径)) then
-      f=File(文件夹路径).mkdirs()
+    local file = File(tostring(路径))
+    local parent = file.getParentFile()
+    if not parent.exists() then
+      parent.mkdirs()
     end
-    io.open(tostring(路径),"w"):write(tostring(内容)):close()
-    end,function()
+    io_open(tostring(路径),"w"):write(tostring(内容)):close()
+  end, function()
     提示("写入文件 "..路径.." 失败")
   end)
 end
 
 function 读取文件(路径)
-  if 文件是否存在(路径) then
-    rtn=io.open(路径):read("*a")
-   else
-    rtn=""
+  local f = io_open(路径, "r")
+  if f then
+    local rtn = f:read("*a")
+    f:close()
+    return rtn
   end
-  return rtn
+  return ""
 end
 
 function 复制文件(from,to)
@@ -667,9 +740,9 @@ function 获取Cookie(url,isckeck)
       local data=luajson.decode(activity.getSharedData("signdata")).cookie
       local mdata={}
       for k,v pairs(data)
-        table.insert(mdata,k.."="..v)
+        table_insert(mdata,k.."="..v)
       end
-      mdata=table.concat(mdata,"; ")
+      mdata=table_concat(mdata,"; ")
       return mdata;
     end
   end
@@ -695,13 +768,14 @@ function 初始化历史记录数据()
 end
 
 function 保存历史记录(id, title, preview, _type)
+  if not MyHistoryManager then 初始化历史记录数据() end
   local id=tostring(id)
   MyHistoryManager.add(id, title, preview, _type)
 end
 
 function 获取历史记录()
   初始化历史记录数据()
-  return luajava.astable(MyHistoryManager.getRecentFirst())
+  return luajava_astable(MyHistoryManager.getRecentFirst())
 end
 
 function 清除历史记录()
@@ -725,7 +799,7 @@ function 保存搜索历史记录(content)
 end
 
 function 获取搜索历史记录()
-  return luajava.astable(MySearchHistoryManager.getRecentFirst())
+  return luajava_astable(MySearchHistoryManager.getRecentFirst())
 end
 
 function 清除搜索历史记录()
@@ -733,38 +807,43 @@ function 清除搜索历史记录()
 end
 
 
+local Configuration = luajava_bindClass "android.content.res.Configuration"
 function 获取系统夜间模式(isApplicationContext)
-  local mactivity
-  if isApplicationContext==true then
-    mactivity=activity.getApplicationContext()
-   else
-    mactivity=activity
-  end
-  _,Re=xpcall(function()
-    import "android.content.res.Configuration"
-    currentNightMode = mactivity.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK
-    return currentNightMode == Configuration.UI_MODE_NIGHT_YES--夜间模式启用
-    end,function()
-    return false
+  local mactivity = isApplicationContext and activity.getApplicationContext() or activity
+  local ok, Re = pcall(function()
+    local currentNightMode = mactivity.getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK
+    return currentNightMode == Configuration.UI_MODE_NIGHT_YES
   end)
-  return Re
+  return ok and Re or false
 end
 
 function 获取主题夜间模式()
-  _,Re=xpcall(function()
-    NightMode = AppCompatDelegate.getDefaultNightMode();
-    return NightMode == AppCompatDelegate.MODE_NIGHT_YES--夜间模式启用
-    end,function()
-    return false
+  local ok, Re = pcall(function()
+    return AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES
   end)
-  return Re
+  return ok and Re or false
 end
 
 
 function dec2hex(n)
   local color=0xFFFFFFFF & n
-  local hex_str = string.format("#%08X", color)
+  local hex_str = string_format("#%08X", color)
   return hex_str
+end
+
+function 转0x(j,isAndroid)
+  if #j==7 then
+    jj=j:match("#(.+)")
+    jjj=tonumber("0xff"..jj)
+   else
+    jj=j:match("#(.+)")
+    jjj=tonumber("0x"..jj)
+  end
+  -- 如果安卓的颜色值大于2^31-1，那么它是一个负数，需要减去2^32
+  if isAndroid and jjj > 2^31 - 1 then
+    jjj = tointeger(jjj - 2^32)
+  end
+  return jjj
 end
 
 function 主题(str)
@@ -784,6 +863,10 @@ function 主题(str)
     ripplec="#559E9E9E"
     cardedge=dec2hex(res.color.attr.colorSurfaceContainerLow)
     oricardedge=dec2hex(res.color.attr.colorOutlineVariant)
+
+    primaryc_int=转0x(primaryc,true)
+    backgroundc_int=转0x(backgroundc,true)
+    stextc_int=转0x(stextc,true)
 
     if 获取主题夜间模式() == true then
       if Boolean.valueOf(this.getSharedData("Setting_Auto_Night_Mode"))==true then
@@ -814,6 +897,11 @@ function 主题(str)
     cardedge=dec2hex(res.color.attr.colorSurfaceContainer)
     oricardedge=dec2hex(res.color.attr.colorOutlineVariant)
     barc=dec2hex(res.color.attr.colorSurfaceContainerLow)
+
+    primaryc_int=转0x(primaryc,true)
+    backgroundc_int=转0x(backgroundc,true)
+    stextc_int=转0x(stextc,true)
+
     pcall(function()
       local _window = activity.getWindow();
       _window.setBackgroundDrawable(ColorDrawable(0xff222222));
@@ -852,21 +940,6 @@ end
 
 activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS).setStatusBarColor(0);
 
-
-function 转0x(j,isAndroid)
-  if #j==7 then
-    jj=j:match("#(.+)")
-    jjj=tonumber("0xff"..jj)
-   else
-    jj=j:match("#(.+)")
-    jjj=tonumber("0x"..jj)
-  end
-  -- 如果安卓的颜色值大于2^31-1，那么它是一个负数，需要减去2^32
-  if isAndroid and jjj > 2^31 - 1 then
-    jjj = tointeger(jjj - 2^32)
-  end
-  return jjj
-end
 
 function 提示(t)
 
@@ -919,8 +992,8 @@ function 颜色渐变(控件,左色,右色)
   --控件.setBackgroundDrawable(ColorDrawable(左色))
 end
 
-Fragment = luajava.bindClass "androidx.fragment.app.Fragment"
---LuaFragment = luajava.bindClass "com.androlua.LuaFragment"
+Fragment = luajava_bindClass "androidx.fragment.app.Fragment"
+--LuaFragment = luajava_bindClass "com.androlua.LuaFragment"
 --activity.setContentView(loadlayout("layout/fragment"))
 
 nF={}
@@ -939,7 +1012,7 @@ end
 function 获取js(jsname)
   local path=activity.getLuaPath('/js')
   local path=path.."/"..jsname..".js"
-  local content=io.open(path):read("*a")
+  local content=io_open(path):read("*a")
   return content
 end
 
@@ -950,7 +1023,7 @@ function 屏蔽元素(id,tab)
   end
 end
 
-local Pattern = luajava.bindClass "java.util.regex.Pattern"
+local Pattern = luajava_bindClass "java.util.regex.Pattern"
 function Regular_Matching(reg,str)
   --正则表达式,需要匹配的内容
   local pattern = Pattern.compile(reg)
@@ -1023,240 +1096,133 @@ function 关闭对话框(an)
   an.dismiss()
 end
 
-function 三按钮对话框(bt,nr,qd,qx,ds,qdnr,qxnr,dsnr,iscancelable)
-
-  import "com.google.android.material.bottomsheet.*"
-
+local function createBaseDialogLayout(bt, nr, buttons)
   local gd2 = GradientDrawable()
-  gd2.setColor(转0x(backgroundc))--填充
-  local radius=dp2px(16)
-  gd2.setCornerRadii({radius,radius,radius,radius,0,0,0,0})--圆角
-  gd2.setShape(0)--形状，0矩形，1圆形，2线，3环形
-  local dann={
-    LinearLayout;
-    layout_width=-1;
-    layout_height=-1;
-    {
-      LinearLayout;
-      orientation="vertical";
-      layout_width=-1;
-      layout_height=-2;
-      Elevation="4dp";
-      BackgroundDrawable=gd2;
-      id="ztbj";
-      {
-        CardView;
-        layout_gravity="center",
-        CardBackgroundColor=转0x(cardedge);
-        radius="3dp",
-        Elevation="0dp";
-        layout_height="6dp",
-        layout_width="56dp",
-        layout_marginTop="12dp";
-      };
-      {
-        TextView;
-        layout_width=-1;
-        layout_height=-2;
-        textSize="20sp";
-        layout_marginTop="24dp";
-        layout_marginLeft="24dp";
-        layout_marginRight="24dp";
-        Text=bt;
-        Typeface=字体("product-Bold");
-        textColor=转0x(primaryc);
-      };
-      {
-        ScrollView;
-        layout_width=-1;
-        layout_height=-1;
-        {
-          TextView;
-          layout_width=-1;
-          layout_height=-2;
-          layout_marginTop="8dp";
-          layout_marginLeft="24dp";
-          layout_marginRight="24dp";
-          layout_marginBottom="8dp";
-          Typeface=字体("product");
-          Text=nr;
-          textColor=转0x(textc);
-          id="sandhk_wb";
-          textSize=内容文字大小;
-          lineHeight=内容行高;
-        };
-      };
-      {
-        LinearLayout;
-        orientation="horizontal";
-        layout_width=-1;
-        layout_height=-2;
-        gravity="right|center";
-        {
-          MaterialButton_OutlinedButton;
-          layout_marginTop="16dp";
-          layout_marginLeft="16dp";
-          layout_marginRight="16dp";
-          layout_marginBottom="16dp";
-          textColor=转0x(stextc);
-          text=ds;
-          id="dsnr_c";
-          Typeface=字体("product-Bold");
-        };
-        {
-          LinearLayout;
-          orientation="horizontal";
-          layout_width=-1;
-          layout_height=-2;
-          layout_weight=1;
-        };
-        {
-          MaterialButton_OutlinedButton;
-          textColor=转0x(stextc);
-          text=qx;
-          id="qxnr_c";
-          Typeface=字体("product-Bold");
-        };
-        {
-          MaterialButton;
-          layout_marginTop="16dp";
-          layout_marginLeft="16dp";
-          layout_marginRight="16dp";
-          layout_marginBottom="16dp";
-          textColor=转0x(backgroundc);
-          text=qd;
-          id="qdnr_c";
-          Typeface=字体("product-Bold");
-        };
-      };
-    };
-  };
+  gd2.setColor(转0x(backgroundc))
+  local radius = dp2px(16)
+  gd2.setCornerRadii({radius, radius, radius, radius, 0, 0, 0, 0})
+  gd2.setShape(0)
 
-  if iscancelable==nil then
-    iscancelable=true
+  local layout = {
+    LinearLayout,
+    layout_width = -1,
+    layout_height = -1,
+    {
+      LinearLayout,
+      orientation = "vertical",
+      layout_width = -1,
+      layout_height = -2,
+      Elevation = "4dp",
+      BackgroundDrawable = gd2,
+      id = "ztbj",
+      {
+        CardView,
+        layout_gravity = "center",
+        CardBackgroundColor = 转0x(cardedge),
+        radius = "3dp",
+        Elevation = "0dp",
+        layout_height = "6dp",
+        layout_width = "56dp",
+        layout_marginTop = "12dp",
+      },
+      {
+        TextView,
+        layout_width = -1,
+        layout_height = -2,
+        textSize = "20sp",
+        layout_marginTop = "24dp",
+        layout_marginLeft = "24dp",
+        layout_marginRight = "24dp",
+        Text = bt,
+        Typeface = 字体("product-Bold"),
+        textColor = 转0x(primaryc),
+      },
+      {
+        ScrollView,
+        layout_width = -1,
+        layout_height = -1,
+        {
+          TextView,
+          layout_width = -1,
+          layout_height = -2,
+          layout_marginTop = "8dp",
+          layout_marginLeft = "24dp",
+          layout_marginRight = "24dp",
+          layout_marginBottom = "8dp",
+          Typeface = 字体("product"),
+          Text = nr,
+          textColor = 转0x(textc),
+          id = "sandhk_wb",
+          textSize = 内容文字大小,
+          lineHeight = 内容行高,
+        },
+      },
+      {
+        LinearLayout,
+        orientation = "horizontal",
+        layout_width = -1,
+        layout_height = -2,
+        gravity = "right|center",
+        id = "button_container",
+      },
+    },
+  }
+
+  local tmpview = {}
+  local view = loadlayout2(layout, tmpview)
+  local container = tmpview.button_container
+
+  for _, btn in ipairs(buttons) do
+    local btn_layout = {
+      btn.type or MaterialButton,
+      layout_marginTop = "16dp",
+      layout_marginLeft = "16dp",
+      layout_marginRight = "16dp",
+      layout_marginBottom = "16dp",
+      textColor = btn.textColor or 转0x(backgroundc),
+      text = btn.text,
+      id = btn.id,
+      Typeface = 字体("product-Bold"),
+    }
+    if btn.weight then
+      btn_layout.layout_weight = btn.weight
+      btn_layout.layout_width = -1
+    end
+    container.addView(loadlayout2(btn_layout, tmpview, LinearLayout))
   end
-  local tmpview={}
-  local bottomSheetDialog = BottomSheetDialog(this)
-  bottomSheetDialog.setContentView(loadlayout2(dann,tmpview))
-  local an=bottomSheetDialog.show()
-  .setCancelable(iscancelable);
-  tmpview.dsnr_c.onClick=function()
-    dsnr(an)
-  end;
-  tmpview.qxnr_c.onClick=function()
-    qxnr(an)
-  end;
-  tmpview.qdnr_c.onClick=function()
-    qdnr(an)
-  end;
+
+  return view, tmpview
 end
 
-
-function 双按钮对话框(bt,nr,qd,qx,qdnr,qxnr,iscancelable)
-
-  import "com.google.android.material.bottomsheet.*"
-
-  local gd2 = GradientDrawable()
-  gd2.setColor(转0x(backgroundc))--填充
-  local radius=dp2px(16)
-  gd2.setCornerRadii({radius,radius,radius,radius,0,0,0,0})--圆角
-  gd2.setShape(0)--形状，0矩形，1圆形，2线，3环形
-  local dann={
-    LinearLayout;
-    layout_width=-1;
-    layout_height=-1;
-    {
-      LinearLayout;
-      orientation="vertical";
-      layout_width=-1;
-      layout_height=-2;
-      Elevation="4dp";
-      BackgroundDrawable=gd2;
-      id="ztbj";
-      {
-        CardView;
-        layout_gravity="center",
-        CardBackgroundColor=转0x(cardedge);
-        radius="3dp",
-        Elevation="0dp";
-        layout_height="6dp",
-        layout_width="56dp",
-        layout_marginTop="12dp";
-      };
-      {
-        TextView;
-        layout_width=-1;
-        layout_height=-2;
-        textSize="20sp";
-        layout_marginTop="24dp";
-        layout_marginLeft="24dp";
-        layout_marginRight="24dp";
-        Text=bt;
-        Typeface=字体("product-Bold");
-        textColor=转0x(primaryc);
-      };
-      {
-        ScrollView;
-        layout_width=-1;
-        layout_height=-1;
-        {
-          TextView;
-          layout_width=-1;
-          layout_height=-2;
-          layout_marginTop="8dp";
-          layout_marginLeft="24dp";
-          layout_marginRight="24dp";
-          layout_marginBottom="8dp";
-          Typeface=字体("product");
-          Text=nr;
-          textColor=转0x(textc);
-          id="sandhk_wb";
-          textSize=内容文字大小;
-          lineHeight=内容行高;
-        };
-      };
-      {
-        LinearLayout;
-        orientation="horizontal";
-        layout_width=-1;
-        layout_height=-2;
-        gravity="right|center";
-        {
-          MaterialButton_OutlinedButton;
-          textColor=转0x(stextc);
-          text=qx;
-          id="qxnr_c";
-          Typeface=字体("product-Bold");
-        };
-        {
-          MaterialButton;
-          layout_marginTop="16dp";
-          layout_marginLeft="16dp";
-          layout_marginRight="16dp";
-          layout_marginBottom="16dp";
-          textColor=转0x(backgroundc);
-          text=qd;
-          id="qdnr_c";
-          Typeface=字体("product-Bold");
-        };
-      };
-    };
-  };
-
-  if iscancelable==nil then
-    iscancelable=true
-  end
-  local tmpview={}
+function 三按钮对话框(bt, nr, qd, qx, ds, qdnr, qxnr, dsnr, iscancelable)
+  local buttons = {
+    {text = ds, id = "dsnr_c", textColor = 转0x(stextc), type = MaterialButton_OutlinedButton},
+    {text = "", id = "spacer", weight = 1, type = LinearLayout}, -- Spacer
+    {text = qx, id = "qxnr_c", textColor = 转0x(stextc), type = MaterialButton_OutlinedButton},
+    {text = qd, id = "qdnr_c", textColor = 转0x(backgroundc), type = MaterialButton}
+  }
+  local layout, tmpview = createBaseDialogLayout(bt, nr, buttons)
   local bottomSheetDialog = BottomSheetDialog(this)
-  bottomSheetDialog.setContentView(loadlayout2(dann,tmpview))
-  local an=bottomSheetDialog.show()
-  .setCancelable(iscancelable);
-  tmpview.qxnr_c.onClick=function()
-    qxnr(an)
-  end;
-  tmpview.qdnr_c.onClick=function()
-    qdnr(an)
-  end;
+  bottomSheetDialog.setContentView(layout)
+  local an = bottomSheetDialog.show()
+  an.setCancelable(iscancelable ~= false)
+  tmpview.dsnr_c.onClick = function() dsnr(an) end
+  tmpview.qxnr_c.onClick = function() qxnr(an) end
+  tmpview.qdnr_c.onClick = function() qdnr(an) end
+end
+
+function 双按钮对话框(bt, nr, qd, qx, qdnr, qxnr, iscancelable)
+  local buttons = {
+    {text = qx, id = "qxnr_c", textColor = 转0x(stextc), type = MaterialButton_OutlinedButton},
+    {text = qd, id = "qdnr_c", textColor = 转0x(backgroundc), type = MaterialButton}
+  }
+  local layout, tmpview = createBaseDialogLayout(bt, nr, buttons)
+  local bottomSheetDialog = BottomSheetDialog(this)
+  bottomSheetDialog.setContentView(layout)
+  local an = bottomSheetDialog.show()
+  an.setCancelable(iscancelable ~= false)
+  tmpview.qxnr_c.onClick = function() qxnr(an) end
+  tmpview.qdnr_c.onClick = function() qdnr(an) end
 end
 
 
@@ -1287,7 +1253,7 @@ function 重命名文件(旧,新)
 end
 
 function 追加更新文件(path, content)
-  io.open(path,"a+"):write(content):close()
+  io_open(path,"a+"):write(content):close()
 end
 
 function 文件夹是否存在(file)
@@ -1405,11 +1371,11 @@ function 表情(n)
 end
 
 --引用Java的FileInputStream类
-local FileInputStream = luajava.bindClass "java.io.FileInputStream"
+local FileInputStream = luajava_bindClass "java.io.FileInputStream"
 --引用Android的BitmapFactory类
-local BitmapFactory = luajava.bindClass "android.graphics.BitmapFactory"
+local BitmapFactory = luajava_bindClass "android.graphics.BitmapFactory"
 --引用Android的BitmapDrawable类
-local BitmapDrawable = luajava.bindClass "android.graphics.drawable.BitmapDrawable"
+local BitmapDrawable = luajava_bindClass "android.graphics.drawable.BitmapDrawable"
 
 function getImageDrawable(image_path)
   --打开文件输入流 读取图像文件
@@ -1419,9 +1385,9 @@ function getImageDrawable(image_path)
   --使用Bitmap对象创建一个BitmapDrawable对象并返回
   return BitmapDrawable(activity.getResources(), bitmap)
 end
-SpannableStringBuilder = luajava.bindClass "android.text.SpannableStringBuilder"
-local Spannable = luajava.bindClass "android.text.Spannable"
-local ImageSpan = luajava.bindClass "android.text.style.ImageSpan"
+SpannableStringBuilder = luajava_bindClass "android.text.SpannableStringBuilder"
+local Spannable = luajava_bindClass "android.text.Spannable"
+local ImageSpan = luajava_bindClass "android.text.style.ImageSpan"
 function Spannable_Image(spannable, str, drawable, start, _end, flags) -- SpannableString,要更改的内容（支持正则）,图片[,开始位置,结束位置,flags]
   local tab = (str and Regular_Matching(str,spannable) or {{["start"]=tointeger(start),["ends"]=tointeger(_end)}}) or {} -- 判断是否有内容。否则将使用后面的位置。
   for _, v in pairs(tab) do
@@ -1430,10 +1396,10 @@ function Spannable_Image(spannable, str, drawable, start, _end, flags) -- Spanna
   end
   return spannable
 end
-local Glide = luajava.bindClass "com.bumptech.glide.Glide"
-local CustomTarget = luajava.bindClass "com.bumptech.glide.request.target.CustomTarget"
-local PorterDuffColorFilter=luajava.bindClass "android.graphics.PorterDuffColorFilter"
-local PorterDuff=luajava.bindClass "android.graphics.PorterDuff"
+local Glide = luajava_bindClass "com.bumptech.glide.Glide"
+local CustomTarget = luajava_bindClass "com.bumptech.glide.request.target.CustomTarget"
+local PorterDuffColorFilter=luajava_bindClass "android.graphics.PorterDuffColorFilter"
+local PorterDuff=luajava_bindClass "android.graphics.PorterDuff"
 local colorFilter = PorterDuffColorFilter(res.color.attr.colorPrimary, PorterDuff.Mode.SRC_ATOP)
 like_drawable = getImageDrawable(图标("favorite_outline")).setBounds(sp2px(0), sp2px(0), sp2px(18), sp2px(18)).setColorFilter(colorFilter)
 liked_drawable = getImageDrawable(图标("favorite")).setBounds(sp2px(0), sp2px(0), sp2px(18), sp2px(18)).setColorFilter(colorFilter)
@@ -1553,7 +1519,7 @@ function 下载文件对话框(title,url,path,ex)
 
 
   function ding(a,b)--已下载，总长度(byte)
-    appdowninfo.Text=string.format("%0.2f",a/1024/1024).."MB/"..string.format("%0.2f",b/1024/1024).."MB".."\n下载状态：正在下载"
+    appdowninfo.Text=string_format("%0.2f",a/1024/1024).."MB/"..string_format("%0.2f",b/1024/1024).."MB".."\n下载状态：正在下载"
     进度条.progress=(a/b*100)
   end
 
@@ -1567,7 +1533,7 @@ function 下载文件对话框(title,url,path,ex)
       提示("导入完成ʕ•ٹ•ʔ")
      else
       if path:find(".apk$")~=nil then
-        提示("安装包下载成功,大小"..string.format("%0.2f",c/1024/1024).."MB，储存在："..path)
+        提示("安装包下载成功,大小"..string_format("%0.2f",c/1024/1024).."MB，储存在："..path)
         双按钮对话框("安装APP",[===[您下载了安装包文件，要现在安装吗？ 取消后可前往]===]..path.."手动安装","立即安装","取消",function(an)
           安装apk(path)
           end,function(an)
@@ -1582,7 +1548,7 @@ function 下载文件对话框(title,url,path,ex)
         end
 
        else
-        提示("下载完成，大小"..string.format("%0.2f",c/1024/1024).."MB，储存在："..path)
+        提示("下载完成，大小"..string_format("%0.2f",c/1024/1024).."MB，储存在："..path)
       end
     end
   end
@@ -1669,7 +1635,7 @@ function MUKPopu(t)
       layout_margin="8dp";
       {
         TextView;
-        Text=t.tittle,
+        Text=tostring(t.tittle or ""),
         gravity="left";
         padding="12dp";
         paddingTop="12dp";
@@ -1757,7 +1723,7 @@ function MUKPopu(t)
 
   if this.getSharedData("允许加载代码")=="true" then
     if t.isload_codeEx~=true then
-      table.insert(t.list,{src=图标("build"),text="执行代码",onClick=function()
+      table_insert(t.list,{src=图标("build"),text="执行代码",onClick=function()
           local InputLayout={
             LinearLayout;
             orientation="vertical";
@@ -2098,7 +2064,7 @@ function 加入收藏夹(回答id,收藏类型,func)
 
       local orii=0
       local i=0
-      for k, v in pairs(luajava.astable(adp.getData())) do
+      for k, v in pairs(luajava_astable(adp.getData())) do
         local oristatus=v.oristatus
         local status=v.status.Checked
 
@@ -2110,14 +2076,14 @@ function 加入收藏夹(回答id,收藏类型,func)
 
         if oristatus~=status then
           if status==true then
-            table.insert(dotab.add,v.myid)
+            table_insert(dotab.add,v.myid)
            elseif status==false then
-            table.insert(dotab.remove,v.myid)
+            table_insert(dotab.remove,v.myid)
           end
         end
       end
-      local addstr=urlEncode(table.concat(dotab.add,","))
-      local removestr=urlEncode(table.concat(dotab.remove,","))
+      local addstr=urlEncode(table_concat(dotab.add,","))
+      local removestr=urlEncode(table_concat(dotab.remove,","))
       if addstr=="" and removestr=="" then
         return
       end
@@ -2515,103 +2481,83 @@ import "android.graphics.drawable.GradientDrawable"
 
 StringHelper = {}
 
---[[
-utf-8编码规则
-单字节 - 0起头
-   1字节  0xxxxxxx   0 - 127
-多字节 - 第一个字节n个1加1个0起头
-   2 字节 110xxxxx   192 - 223
-   3 字节 1110xxxx   224 - 239
-   4 字节 11110xxx   240 - 247
-可能有1-4个字节
---]]
-function StringHelper.GetBytes(char)
-  if not char then
-    return 0
-  end
-  local code = string.byte(char)
-  if code < 127 then
-    return 1
-   elseif code <= 223 then
-    return 2
-   elseif code <= 239 then
-    return 3
-   elseif code <= 247 then
-    return 4
-   else
-    -- 讲道理不会走到这里^_^
-    return 0
-  end
-end
-
 function StringHelper.getCount(str)
-  local tempStr = str
-  local index = 0 -- 字符记数
-  local bytes = 0 -- 字符的字节记数
-
-  endIndex = endIndex or -1
-  while string.len(tempStr) > 0 do
-    bytes = bytes + StringHelper.GetBytes(tempStr)
-    tempStr = string.sub(str, bytes+1)
-
-    index = index + 1
+  if utf8 then
+    return utf8.len(str)
   end
-  return index
+  local _, count = string.gsub(str, "[^\128-\191]", "")
+  return count
 end
 
-function StringHelper.Sub(str,startIndex, endIndex,addStr)
-  local tempStr = str
-  local byteStart = 1 -- string.sub截取的开始位置
-  local byteEnd = -1 -- string.sub截取的结束位置
-  local index = 0 -- 字符记数
-  local bytes = 0 -- 字符的字节记数
-
+function StringHelper.Sub(str, startIndex, endIndex, addStr)
+  local count = StringHelper.getCount(str)
   startIndex = math.max(startIndex, 1)
-  endIndex = endIndex or -1
-  while string.len(tempStr) > 0 do
-    if index == startIndex - 1 then
-      byteStart = bytes+1;
-     elseif index == endIndex then
-      byteEnd = bytes;
-      break
+  endIndex = (not endIndex or endIndex < 0) and count or math.min(endIndex, count)
+  
+  local result = str
+  if utf8 then
+    local byteStart = utf8.offset(str, startIndex)
+    local byteEnd = utf8.offset(str, endIndex + 1)
+    if byteStart then
+      result = string.sub(str, byteStart, (byteEnd and byteEnd - 1) or -1)
     end
-    bytes = bytes + StringHelper.GetBytes(tempStr)
-    tempStr = string.sub(str, bytes+1)
+  else
+    -- Fallback for environments without utf8 library
+    local byteStart, byteEnd = 1, -1
+    local currentPos = 1
+    local charIndex = 1
+    while charIndex <= count do
+      local b = string.byte(str, currentPos)
+      local len = 1
+      if b >= 240 then len = 4
+      elseif b >= 224 then len = 3
+      elseif b >= 192 then len = 2 end
+      
+      if charIndex == startIndex then byteStart = currentPos end
+      if charIndex == endIndex then byteEnd = currentPos + len - 1 break end
+      
+      currentPos = currentPos + len
+      charIndex = charIndex + 1
+    end
+    result = string.sub(str, byteStart, byteEnd)
+  end
 
-    index = index + 1
+  if addStr and count > endIndex then
+    result = result .. addStr
   end
-  if addStr then
-    if StringHelper.getCount(str)>=endIndex then
-      addStr=addStr
-     else
-      addStr=""
-    end
-   else
-    addStr=""
-  end
-  return string.sub(str, byteStart, byteEnd)..addStr
+  return result
 end
 
-function 替换文件字符串(路径,要替换的字符串,替换成的字符串)
-  if 路径 then
-    路径=tostring(路径)
-    内容=io.open(路径):read("*a")
-    io.open(路径,"w+"):write(tostring(内容:gsub(要替换的字符串,替换成的字符串))):close()
-    import "androidx.core.content.ContextCompat"
-    filedir=tostring(ContextCompat.getDataDir(activity)).."/files/init.lua"
-   else
-    return false
+function table.clone(org)
+  local res = {}
+  for k, v in pairs(org) do
+    if type(v) == "table" then
+      res[k] = table.clone(v)
+    else
+      res[k] = v
+    end
   end
+  return res
+end
+
+function 替换文件字符串(路径, 要替换的字符串, 替换成的字符串)
+  local path = tostring(路径)
+  local content = 读取文件(path)
+  if content ~= "" then
+    写入文件(path, content:gsub(要替换的字符串, 替换成的字符串))
+    return true
+  end
+  return false
 end
 
 function urlEncode(s)
-  s = string.gsub(s, "([^%w%.%- ])", function(c) return string.format("%%%02X", string.byte(c)) end)
-  return string.gsub(s, " ", " ")
+  s = string_gsub(s, "([^%w%.%- ])", function(c) return string_format("%%%02X", string.byte(c)) end)
+  return string_gsub(s, " ", " ")
 end
 
 
 function urlDecode(s)
-  s = string.gsub(s, '%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
+  s = string_gsub(s, '%%(%x%x)', function(h) return string.char(tonumber(h, 16)) end)
   return s
 end
 
@@ -2654,8 +2600,8 @@ function 等待doc(view)
 end
 
 function getFont_b64(filePath)
-  local FileInputStream=luajava.bindClass"java.io.FileInputStream"
-  local Base64=luajava.bindClass "android.util.Base64";
+  local FileInputStream=luajava_bindClass"java.io.FileInputStream"
+  local Base64=luajava_bindClass "android.util.Base64";
 
   local fis = FileInputStream(filePath)
   local fileContent = byte[fis.available()];
@@ -2678,7 +2624,7 @@ end
 function matchtext(str,regex)
   local t={}
   for i,v in string.gfind(str,regex) do
-    table.insert(t,string.sub(str,i,v))
+    table_insert(t,string.sub(str,i,v))
   end
   return t
 end --返回table
@@ -2688,7 +2634,7 @@ function getDirSize(path)
   if not(File(path).exists()) then
     return 0
   end
-  local a=luajava.astable(File(path).listFiles() or {})
+  local a=luajava_astable(File(path).listFiles() or {})
   for k,v in pairs(a) do
     if v.isDirectory() then
       len=len+getDirSize(tab,tostring(v))
@@ -2713,11 +2659,11 @@ function table.swap(数据, 查找位置, 替换位置, ismode)
     查找位置 = 查找位置 + 1
   end
   xpcall(function()
-    删除数据=table.remove(数据, 查找位置)
+    删除数据=table_remove(数据, 查找位置)
     end,function()
     return false
   end)
-  table.insert(数据, 替换位置, 删除数据)
+  table_insert(数据, 替换位置, 删除数据)
 end
 
 function getLogin()
@@ -2744,77 +2690,59 @@ end
 
 
 function setHead()
+  local udid = this.getSharedData("udid")
+  local signdata = this.getSharedData("signdata")
+  
+  local common_head = {
+    ["x-udid"] = udid,
+  }
 
-  if this.getSharedData("signdata") then
-    local jsondata=luajson.decode(this.getSharedData("signdata"))
-    access_token="Bearer "..jsondata.access_token
-    head = {
-      ["authorization"] = access_token,
-      ["x-udid"] = this.getSharedData("udid"),
-    }
-
-    posthead=table.clone(head)
-    posthead["content-type"]="application/json; charset=UTF-8"
-
-
-    apphead = {
-      ["x-api-version"] = "3.1.8";
-      ["x-app-za"] = "OS=Android&VersionName=10.12.0&VersionCode=21210&Product=com.zhihu.android&Installer=Google+Play&DeviceType=AndroidPhone";
-      ["x-app-version"] = "10.12.0";
-      ["x-app-bundleid"] = "com.zhihu.android";
-      ["x-app-flavor"] = "play";
-      ["x-app-build"] = "release";
-      ["x-network-type"] = "WiFi";
-      ["authorization"] = access_token;
-      ["x-udid"] = this.getSharedData("udid");
-      ["user-agent"] = "com.zhihu.android/Futureve/10.12.0",
-    }
-
-    postapphead=table.clone(apphead)
-    postapphead["content-type"]="application/json; charset=UTF-8"
-
-   else
-    head = {
-      ["cookie"] = 获取Cookie("https://www.zhihu.com/");
-      ["x-udid"] = this.getSharedData("udid");
-    }
-
-    posthead=table.clone(head)
-    posthead["content-type"]="application/json; charset=UTF-8"
-
-    apphead = {
-      ["x-api-version"] = "3.1.8";
-      ["x-app-za"] = "OS=Android&VersionName=10.12.0&VersionCode=21210&Product=com.zhihu.android&Installer=Google+Play&DeviceType=AndroidPhone";
-      ["x-app-version"] = "10.12.0";
-      ["x-app-bundleid"] = "com.zhihu.android";
-      ["x-app-flavor"] = "play";
-      ["x-app-build"] = "release";
-      ["x-network-type"] = "WiFi";
-      ["cookie"] = 获取Cookie("https://www.zhihu.com/");
-      ["x-udid"] = this.getSharedData("udid");
-      ["user-agent"] = "com.zhihu.android/Futureve/10.12.0",
-    }
-
-    postapphead=table.clone(apphead)
-    postapphead["content-type"]="application/json; charset=UTF-8"
+  if signdata then
+    local jsondata = luajson.decode(signdata)
+    access_token = "Bearer " .. jsondata.access_token
+    common_head["authorization"] = access_token
+  else
+    common_head["cookie"] = 获取Cookie("https://www.zhihu.com/")
   end
 
+  head = common_head
+  posthead = {}
+  for k, v in pairs(head) do posthead[k] = v end
+  posthead["content-type"] = "application/json; charset=UTF-8"
+
+  apphead = {
+    ["x-api-version"] = "3.1.8",
+    ["x-app-za"] = "OS=Android&VersionName=10.12.0&VersionCode=21210&Product=com.zhihu.android&Installer=Google+Play&DeviceType=AndroidPhone",
+    ["x-app-version"] = "10.12.0",
+    ["x-app-bundleid"] = "com.zhihu.android",
+    ["x-app-flavor"] = "play",
+    ["x-app-build"] = "release",
+    ["x-network-type"] = "WiFi",
+    ["user-agent"] = "com.zhihu.android/Futureve/10.12.0",
+  }
+  for k, v in pairs(head) do apphead[k] = v end
+
+  postapphead = {}
+  for k, v in pairs(apphead) do postapphead[k] = v end
+  postapphead["content-type"] = "application/json; charset=UTF-8"
+
   if followhead then
-    followhead = table.clone(apphead)
-    followhead["x-moments-ab-param"] = "follow_tab=1";
+    followhead = {}
+    for k, v in pairs(apphead) do followhead[k] = v end
+    followhead["x-moments-ab-param"] = "follow_tab=1"
   end
 
   if homeapphead then
-    homeapphead=table.clone(head)
-    homeapphead["x-close-recommend"]="0"
+    homeapphead = {}
+    for k, v in pairs(head) do homeapphead[k] = v end
+    homeapphead["x-close-recommend"] = "0"
   end
-
 end
 
 setHead()
 
 function 清理内存()
-  task(1,function()
+  taskUI(function()
 
     import "androidx.core.content.ContextCompat"
     local datadir=tostring(ContextCompat.getDataDir(activity))
@@ -2828,7 +2756,7 @@ function 清理内存()
         if File(path).canWrite()==false then
           return
         end
-        local a=luajava.astable(File(path).listFiles() or {})
+        local a=luajava_astable(File(path).listFiles() or {})
 
         for k,v in pairs(a) do
           if v.isDirectory() then
@@ -2973,16 +2901,6 @@ function get_installApp_permissions()
 end
 
 
-function 替换文件字符串(路径,要替换的字符串,替换成的字符串)
-  if 路径 then
-    路径=tostring(路径)
-    内容=io.open(路径):read("*a")
-    io.open(路径,"w+"):write(tostring(内容:gsub(要替换的字符串,替换成的字符串))):close()
-   else
-    return false
-  end
-end
-
 function getRandom(n)
   local t = {
     "0","1","2","3","4","5","6","7","8","9",
@@ -3027,7 +2945,7 @@ function loadglide(view,url,ischeck,size)
     })
     .into(view)
   end
-  glid_manager.clearMemory();
+  -- glid_manager.clearMemory(); -- 移除强制清理内存缓存，避免滑动卡顿
 end
 
 local mybase64=require("base64")
@@ -3090,7 +3008,7 @@ function ChoicePath(StartPath,callback)
     end
     ls=File(path).listFiles()
     if ls~=nil then
-      ls=luajava.astable(File(path).listFiles()) --全局文件列表变量
+      ls=luajava_astable(File(path).listFiles()) --全局文件列表变量
       table.sort(ls,function(a,b)
         return (a.isDirectory()~=b.isDirectory() and a.isDirectory()) or ((a.isDirectory()==b.isDirectory()) and a.Name<b.Name)
       end)

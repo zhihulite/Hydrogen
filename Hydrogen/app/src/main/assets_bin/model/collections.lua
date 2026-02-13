@@ -114,6 +114,7 @@ function base_collections.resolvedata(v,data)
   add.评论数=评论数
   add.id内容=id分割
   add.预览内容=预览内容
+  add.testdata=v
   table.insert(data,add)
 end
 
@@ -151,7 +152,8 @@ function base_collections.getAdapter(collection_pagetool,pos)
       views.预览内容.Text=data.预览内容
 
       views.card.onClick=function()
-        点击事件判断(data.id内容,data.标题)
+        nTView=views.card
+        点击事件判断(data.id内容,data.标题,data.testdata)
       end
 
       views.card.onTouch=function(v,event)
@@ -178,7 +180,6 @@ function base_collections:initpage(view,sr)
   :initPage()
   :createfunc()
   :setUrlItem(collections_base:getUrl())
-  :refer()
 end
 
 return base_collections

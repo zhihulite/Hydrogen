@@ -1,23 +1,25 @@
-# Add project specific ProGuard rules here.
-# You can control the set of applied configuration files using the
-# proguardFiles setting in build.gradle.
-#
-# For more details, see
-#   http://developer.android.com/guide/developing/tools/proguard.html
+# -------------------------------------------------------------------------
+# 安全精简模式：仅移除调试元数据，不混淆、不压缩、不优化
+# -------------------------------------------------------------------------
 
-# If your project uses WebView with JS, uncomment the following
-# and specify the fully qualified class name to the JavaScript interface
-# class:
-#-keepclassmembers class fqcn.of.javascript.interface.for.webview {
-#   public *;
-#}
+# 禁用核心修改功能，确保 Lua 调用万无一失
+-dontshrink
+-dontoptimize
+-dontobfuscate
 
-# Uncomment this to preserve the line number information for
-# debugging stack traces.
-#-keepattributes SourceFile,LineNumberTable
+# 忽略所有警告，因为我们不删除代码，警告通常不影响运行
+-ignorewarnings
 
-# If you keep the line number information, uncomment this to
-# hide the original source file name.
-#-renamesourcefileattribute SourceFile
--keep class com.baidu.bottom.** { *; }
--keep class com.baidu.mobstat.** { *; }
+# 抹除调试元数据
+# 不保留以下属性，对应的 smali 标记就会消失：
+# .source  -> SourceFile
+# .line    -> LineNumberTable
+# .local   -> LocalVariableTable
+# .param   -> LocalVariableTypeTable
+# .prologue -> (默认不保留)
+
+# 必须保留的元数据（为了反射和注解正常工作）
+-keepattributes *Annotation*,Signature,InnerClasses,EnclosingMethod
+
+# 额外保险：保留所有类的成员名称和保护状态
+-keep class ** { *; }

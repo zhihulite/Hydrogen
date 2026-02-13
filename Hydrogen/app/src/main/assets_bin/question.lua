@@ -6,7 +6,36 @@ import "android.text.Html$TagHandler"
 import "android.text.Html$ImageGetter"
 import "androidx.core.widget.NestedScrollView"
 
-question_id=...
+question_id, pre_data = ...
+
+-- 立即应用传入的数据
+if type(pre_data) == "table" then
+  taskUI(function()
+    if title then title.text = pre_data.title or pre_data.name end
+    if _comment then _comment.Text = tostring(pre_data.comment_count or "") end
+    if _star then _star.Text = tostring(pre_data.follower_count or "") end
+    if _title then _title.Text = "共" .. tostring(pre_data.answer_count or "") .. "个回答" end
+
+    if pre_data.excerpt and #pre_data.excerpt > 0 then
+      if description_text then description_text.Text = pre_data.excerpt end
+      if openroot then openroot.visibility = 0 end
+    elseif description_card then
+      description_card.visibility = 8
+    end
+
+    if _root then _root.Visibility = 0 end
+
+    if pre_data.author then
+      if loadglide and usericon then loadglide(usericon, pre_data.author.avatar_url) end
+      if askername then askername.text = pre_data.author.name end
+      if askerheadline then askerheadline.text = pre_data.author.headline ~= "" and pre_data.author.headline or "暂无签名" end
+    end
+  end)
+elseif type(pre_data) == "string" then
+  taskUI(function()
+    if title then title.text = pre_data end
+  end)
+end
 
 设置视图("layout/question")
 设置toolbar(toolbar)
@@ -33,6 +62,7 @@ function 问题详情(code)
     Elevation="4dp";
     BackgroundColor=转0x(backgroundc);
     id="ztbj";
+    paddingTop=状态栏高度;
     {
       CardView;
       layout_gravity="center",
@@ -150,94 +180,85 @@ function 问题详情(code)
   show.Visibility=0
 end
 
+question_base=require "model.question":new(question_id)
 
-question_base=require "model.question":new(question_id):getData(function(tab)
+-- 并行发起问题详情获取和列表初始化
+taskUI(function()
+  question_base:getData(function(tab)
+    if not tab then return end
 
-  question_pagetool=question_base:initpage(question_recy,questionsr)
+    -- 核心 UI 更新
+    title.text = tab.title
+    _comment.Text = tostring(tab.comment_count)
+    _star.Text = tostring(tab.follower_count)
+    _title.Text = "共" .. tostring(tab.answer_count) .. "个回答"
 
+    if #tab.excerpt > 0 then
+      description_text.Text = tab.excerpt
+      openroot.visibility = 0
+    else
+      description_card.visibility = 8
+    end
 
-  if tab==false then
-    return
-  end
+    _root.Visibility = 0
 
-  for k,v in pairs(tab.topics) do
-    tags.ids.load.parent.visibility=0
-    tags:addTab(v.name,function()newActivity("topic",{v.id})end,2)
-  end
+    初始化历史记录数据()
+    保存历史记录(question_id, tab.title, tab.excerpt, "问题")
 
-  title.text=tab.title
-
-  初始化历史记录数据()
-  保存历史记录(question_id,tab.title,tab.excerpt,"问题")
-
-  _comment.Text=tostring((tab.comment_count))
-  _star.Text=tostring((tab.follower_count))
-  _title.Text="共"..tostring((tab.answer_count)).."个回答"
-
-  if #tab.excerpt>0 then
-    description_text.Text=tab.excerpt
-    openroot.visibility=0
-   else
-    description_card.visibility=8
-  end
-
-  问题预览=tab.detail
-
-  if tab.relationship.is_following then
-    关注数量={[1]=tointeger(_star.Text),[2]=tointeger(_star.Text)-1}
-    _follow.text="已关注"
-   else
-    关注数量={[1]=tointeger(_star.Text+1),[2]=tointeger(_star.Text)}
-    _follow.text="未关注"
-  end
-
-  _root.Visibility=0
-
-  pop={
-    tittle="问题",
-    list={
-      {src=图标("share"),text="分享",onClick=function()
-          local format="【问题】%s：%s"
-          分享文本(string.format(format,title.text,"https://www.zhihu.com/question/"..question_id))
-        end,
-        onLongClick=function()
-          local format="【问题】%s：%s"
-          分享文本(string.format(format,title.text,"https://www.zhihu.com/question/"..question_id),true)
-      end},
-      {src=图标("list_alt"),text="问题日志",onClick=function()
-          newActivity("browser",{"https://www.zhihu.com/question/"..question_id.."/log"})
-      end},
-      {src=图标("format_align_left"),text="按时间顺序",onClick=function()
-          question_pagetool:setUrlItem(question_base:getUrl("updated"))
-          :clearItem(pos)
-          :refer(pos,nil,true)
-      end},
-      {src=图标("notes"),text="按默认顺序",onClick=function()
-          question_pagetool:setUrlItem(question_base:getUrl())
-          :clearItem(pos)
-          :refer(pos,nil,true)
-      end},
-    }
-  }
-
-  a=MUKPopu(pop)
-
-  loadglide(people_image,tab.author.avatar_url)
-  askername.text=tab.author.name
-  askerheadline.text=tab.author.headline
-  if askerheadline.text==""
-    askerheadline.text="暂无签名"
-  end
+    -- 非核心 UI 和逻辑移入任务
+    taskUI(100, function()
+      for k, v in pairs(tab.topics) do
+        tags.ids.load.parent.visibility = 0
+        tags:addTab(v.name, function() newActivity("topic", {v.id}) end, 2)
+      end
 
 
-  用户id=tab.author.id
-  if tab.author.is_following then
-    following.Text="取关";
-   else
-    following.Text="关注";
-  end
+      问题预览 = tab.detail
 
+      if tab.relationship.is_following then
+        关注数量 = {[1] = tointeger(_star.Text), [2] = tointeger(_star.Text) - 1}
+        _follow.text = "已关注"
+      else
+        关注数量 = {[1] = tointeger(_star.Text) + 1, [2] = tointeger(_star.Text)}
+        _follow.text = "未关注"
+      end
+
+      loadglide(usericon, tab.author.avatar_url)
+      提问者数据 = tab.author
+      askername.text = tab.author.name
+      askerheadline.text = tab.author.headline ~= "" and tab.author.headline or "暂无签名"
+      用户id = tab.author.id
+      following.Text = tab.author.is_following and "取关" or "关注"
+
+      pop = {
+        tittle = "问题",
+        list = {
+          {src = 图标("share"), text = "分享", onClick = function()
+              local format = "【问题】%s：%s"
+              分享文本(string.format(format, title.text, "https://www.zhihu.com/question/" .. question_id))
+            end,
+            onLongClick = function()
+              local format = "【问题】%s：%s"
+              分享文本(string.format(format, title.text, "https://www.zhihu.com/question/" .. question_id), true)
+          end},
+          {src = 图标("list_alt"), text = "问题日志", onClick = function()
+              newActivity("browser", {"https://www.zhihu.com/question/" .. question_id .. "/log"})
+          end},
+          {src = 图标("format_align_left"), text = "按时间顺序", onClick = function()
+              question_pagetool:setUrlItem(question_base:getUrl("updated")):clearItem():refer(nil, nil, true)
+          end},
+          {src = 图标("notes"), text = "按默认顺序", onClick = function()
+              question_pagetool:setUrlItem(question_base:getUrl()):clearItem():refer(nil, nil, true)
+          end},
+        }
+      }
+      a = MUKPopu(pop)
+    end)
+  end)
 end)
+
+question_pagetool=question_base:initpage(question_recy,questionsr)
+
 
 
 if activity.getSharedData("问题提示0.01")==nil
@@ -259,7 +280,7 @@ function onDestroy()
   show.destroy()
 end
 
-task(1,function()
+taskUI(function()
   a=MUKPopu({
     tittle="问题",
     list={

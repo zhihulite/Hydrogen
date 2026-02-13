@@ -63,6 +63,17 @@ local function resolve_moments_feed(v,data)
     end
    elseif v.type=="topic" then
     id内容="话题分割"..v.id
+   else
+    -- 处理未知类型（如盐选专栏、付费内容等）
+    if v.url then
+       id内容 = "浏览器" .. v.url
+       标题 = v.title
+       预览内容 = "请点击查看详情"
+    else
+       id内容 = "toast分割当前版本暂不支持该内容"
+       标题 = v.title or "未知内容"
+       预览内容 = "暂不支持，请尝试在浏览器中打开"
+    end
   end
   if 预览内容 then
     if 预览内容~="[视频]" then
@@ -91,6 +102,7 @@ local function resolve_moments_feed(v,data)
   add.动作=动作
   add.时间=时间
   add.图像=头像
+  add.testdata=v
   if data then
     table.insert(data,add)
   end
@@ -181,6 +193,7 @@ local function resolve_feed_item_index_group(v,data)
   add.动作=动作
   add.时间=时间
   add.图像=头像
+  add.testdata=v
   if data then
     table.insert(data,add)
   end
@@ -273,7 +286,8 @@ local function 加载主页关注折叠adp(data,views)
         views.评论数布局.Visibility=8
       end
       views.card.onClick=function()
-        点击事件判断(data.id内容,data.标题)
+        nTView=views.card
+        点击事件判断(data.id内容,data.标题,data.testdata)
       end
     end,
   })
@@ -363,7 +377,8 @@ function base.getAdapter(follow_pagetool,pos)
 
       --子项目点击事件
       views.card.onClick=function(v)
-        点击事件判断(data.id内容,data.标题)
+        nTView=views.card
+        点击事件判断(data.id内容,data.标题,data.testdata)
       end
 
     end,

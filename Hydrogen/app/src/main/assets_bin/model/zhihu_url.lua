@@ -11,57 +11,72 @@ function urlDecode(s)
   return s
 end
 
+-- 性能优化：缓存常用的正则表达式模式
+local IMAGE_PATTERN = "%.(jpg|gif|bmp|png|webp|jpeg)$"
+local URL_SPLIT_PATTERN = "([^%?]+)%??(.*)"
+local DIGIT_PATTERN = "(%d+)"
+
 function 检查链接(url, needExecute)
   if url:find("^zhihu://") then
     return 检查意图(url, needExecute)
    elseif url:find("^https?://") and not url:find("zhihu.com") then
-    if needExecute then return false end
+    if needExecute then return true end
+    if url:lower():match(IMAGE_PATTERN) or url:find("zhimg.com") then
+      this.setSharedData("imagedata", luajson.encode({["0"]=url, ["1"]=1}))
+      return newActivity("image")
+    end
     return newActivity("browser", {url})
   end
 
-  -- 拆分 base 和 query
-  local base, query = url:match("([^%?]+)%??(.*)")
+  -- 性能优化：使用缓存的正则模式
+  local base, query = url:match(URL_SPLIT_PATTERN)
   if not base then return end
 
   -- 先匹配最具体的路径 避免误判
-  local qId, aId = base:match("zhihu.com/question/(%d+)/answer/(%d+)")
+  local qId, aId = base:match("question/(%d+)/answers?/(%d+)")
   if qId and aId then
     if needExecute then return true end
     return newActivity("answer", {qId, aId})
   end
 
-  local answerId = base:match("zhihu.com/answer/(%d+)")
+  local answerId = base:match("answer/(%d+)")
   if answerId then
     if needExecute then return true end
     return newActivity("answer", {"null", answerId})
   end
 
-  local questionId = base:match("zhihu.com/question/(%d+)")
+  local questionId = base:match("question/(%d+)/answers?/updated")
   if questionId then
     if needExecute then return true end
     return newActivity("question", {questionId})
   end
 
-  local articleId = base:match("zhuanlan.zhihu.com/p/(%d+)") or base:match("zhihu.com/appview/p/(%d+)")
+  local questionId = base:match("question/(%d+)")
+  if questionId then
+    if needExecute then return true end
+    return newActivity("question", {questionId})
+  end
+
+  local articleId = base:match("p/(%d+)")
 
   if articleId then
     if needExecute then return true end
     return newActivity("column", {articleId})
   end
 
-  local topicId = base:match("zhihu.com/topics/(%d+)") or base:match("zhihu.com/topic/(%d+)")
+  local topicId = base:match("topics/(%d+)") or base:match("topic/(%d+)")
   if topicId then
     if needExecute then return true end
     return newActivity("topic", {topicId})
   end
 
-  local pinId = base:match("zhihu.com/pin/(%d+)")
+  local pinId = base:match("pin/(%d+)")
   if pinId then
     if needExecute then return true end
     return newActivity("column", {pinId, "想法"})
   end
 
-  local videoId = base:match("zhihu.com/video/(%d+)")
+  local videoId = base:match("video/(%d+)")
   if videoId then
     if needExecute then return true end
     local head = {
@@ -94,31 +109,31 @@ function 检查链接(url, needExecute)
     return
   end
 
-  videoId = base:match("zhihu.com/zvideo/(%d+)")
+  videoId = base:match("zvideo/(%d+)")
   if videoId then
     if needExecute then return true end
     return newActivity("column", {videoId, "视频"})
   end
 
-  local userName = base:match("zhihu.com/people/([^/]+)") or base:match("zhihu.com/org/([^/]+)")
+  local userName = base:match("people/([^/]+)") or base:match("org/([^/]+)")
   if userName then
     if needExecute then return true end
     return newActivity("people", {userName})
   end
 
-  local roundTableId = base:match("zhihu.com/roundtable/(%d+)")
+  local roundTableId = base:match("roundtable/(%d+)")
   if roundTableId then
     if needExecute then return true end
     return newActivity("column", {roundTableId, "圆桌"})
   end
 
-  local specialId = base:match("zhihu.com/special/(%d+)")
+  local specialId = base:match("special/(%d+)")
   if specialId then
     if needExecute then return true end
     return newActivity("column", {specialId, "专题"})
   end
 
-  local columnId = base:match("zhihu.com/column/(%d+)")
+  local columnId = base:match("column/(%d+)")
   if columnId then
     if needExecute then return true end
     return newActivity("people_column", {columnId})
@@ -149,7 +164,7 @@ function 检查链接(url, needExecute)
     return newActivity("login", {url})
   end
 
-  local commentType, id = base:match("zhihu.com/comment/list/([^/]+)/(%d+)$")
+  local commentType, id = base:match("comment/list/([^/]+)/(%d+)$")
   if commentType and id then
     if needExecute then return true end
     return newActivity("comment", {id, commentType .. "s"})
@@ -157,9 +172,10 @@ function 检查链接(url, needExecute)
 
   local encoded = url:match("target=([^&]+)")
   if encoded then 
-    return newActivity("browser", {encoded:gsub("%%(%x%x)", function(h)
-        return string.char(tonumber(h, 16))
-    end)})
+    local decoded = encoded:gsub("%%(%x%x)", function(h)
+      return string.char(tonumber(h, 16))
+    end)
+    return 检查链接(decoded, needExecute)
   end
 
   if needExecute then return false end
@@ -174,7 +190,7 @@ function 检查意图(url, needExecute)
    elseif not url:find("^zhihu://") then
     return false
   end
-  local base, query = url:match("([^%?]+)%??(.*)")
+  local base, query = url:match(URL_SPLIT_PATTERN)
   if not base then return end
 
   local id = base:match("answers/(%d+)") or base:match("answer/(%d+)")

@@ -1,22 +1,70 @@
 {
-  LinearLayout,
+  FrameLayout,
   layout_width="fill";
   layout_height="fill";
   id="root";
-  orientation="vertical",
   {
     NestedLuaWebView,
     id="content",
-    layout_width="-1";
-    layout_height="-1";
+    layout_width="match_parent";
+    layout_height="match_parent";
     Visibility=8,
   };
   {
-    LinearProgressIndicator;
+    LinearLayout;
+    layout_height="wrap";
+    layout_width="fill",
+    id="userinfo",
+    orientation="vertical";
+    background=backgroundc;
+    paddingLeft="16dp";
+    paddingRight="16dp";
+    {
+      LinearLayout,
+      layout_width="fill";
+      layout_height="wrap";
+      gravity="center_vertical";
+      {
+        CircleImageView,
+        layout_width="42sp",
+        layout_height="42sp",
+        layout_marginTop="8dp";
+        layout_marginBottom="4dp";
+        id="usericon",
+      },
+      {
+        LinearLayout,
+        layout_width="fill";
+        layout_height="wrap";
+        orientation="vertical",
+        layout_marginLeft="12dp";
+        {
+          TextView,
+          layout_width="wrap",
+          Typeface=字体("product-Bold");
+          textColor=textc,
+          id="username",
+          textSize="16sp",
+          lineHeight=标题行高;
+        },
+        {
+          TextView,
+          Typeface=字体("product");
+          layout_width="wrap",
+          maxLines=1,
+          textColor=textc,
+          id="userheadline",
+          textSize="12sp",
+          lineHeight=内容行高;
+        },
+      },
+    };
+  },
+  {
+    ProgressBar;
     id="progress";
-    Visibility=8,
-    layout_width="match_parent";
-    layout_height="wrap_content";
+    Visibility=8;
+    layout_gravity="center";
     indeterminate="true";
   },
 };

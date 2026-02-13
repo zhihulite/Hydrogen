@@ -28,7 +28,7 @@ if xxx:match("article") or xxx:match("pin") then
   return
 end
 
-task(1,function()
+taskUI(function()
   local loaduri = Uri.fromFile(File(filedir)).toString();
   t.content.loadUrl(loaduri)
 end)
@@ -57,7 +57,7 @@ detector.setOnDoubleTapListener {
   onDoubleTap=function()
     t.content.scrollTo(0, 0)
     isDoubleTap=true
-    task(timeOut,function()isDoubleTap=false end)
+    taskUI(timeOut,function()isDoubleTap=false end)
   end
 }
 
@@ -67,7 +67,7 @@ end
 
 all_root.onClick=function(v)
   if not isDoubleTap then
-    task(timeOut,function()
+    taskUI(timeOut,function()
       if not isDoubleTap then
         local questionid=xxx:match[[question_id="(.-)"]]
         activity.newActivity("question",{questionid})
@@ -113,15 +113,15 @@ userinfo.onClick=function()
 end
 
 
-username.text=xxx:match[[author="(.-)"]]
+username.text=xxx:match[[author="(.-)"]] or "未知作者"
 userheadline.text=xxx:match[[headline="(.-)"]]
-if userheadline.text=="" then
+if userheadline.text=="" or userheadline.text==nil then
   userheadline.text="Ta还没有签名哦~"
 end
 
-thanks_count.text=xxx:match[[thanks_count="(.-)"]]
-favlists_count.text=xxx:match[[favlists_count="(.-)"]] or "未知"
-vote_count.text=xxx:match[[vote_count="(.-)"]]
+thanks_count.text=xxx:match[[thanks_count="(.-)"]] or "0"
+favlists_count.text=xxx:match[[favlists_count="(.-)"]] or "0"
+vote_count.text=xxx:match[[vote_count="(.-)"]] or "0"
 
 comment.onClick=function()
   local 保存路径=内置存储文件("Download/"..title:gsub("/","or").."/"..username.text)
@@ -153,12 +153,7 @@ end})
 WebViewUtils=require "views/WebViewUtils"
 local MyWebViewUtils=WebViewUtils(t.content)
 local function 设置滑动跟随(t)
-  t.onGenericMotion=function(view,x,y,lx,ly)
-    if t.getScrollY()<=0 then
-      appbar.setExpanded(true);
-     else
-      appbar.setExpanded(false);
-    end
+  t.onScrollChange=function(view,x,y,lx,ly)
   end
 end
 
@@ -202,8 +197,8 @@ ActivityResultCallback{
     end
 end});
 
-task(1,function()
-  a=MUKPopu({
+taskUI(function()
+  mypop=MUKPopu({
     tittle="回答",
     list={
       {

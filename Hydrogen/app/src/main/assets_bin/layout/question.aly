@@ -175,7 +175,11 @@
                       StrokeWidth=dp2px(1),
                       Visibility=8;
                       onClick=function()
-                        if 用户id then
+                        if 提问者数据 then
+                          nTView = usericon
+                          newActivity("people",{用户id, 提问者数据})
+                         elseif 用户id then
+                          nTView = usericon
                           newActivity("people",{用户id})
                          else
                           提示("加载中")
@@ -195,7 +199,7 @@
                             CircleImageView;
                             layout_width="26dp",
                             layout_height="26dp",
-                            id="people_image",
+                            id="usericon",
                             layout_gravity="center_vertical",
                           };
                           {

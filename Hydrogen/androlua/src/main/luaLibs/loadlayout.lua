@@ -533,7 +533,7 @@ local function setattribute(root,view,params,k,v,ids)
 
      else
 
-      task(1,function()
+      taskUI(function()
 
         params.getBehavior().setPeekHeight(checkValue(v))
 
@@ -549,7 +549,7 @@ local function setattribute(root,view,params,k,v,ids)
 
      else
 
-      task(1,function()
+      taskUI(function()
 
         params.getBehavior().setHideable(checkValue(v))
 
@@ -565,7 +565,7 @@ local function setattribute(root,view,params,k,v,ids)
 
      else
 
-      task(1,function()
+      taskUI(function()
 
         params.getBehavior().setSkipCollapsed(checkValue(v))
 

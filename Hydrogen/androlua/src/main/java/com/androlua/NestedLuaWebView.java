@@ -80,8 +80,7 @@ public class NestedLuaWebView extends LuaWebView implements NestedScrollingChild
 
                 final int y = (int) ev.getY(pointerIndex);
                 final int yDiff = Math.abs(y - mLastMotionY);
-                if (yDiff > mTouchSlop
-                        && (getNestedScrollAxes() & ViewCompat.SCROLL_AXIS_VERTICAL) == 0) {
+                if (yDiff > mTouchSlop) {
                     mIsBeingDragged = true;
                     mLastMotionY = y;
                     initVelocityTrackerIfNotExists();
@@ -209,7 +208,9 @@ public class NestedLuaWebView extends LuaWebView implements NestedScrollingChild
                 final VelocityTracker velocityTracker = mVelocityTracker;
                 velocityTracker.computeCurrentVelocity(1000, mMaximumVelocity);
                 int initialVelocity = (int) velocityTracker.getYVelocity(mActivePointerId);
+                boolean isFling = false;
                 if ((Math.abs(initialVelocity) > mMinimumVelocity)) {
+                    isFling = true;
                     if (!dispatchNestedPreFling(0, -initialVelocity)) {
                         dispatchNestedFling(0, -initialVelocity, true);
                         fling(-initialVelocity);
@@ -220,6 +221,15 @@ public class NestedLuaWebView extends LuaWebView implements NestedScrollingChild
                 }
                 mActivePointerId = INVALID_POINTER;
                 endDrag();
+                
+                if (isFling) {
+                    // Prevent native WebView fling by sending CANCEL
+                    MotionEvent cancel = MotionEvent.obtain(ev);
+                    cancel.setAction(MotionEvent.ACTION_CANCEL);
+                    super.onTouchEvent(cancel);
+                    cancel.recycle();
+                    return true;
+                }
                 break;
             case MotionEvent.ACTION_CANCEL:
                 if (mIsBeingDragged) {
@@ -425,11 +435,6 @@ public class NestedLuaWebView extends LuaWebView implements NestedScrollingChild
     @Override
     public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
         return mChildHelper.dispatchNestedPreFling(velocityX, velocityY);
-    }
-
-    @Override
-    public int getNestedScrollAxes() {
-        return ViewCompat.SCROLL_AXIS_VERTICAL;
     }
 
     @Override
