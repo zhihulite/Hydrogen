@@ -16,7 +16,8 @@ Hydrogen 是一个基于 Androlua+ 开发的项目，为了避免重打包可以
 
 ## 特别致谢
 
-- [ZL114514](https://gitee.com/ZL114514)：目前负责仓库的维护工作
+- [ZL114514](https://github.com/ZL114514)：目前负责仓库的维护工作
+- [People 11](https://GitHub.com/People-11)：使用 Gemini 进行了不少修缮
 - [orz12](https://gitee.com/orz12)：早期重新设计了部分布局
 - [1582421598](https://github.com/1582421598)：提交 PR 修复 bug
 - [NullCola](https://t.me/NullCola)：绘制矢量Hydrogen 图标
