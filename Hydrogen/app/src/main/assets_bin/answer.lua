@@ -78,7 +78,9 @@ IArgbEvaluator=ArgbEvaluator.newInstance()
 import "model.answer"
 回答容器=answer:new(回答id)
 数据表={} -- 全局视图数据表
-
+if activity.getSharedData("回答单页模式")=="true" then
+  pg.setUserInputEnabled(false);
+end
 -- 辅助函数：获取当前页面的 mviews 数据
 local function getCurrentMView()
   local adapter = pg.getAdapter()
