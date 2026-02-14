@@ -152,6 +152,11 @@ function 检查链接(url, needExecute)
     return newActivity("login")
   end
 
+  if base:find("zhihu.com/account/scan") then
+    if needExecute then return true end
+    return newActivity("browser",{base})
+  end
+
   if base:find("zhihu.com/oia/") then
     if needExecute then return true end
     local cleanUrl = base:gsub("oia/", "")
@@ -171,7 +176,7 @@ function 检查链接(url, needExecute)
   end
 
   local encoded = url:match("target=([^&]+)")
-  if encoded then 
+  if encoded then
     local decoded = encoded:gsub("%%(%x%x)", function(h)
       return string.char(tonumber(h, 16))
     end)
@@ -179,7 +184,7 @@ function 检查链接(url, needExecute)
   end
 
   if needExecute then return false end
-  
+
   return Toast.makeText(activity, "暂不支持的知乎链接" .. url, Toast.LENGTH_SHORT).show()
 end
 
@@ -272,6 +277,12 @@ function 检查意图(url, needExecute)
       return 提示(res)
     end
   end
+
+  if base:find("rescan") then
+    if needExecute then return true end
+    return 提示("请重新扫描")
+  end
+
   if needExecute then return false end
   return Toast.makeText(activity, "暂不支持的知乎意图" .. url, Toast.LENGTH_SHORT).show()
 
