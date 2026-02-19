@@ -27,11 +27,16 @@
         // 设置 .AnswerItem-time 和 .ExtraInfo 保持原字体颜色
         styleElem = createCSS('.AnswerItem-time *, .ExtraInfo *', 'color: inherit !important;', styleElem);
 
-        // 设置 .GifPlayer-icon 及其内部的所有子元素背景透明
-        styleElem = createCSS('.GifPlayer-icon, .GifPlayer-icon *', 'background-color: transparent !important;', styleElem);
-
         // 设置其他元素的新字体颜色和背景颜色
         styleElem = createCSS('body, body *', 'background-color: #' + appbackgroudc + ' !important; color: RGB(' + fontColor + '%,' + fontColor + '%,' + fontColor + '%) !important;', styleElem);
+
+        // 设置 .ztext-math 及其子元素背景透明，防止 body * 的背景色覆盖
+        // 必须放在 body * 后面以覆盖样式
+        styleElem = createCSS('.ztext-math, .ztext-math *', 'background-color: transparent !important;', styleElem);
+
+        // 仅对公式图片进行反色处理
+        // 必须放在 body * 后面，确保 background-color 是 transparent，这样 invert 只主要反转前景内容
+        styleElem = createCSS('.ztext-math img, img[src*="equation"], .ztext-math svg, img.ztext-math', 'filter: invert(1) !important; background-color: transparent !important;', styleElem);
     }
 
     function createCSS(sel, decl, styleElem) {
