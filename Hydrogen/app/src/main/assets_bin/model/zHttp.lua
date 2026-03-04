@@ -41,10 +41,11 @@ function zHttp.setcallback(code,content,raw,headers,url,head,callback,func,data)
       end
     end
    elseif code==400 then
+    local decoded_content
     local _ = pcall(function()
       decoded_content=luajson.decode(content)
     end)
-    if decoded_content.error and decoded_content.error.message then
+    if decoded_content and decoded_content.error and decoded_content.error.message then
       提示("知乎提示："..decoded_content.error.message)
     end
    elseif headers and headers.Location and headers.Location[0] then

@@ -412,7 +412,7 @@ home_pageinfo={
 
 local menu={}
 local pageinfo_keys={}
-for i,item ipairs(home_items)
+for i,item in ipairs(home_items) do
   local home_pageinfo=home_pageinfo[item]
   pageinfo_keys[item]=i-1
   if home_pageinfo then
@@ -427,9 +427,6 @@ end
 optmenu={}
 loadmenu(bnv.getMenu(), menu, optmenu, 3)
 bnv.setLabelVisibilityMode(1)
-
-local startindex=pageinfo_keys[starthome]
-local isFirstLoad = true
 
 local startindex=pageinfo_keys[starthome]
 local isFirstLoad = true
@@ -1153,7 +1150,7 @@ local handleBackStackChange=debounce(function()
           import "android.view.accessibility.AccessibilityEvent"
 
           --只有主页使用LuaFragment
-          if luajava.instanceof(lastFragment,LuaFragment)
+          if luajava.instanceof(lastFragment,LuaFragment) then
             local rootView=_menu
             rootView.requestFocus()
             rootView.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)
@@ -1167,8 +1164,8 @@ local handleBackStackChange=debounce(function()
 
    elseif currentStackSize > previousStackSize then
     -- 新增 Fragment 到栈中
-    local fragmemts=this.getSupportFragmentManager().getFragments()
-    local lastFragment=fragmemts[fragmemts.size()-1]
+    local fragmemts=luajava.astable(this.getSupportFragmentManager().getFragments())
+    local lastFragment=fragmemts[#fragmemts]
     local container = lastFragment.getView().getParent()
     showLastFragment(container)
   end
