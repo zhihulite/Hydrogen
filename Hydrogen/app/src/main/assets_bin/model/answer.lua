@@ -22,7 +22,7 @@ end
 
 
 function base:getinfo(id,cb)
-  local include='?include=question.answer_count%2Cquestion.visit_count%2Cqustion.comment_count'
+  local include='?include=question.answer_count%2Cquestion.visit_count%2Cquestion.comment_count'
   local url="https://www.zhihu.com/api/v4/answers/"..tostring(id)..include
   zHttp.get(url,apphead
   ,function(a,b)

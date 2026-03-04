@@ -57,8 +57,8 @@ if type(pre_data) == "table" then
   -- 更新底栏计数
   vote_count.Text = tostring(pre_data.voteup_count or vote_count.Text)
   comment_count.Text = tostring(pre_data.comment_count or comment_count.Text)
-  expand_title.text = tostring((pre_data.question or {}).title or "")
-  _title.text = tostring((pre_data.question or {}).title or "")
+  expand_title.Text = tostring((pre_data.question or {}).title or "")
+  _title.Text = tostring((pre_data.question or {}).title or "")
 end
 
 edgeToedge(nil,nil,function()
@@ -108,8 +108,8 @@ local function set_question_info(tab)
   all_answer.Text = info_text
   all_answer_expand.Text = info_text
   问题id = tab.id
-  _title.Text = tab.title
-  expand_title.Text = tab.title
+  _title.Text = tostring(tab.title or "")
+  expand_title.Text = tostring(tab.title or "")
   -- 强制应用一次背景色
   root_card.setBackgroundColor(backgroundc_int)
   title_bar_expand.setBackgroundColor(backgroundc_int)
@@ -422,8 +422,8 @@ function 初始化页(mviews)
   local data = mviews.data
   local ids = mviews.ids
   if (mviews.load == true or mviews.load == "preview" or mviews.load == "loading") and data and data.author then
-    ids.username.Text = data.author.name
-    ids.userheadline.Text = (data.author.headline == "" and "Ta还没有签名哦~") or data.author.headline
+    ids.username.Text = tostring(data.author.name or "未知用户")
+    ids.userheadline.Text = tostring((data.author.headline == "" and "Ta还没有签名哦~") or data.author.headline or "Ta还没有签名哦~")
     loadglide(ids.usericon, data.author.avatar_url)
     更新底栏(data)
 
@@ -822,73 +822,174 @@ taskUI(function()
         end
       },
       {
-        src=图标("share"),text="以图片形式保存",onClick=function()
+        src=图标("image"),text="生成图片",onClick=function()
           local url = 获取当前回答URL()
           if not url then return end
           local webView = 获取当前WebView()
+          local mview = getCurrentMView()
           import "android.graphics.Bitmap"
+          import "android.graphics.BitmapFactory"
           import "android.graphics.Canvas"
+          import "android.util.Base64"
           import "com.nwdxlgzs.view.photoview.PhotoView"
+          import "android.os.Environment"
+          import "java.io.ByteArrayInputStream"
+          import "java.io.File"
+          import "java.io.FileOutputStream"
+          import "androidx.core.content.FileProvider"
 
-          function webviewToBitmap(webView, func)
-            webView.evaluateJavascript("captureScreenshot()", {onReceiveValue=function(b)
-                local process
-                process=function()
-                  webView.evaluateJavascript("getScreenshot()", {onReceiveValue=function(b)
-                      if b:find("process") then
-                        taskUI(200, process)
-                       else
-                        func(base64ToBitmap(b))
-                      end
-                  end})
-                end
-                taskUI(300, process)
-            end})
-          end
+          提示("截图中，请稍候…")
 
-          webviewToBitmap(webView, function(bitmap)
-            local ids={}
+          local _, _, _, name = get_current_info()
+
+          local function showPreview(bmp)
+            local ids = {}
             AlertDialog.Builder(this)
             .setTitle("预览")
             .setView(loadlayout({
-              LinearLayout;
-              layout_width="-1";
-              layout_height="-1";
-              {
-                PhotoView;
-                id="iv";
-                layout_width="fill";
-                layout_height="wrap";
-                adjustViewBounds="true";
-              }
-            },ids))
+              LinearLayout; layout_width="-1"; layout_height="-1";
+              { PhotoView; id="iv"; layout_width="fill"; layout_height="wrap"; adjustViewBounds="true" }
+            }, ids))
             .setPositiveButton("确认并分享", function()
-              import "android.os.Environment"
-              import "java.io.File"
-              import "java.io.FileOutputStream"
-              import "androidx.core.content.FileProvider"
-              local _, _, _, name = get_current_info()
               local dir = this.getExternalFilesDir(Environment.DIRECTORY_PICTURES).toString()
               local file = File(dir, "知乎回答-".._title.Text.."-来自-"..name..".jpg")
-              local fos = FileOutputStream(file)
-              bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
-              fos.flush()
-              fos.close()
+              local ok2, err = pcall(function()
+                local fos = FileOutputStream(file)
+                bmp.compress(Bitmap.CompressFormat.JPEG, 95, fos)
+                fos.flush()
+                fos.close()
+              end)
+              if not ok2 then return 提示("保存失败：" .. tostring(err)) end
               local uri = FileProvider.getUriForFile(this, this.getPackageName()..".FileProvider", file)
-              local sendIntent = Intent()
-              .setAction(Intent.ACTION_SEND)
-              .putExtra(Intent.EXTRA_STREAM, uri)
-              .setData(uri)
-              .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-              .putExtra(Intent.EXTRA_TEXT, 获取分享文本(url))
-              .setType("image/*")
-              this.startActivity(Intent.createChooser(sendIntent, nil))
+              this.startActivity(Intent.createChooser(Intent()
+                .setAction(Intent.ACTION_SEND)
+                .putExtra(Intent.EXTRA_STREAM, uri)
+                .setData(uri)
+                .setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                .putExtra(Intent.EXTRA_TEXT, 获取分享文本(url))
+                .setType("image/*"), nil))
             end)
             .setNegativeButton("取消", nil)
             .setOnDismissListener({onDismiss=function() webView.scrollBy(0, 1) end})
             .show()
-            loadglide(ids.iv, bitmap)
-          end)
+            loadglide(ids.iv, bmp)
+          end
+
+          local function processData(fullData)
+            if not fullData or #fullData < 30 then return 提示("截图失败：数据为空或过短") end
+            local commaPos = fullData:find(",")
+            if not commaPos then return 提示("截图失败：数据格式错误（头=" .. fullData:sub(1, 40) .. "）") end
+
+            local ok, bmp = pcall(function()
+              local decoded = Base64.decode(fullData:sub(commaPos + 1), Base64.DEFAULT)
+              local imm = BitmapFactory.decodeStream(ByteArrayInputStream(decoded))
+              if not imm then error("BitmapFactory 返回 nil") end
+              local mut = imm.copy(Bitmap.Config.ARGB_8888, true)
+              imm.recycle()
+              return mut
+            end)
+            if not ok or not bmp then return 提示("图片解码失败：" .. tostring(bmp)) end
+
+            -- 叠加 native 视图
+            local canvas = Canvas(bmp)
+            if mview and mview.ids and mview.ids.userinfo then
+              local uinfo = mview.ids.userinfo
+              local savedUinfoTY = uinfo.getTranslationY()
+              uinfo.setTranslationY(0)
+              uinfo.setLayerType(View.LAYER_TYPE_SOFTWARE, nil)
+              uinfo.draw(canvas)
+              uinfo.setLayerType(View.LAYER_TYPE_NONE, nil)
+              uinfo.setTranslationY(savedUinfoTY)
+            end
+
+            local savedTY = appbar.getTranslationY()
+            local savedExpandAlpha = all_root_expand.getAlpha()
+            local savedCollapseAlpha = all_root.getAlpha()
+            all_root_expand.setAlpha(1.0)
+            all_root.setAlpha(0.0)
+            appbar.setTranslationY(0)
+            appbar.setLayerType(View.LAYER_TYPE_SOFTWARE, nil)
+            appbar.draw(canvas)
+            appbar.setLayerType(View.LAYER_TYPE_NONE, nil)
+            appbar.setTranslationY(savedTY)
+            all_root_expand.setAlpha(savedExpandAlpha)
+            all_root.setAlpha(savedCollapseAlpha)
+
+            -- 裁掉顶部状态栏空白
+            if 状态栏高度 and 状态栏高度 > 0 then
+              local cropped = Bitmap.createBitmap(bmp, 0, 状态栏高度, bmp.getWidth(), bmp.getHeight() - 状态栏高度)
+              bmp.recycle()
+              bmp = cropped
+            end
+
+            showPreview(bmp)
+          end
+
+          local CHUNK = 400000
+          local chunks = {}
+          local function readChunk(offset, total)
+            if offset >= total then
+              webView.evaluateJavascript("window.__sshot=undefined", nil)
+              processData(table.concat(chunks))
+              return
+            end
+            webView.evaluateJavascript(
+              string.format("window.__sshot.substr(%d,%d)", offset, CHUNK),
+              {onReceiveValue=function(chunk)
+                if not chunk or chunk == "null" then return 提示("读取截图数据失败") end
+                local raw = chunk:sub(2, -2):gsub('\\/', '/')
+                table.insert(chunks, raw)
+                readChunk(offset + CHUNK, total)
+              end}
+            )
+          end
+
+          local function checkReady()
+            webView.evaluateJavascript([[
+              (function(){
+                var s = window.__sshot;
+                if (s === undefined) return null;
+                if (typeof s === 'string' && s.substring(0,5) === 'error') return s;
+                if (typeof s === 'string') return String(s.length);
+                return null;
+              })()
+            ]], {onReceiveValue=function(r)
+              if r == "null" then return taskUI(500, checkReady) end
+              local val = r:sub(2, -2)
+              if val:find("^error") then return 提示("截图失败：" .. val) end
+              local totalLen = tonumber(val)
+              if not totalLen or totalLen <= 0 then return 提示("截图失败：数据为空") end
+              readChunk(0, totalLen)
+            end})
+          end
+
+          -- 启动 html2canvas 截取完整 DOM
+          webView.evaluateJavascript([[
+            (function(){
+              window.__sshot = undefined;
+              if (typeof html2canvas === 'undefined') {
+                window.__sshot = 'error:snap.js 未加载';
+                return;
+              }
+              html2canvas(document.body, {
+                cacheBust: true, useCORS: true, allowTaint: true, logging: false,
+                scale: window.devicePixelRatio || 1, scrollX: 0, scrollY: 0,
+                width: document.documentElement.scrollWidth,
+                height: Math.min(document.body.scrollHeight, 12000),
+                onclone: function(doc) {
+                  var style = doc.createElement('style');
+                  style.innerHTML = '.ztext, .RichText, .video-box, .VideoCard, .AnswerVideo, .VOT-Container, .AnnotationTag, .LinkCard, .MCNCard, img { opacity: 1 !important; animation: none !important; transition: none !important; }';
+                  doc.head.appendChild(style);
+                }
+              }).then(function(c) {
+                window.__sshot = c.toDataURL('image/jpeg', 0.92);
+              }).catch(function(e) {
+                window.__sshot = 'error:' + String(e);
+              });
+            })()
+          ]], nil)
+
+          taskUI(500, checkReady)
         end,
       },
       {
@@ -934,7 +1035,7 @@ taskUI(function()
         end
       },
       {
-        src=图标("book"),text="举报",onClick=function()
+        src=图标("error"),text="举报",onClick=function()
           local _, _, _, _, 回答id = get_current_info()
           if not 回答id then return 提示("加载中") end
           local url = "https://www.zhihu.com/report?id="..回答id.."&type=answer"
@@ -942,7 +1043,7 @@ taskUI(function()
         end
       },
       {
-        src=图标("search"),text="在网页查找内容",onClick=function()
+        src=图标("search"),text="搜索本页",onClick=function()
           local v = 获取当前WebView()
           if v then webview查找文字(v) end
         end
