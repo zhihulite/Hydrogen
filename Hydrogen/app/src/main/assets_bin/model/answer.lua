@@ -22,7 +22,7 @@ end
 
 
 function base:getinfo(id,cb)
-  local include='?include=question.answer_count%2Cquestion.visit_count%2Cqustion.comment_count'
+  local include='?include=question.answer_count%2Cquestion.visit_count%2Cquestion.comment_count'
   local url="https://www.zhihu.com/api/v4/answers/"..tostring(id)..include
   zHttp.get(url,apphead
   ,function(a,b)
@@ -67,9 +67,10 @@ end
 
 function base:updateLR()
   local mypageinfo=self.pageinfo
-  if mypageinfo[tostring(self.getid)] then
-    local prev_ids=mypageinfo[tostring(self.getid)].prev_ids
-    local next_ids=mypageinfo[tostring(self.getid)].next_ids
+  local entry=mypageinfo[tostring(self.getid)]
+  if entry then
+    local prev_ids=entry.prev_ids or {}
+    local next_ids=entry.next_ids or {}
     --即使滑动到已经加载过的页面再次判断是否在最左or最右端
     self.isleft=#prev_ids==0
     self.isright=#next_ids==0
@@ -94,7 +95,12 @@ function base:getNextId(z, from_id)
   return nil
 end
 
-function base:getOneData(cb,z) --获取一条数据
+function base:getOneData(cb,z,_depth) --获取一条数据
+  _depth = (_depth or 0) + 1
+  if _depth > 10 then
+    cb(false)
+    return
+  end
   local getid=tostring(self.getid)
   local pageinfo=self.pageinfo
 
@@ -109,12 +115,15 @@ function base:getOneData(cb,z) --获取一条数据
   end
   self:getAnswer((getid),function(myz)
     if myz==false then
-      if z then
-        table.remove(pageinfo[tostring(self.getid)].prev_ids)
-       else
-        table.remove(pageinfo[tostring(self.getid)].next_ids,1)
+      local entry=pageinfo[tostring(self.getid)]
+      if entry then
+        if z then
+          table.remove(entry.prev_ids)
+         else
+          table.remove(entry.next_ids,1)
+        end
       end
-      return self:getOneData(cb,z)
+      return self:getOneData(cb,z,_depth)
     end
 
     --更新getid

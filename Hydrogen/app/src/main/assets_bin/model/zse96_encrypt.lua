@@ -265,7 +265,7 @@ function XZSE96V3.b64encode(md5_bytes, device, seed)
     table.insert(combined, 0)
   end
 
-  local result = ""
+  local result_parts = {}
   local shift_counter = 0
   for i = #combined, 3, -3 do
     local b0 = bit32.bxor(combined[i], XZSE96V3.unsigned_right_shift(58, 8 * (shift_counter % 4)))
@@ -279,10 +279,13 @@ function XZSE96V3.b64encode(md5_bytes, device, seed)
     local c2 = XZSE96V3.base64_chars:sub((bit32.rshift(num, 6) & 63) + 1, (bit32.rshift(num, 6) & 63) + 1)
     local c3 = XZSE96V3.base64_chars:sub((bit32.rshift(num, 12) & 63) + 1, (bit32.rshift(num, 12) & 63) + 1)
     local c4 = XZSE96V3.base64_chars:sub((bit32.rshift(num, 18) & 63) + 1, (bit32.rshift(num, 18) & 63) + 1)
-    result = result .. c1 .. c2 .. c3 .. c4
+    table.insert(result_parts, c1)
+    table.insert(result_parts, c2)
+    table.insert(result_parts, c3)
+    table.insert(result_parts, c4)
   end
 
-  return result
+  return table.concat(result_parts)
 end
 
 -- 解码函数：

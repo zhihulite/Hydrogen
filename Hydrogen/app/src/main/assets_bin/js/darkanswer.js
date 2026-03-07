@@ -30,13 +30,11 @@
         // 设置其他元素的新字体颜色和背景颜色
         styleElem = createCSS('body, body *', 'background-color: #' + appbackgroudc + ' !important; color: RGB(' + fontColor + '%,' + fontColor + '%,' + fontColor + '%) !important;', styleElem);
 
-        // 设置 .ztext-math 及其子元素背景透明，防止 body * 的背景色覆盖
+        // 设置公式相关元素基础样式
         // 必须放在 body * 后面以覆盖样式
-        styleElem = createCSS('.ztext-math, .ztext-math *', 'background-color: transparent !important;', styleElem);
+        styleElem = createCSS('.ztext-math, .ztext-math *, [eeimg], [data-tex]', 'background-color: transparent !important;', styleElem);
 
-        // 仅对公式图片进行反色处理
-        // 必须放在 body * 后面，确保 background-color 是 transparent，这样 invert 只主要反转前景内容
-        styleElem = createCSS('.ztext-math img, img[src*="equation"], .ztext-math svg, img.ztext-math', 'filter: invert(1) !important; background-color: transparent !important;', styleElem);
+        styleElem = createCSS('.ztext-math, [eeimg], [data-tex], img[src*="equation"], .ztext-math img, .ztext-math svg, img.ztext-math', 'filter: invert(1) !important; background-color: transparent !important;', styleElem);
     }
 
     function createCSS(sel, decl, styleElem) {
