@@ -7,6 +7,7 @@ import "com.google.zxing.BarcodeFormat"
 import "com.journeyapps.barcodescanner.BarcodeCallback"
 import "com.journeyapps.barcodescanner.BarcodeResult"
 import "com.journeyapps.barcodescanner.DefaultDecoderFactory"
+import "com.journeyapps.barcodescanner.DecoratedBarcodeView"
 
 local _, fallbackTitle = ...
 
