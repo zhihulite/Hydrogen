@@ -9,8 +9,6 @@ import "com.journeyapps.barcodescanner.BarcodeResult"
 import "com.journeyapps.barcodescanner.DefaultDecoderFactory"
 import "com.journeyapps.barcodescanner.DecoratedBarcodeView"
 
-local _, fallbackTitle = ...
-
 设置视图("layout/scan")
 edgeToedge(nil,nil,function() end)
 
@@ -50,7 +48,11 @@ local function tryStartScan()
       barcodeScannerView.pause()
 
       if text:match("^https?://") then
-        newActivity("browser", {text, fallbackTitle or "扫码结果"})
+        if 检查链接(text, true) then
+          检查链接(text)
+         else
+          newActivity("browser", {text})
+        end
         activity.finish()
         return
       end
