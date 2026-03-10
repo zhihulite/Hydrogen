@@ -23,7 +23,7 @@ local function tryStartScan()
   local hasPermission = ContextCompat.checkSelfPermission(activity, cameraPermission) == PackageManager.PERMISSION_GRANTED
   if not hasPermission then
     提示("请授予相机权限后重试")
-    activity.finish()
+    关闭页面()
     return
   end
 
@@ -53,7 +53,7 @@ local function tryStartScan()
          else
           newActivity("browser", {text})
         end
-        activity.finish()
+        关闭页面()
         return
       end
 
@@ -61,10 +61,10 @@ local function tryStartScan()
         关闭对话框(an)
         复制文本(text)
         提示("已复制扫码内容")
-        activity.finish()
+        关闭页面()
       end, function(an)
         关闭对话框(an)
-        activity.finish()
+        关闭页面()
       end)
     end
   })
