@@ -16,6 +16,15 @@ local IMAGE_PATTERN = "%.(jpg|gif|bmp|png|webp|jpeg)$"
 local URL_SPLIT_PATTERN = "([^%?]+)%??(.*)"
 local DIGIT_PATTERN = "(%d+)"
 
+local function 打开浏览器兜底(url, needExecute)
+  if needExecute then return true end
+  local fallbackUrl = url
+  if url:find("^zhihu://") then
+    fallbackUrl = url:gsub("^zhihu://", "https://www.zhihu.com/")
+  end
+  return newActivity("browser", {fallbackUrl})
+end
+
 function 检查链接(url, needExecute)
   if url:find("^zhihu://") then
     return 检查意图(url, needExecute)
@@ -30,7 +39,7 @@ function 检查链接(url, needExecute)
 
   -- 性能优化：使用缓存的正则模式
   local base, query = url:match(URL_SPLIT_PATTERN)
-  if not base then return end
+  if not base then return 打开浏览器兜底(url, needExecute) end
 
   -- 先匹配最具体的路径 避免误判
   local qId, aId = base:match("question/(%d+)/answers?/(%d+)")
@@ -183,9 +192,7 @@ function 检查链接(url, needExecute)
     return 检查链接(decoded, needExecute)
   end
 
-  if needExecute then return false end
-
-  return Toast.makeText(activity, "暂不支持的知乎链接" .. url, Toast.LENGTH_SHORT).show()
+  return 打开浏览器兜底(url, needExecute)
 end
 
 
@@ -196,7 +203,7 @@ function 检查意图(url, needExecute)
     return false
   end
   local base, query = url:match(URL_SPLIT_PATTERN)
-  if not base then return end
+  if not base then return 打开浏览器兜底(url, needExecute) end
 
   local id = base:match("answers/(%d+)") or base:match("answer/(%d+)")
   if id then
@@ -271,6 +278,28 @@ function 检查意图(url, needExecute)
   end
 
   if base:find("webviewform") then
+    local state = base:match("webviewform/([^/?]+)")
+      or query:match("result=([^&]+)")
+      or query:match("status=([^&]+)")
+      or query:match("state=([^&]+)")
+      or query:match("([%a_]+)")
+
+    if state then
+      if needExecute then return true end
+      state = urlDecode(state):lower()
+      local statusMap = {
+        done = "已完成",
+        success = "已完成",
+        ok = "已完成",
+        fail = "操作失败",
+        failed = "操作失败",
+        error = "操作失败",
+        cancel = "已取消",
+        canceled = "已取消"
+      }
+      return 提示(statusMap[state] or ("状态：" .. state))
+    end
+
     local res = query:match("(%d+)")
     if res then
       if needExecute then return true end
@@ -283,7 +312,6 @@ function 检查意图(url, needExecute)
     return 提示("请重新扫描")
   end
 
-  if needExecute then return false end
-  return Toast.makeText(activity, "暂不支持的知乎意图" .. url, Toast.LENGTH_SHORT).show()
+  return 打开浏览器兜底(url, needExecute)
 
 end
