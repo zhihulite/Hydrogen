@@ -15,6 +15,18 @@ edgeToedge(nil,nil,function() end)
 local cameraPermission = "android.permission.CAMERA"
 local hasHandledResult = false
 
+
+local function closeThenRoute(url)
+  关闭页面()
+  task(120, function()
+    if 检查链接(url, true) then
+      检查链接(url)
+     else
+      newActivity("browser", {url})
+    end
+  end)
+end
+
 local function tryStartScan()
   if hasHandledResult then
     return
@@ -48,12 +60,7 @@ local function tryStartScan()
       barcodeScannerView.pause()
 
       if text:match("^https?://") then
-        if 检查链接(text, true) then
-          检查链接(text)
-         else
-          newActivity("browser", {text})
-        end
-        关闭页面()
+        closeThenRoute(text)
         return
       end
 
