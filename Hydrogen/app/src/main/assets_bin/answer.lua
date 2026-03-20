@@ -978,7 +978,7 @@ taskUI(function()
                 height: Math.min(document.body.scrollHeight, 12000),
                 onclone: function(doc) {
                   var style = doc.createElement('style');
-                  style.innerHTML = '.ztext, .RichText, .video-box, .VideoCard, .AnswerVideo, .VOT-Container, .AnnotationTag, .LinkCard, .MCNCard, img { opacity: 1 !important; animation: none !important; transition: none !important; }';
+                  style.innerHTML = '* { text-rendering: auto !important; -webkit-font-smoothing: antialiased !important; font-variant-ligatures: none !important; } b, strong { background-color: transparent !important; } .ztext, .RichText, .video-box, .VideoCard, .AnswerVideo, .VOT-Container, .AnnotationTag, .LinkCard, .MCNCard, img { opacity: 1 !important; animation: none !important; transition: none !important; }';
                   doc.head.appendChild(style);
                 }
               }).then(function(c) {
