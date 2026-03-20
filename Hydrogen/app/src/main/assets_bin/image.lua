@@ -17,7 +17,10 @@ import "android.os.Environment"
 import "java.io.File"
 import "java.io.FileOutputStream"
 import "java.lang.System"
+import "android.content.Context"
 import "android.content.FileProvider"
+import "android.net.Uri"
+import "android.webkit.URLUtil"
 activity.setContentView(loadlayout("layout/image"))
 
 
@@ -128,26 +131,67 @@ picpage.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，�
 
 picpage.setCurrentItem(now)
 
+local function 获取图片MimeType(fileName)
+  local ext = fileName:match("%.([^.]+)$")
+  ext = ext and ext:lower()
+  local mimeTypes = {
+    jpg = "image/jpeg",
+    jpeg = "image/jpeg",
+    png = "image/png",
+    gif = "image/gif",
+    webp = "image/webp",
+  }
+  return mimeTypes[ext] or "image/*"
+end
 
-ripple.onClick=function()
-  local result=get_write_permissions(true)
-  if result~=true then
+local function 下载图片到系统相册(url,fileName)
+  local downloadManager = activity.getSystemService(Context.DOWNLOAD_SERVICE)
+  local request = DownloadManager.Request(Uri.parse(url))
+  request.setAllowedNetworkTypes(
+    DownloadManager.Request.NETWORK_MOBILE
+    | DownloadManager.Request.NETWORK_WIFI
+  )
+  request.setNotificationVisibility(
+    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+  )
+  request.setTitle(fileName)
+  request.setDescription("正在保存图片…")
+  request.setMimeType(获取图片MimeType(fileName))
+  request.setAllowedOverRoaming(true)
+  request.allowScanningByMediaScanner()
+  if url:find("zhimg.com") then
+    request.addRequestHeader("Referer","https://www.zhihu.com/")
+  end
+  request.setDestinationInExternalPublicDir(
+    Environment.DIRECTORY_PICTURES,
+    "Hydrogen/"..fileName
+  )
+
+  local ok,err = pcall(function()
+    downloadManager.enqueue(request)
+  end)
+  if ok then
+    提示("已开始保存，请查看通知栏进度")
+    return true
+   else
+    提示("保存失败："..tostring(err))
     return false
   end
+end
+
+ripple.onClick=function()
   local url=mls[""..picpage.getCurrentItem()]
-  import "android.webkit.URLUtil"
   local 文件名=URLUtil.guessFileName(url,nil,nil)
-  local filepath = Environment.getExternalStorageDirectory().toString().."/Pictures/Hydrogen/"..文件名
-  Http.download(url,filepath,function(code,msg)
-    if code==200 then
-      local File = luajava.bindClass "java.io.File"
-      local MediaScannerConnection = luajava.bindClass "android.media.MediaScannerConnection"
-      MediaScannerConnection.scanFile(activity, {File(filepath).getAbsolutePath()}, nil, nil)
-      提示("已保存到"..msg)
-     else
-      提示("保存失败")
+  if not 文件名:find("%.") then
+    文件名=文件名..".jpg"
+  end
+  if Build.VERSION.SDK_INT < 29 then
+    local result=get_write_permissions(true)
+    if result~=true then
+      return false
     end
-  end)
+  end
+  下载图片到系统相册(url,文件名)
 end
 
 -- 长按分享图片功能
