@@ -153,14 +153,54 @@ function 设置视图(t)
     activity.setContentView(loadlayout(t))
   end
 end
+local function getCurrentFragmentContainer()
+  if thisFragment and thisFragment.ff then
+    if thisFragment.ff == f1 then return f1 end
+    if thisFragment.ff == f2 then return f2 end
+  end
+end
+
+local function getLeastRecentContainer()
+  if tonumber(f1.getTag(R.id.tag_last_time)) > tonumber(f2.getTag(R.id.tag_last_time)) then
+    return f2
+  end
+  return f1
+end
+
+local function selectTargetContainer(fragmentName)
+  if not inSekai then return f1 end
+  if fragmentName == "home" then return f1 end
+  if fragmentName == "comment" then return f2 end
+
+  local currentContainer = getCurrentFragmentContainer()
+  if currentContainer == f2 then
+    return f2
+  end
+
+  if tostring(f1.tag) == "home" then
+    return f2
+  end
+
+  if tostring(f2.tag) == "comment" then
+    return f1
+  end
+
+  if f2.tag == fragmentName then
+    return f2
+  end
+
+  return getLeastRecentContainer()
+end
+
 function newActivity(f,b,c)
   if f1 == nil
     return activity.newActivity(f,b)
   end
   b=b or {}
-  local ff=f1
+  local ff=selectTargetContainer(f)
   local nt=tonumber(os.time())
   local t = activity.getSupportFragmentManager().beginTransaction()
+  t.setReorderingAllowed(true)
   --[[t.setCustomAnimations(
   android.R.anim.slide_in_left,
   android.R.anim.slide_out_right,
@@ -169,15 +209,6 @@ function newActivity(f,b,c)
   --t.remove(activity.getSupportFragmentManager().findFragmentByTag("answer"))
   --t.add(thisF.getId(),MyLuaFileFragment(srcLuaDir..f..".lua",b,{fn=fn,fg=fg,inSekai=inSekai,onBackCancelled=onBackCancelled,onBackStarted=onBackStarted,onBackInvoked=onBackInvoked,onBackProgressed=onBackProgressed}))
   --t.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-  if tonumber(f1.getTag(R.id.tag_last_time))>tonumber(f2.getTag(R.id.tag_last_time))
-    ff=f2
-   else
-    ff=f1
-  end
-  if f2.tag==f
-    ff=f2
-  end
-  if !inSekai then ff = f1 end
   ff.tag=f
   ff.setTag(R.id.tag_last_time,nt)
   if nTView then
@@ -220,13 +251,13 @@ function newActivity(f,b,c)
     ViewCompat.setTransitionName(nTView,"t")
     t.addSharedElement(nTView,"t")
     fragment.setSharedElementEnterTransition(forward).setSharedElementReturnTransition(backward).setEnterTransition(forward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
-    t.add(ff.id,fragment)
+    t.replace(ff.id,fragment)
    else
     backward = MaterialSharedAxis(MaterialSharedAxis.Z, false);
     forward = MaterialSharedAxis(MaterialSharedAxis.Z, true);
     local fragment = MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,})
     fragment.postponeEnterTransition()
-    t.add(ff.id,fragment.setEnterTransition(forward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward))
+    t.replace(ff.id,fragment.setEnterTransition(forward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward))
 
   end
   t.addToBackStack(nil)
