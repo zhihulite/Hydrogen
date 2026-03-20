@@ -16,11 +16,11 @@ import "android.graphics.Bitmap"
 import "android.os.Environment"
 import "java.io.File"
 import "java.io.FileOutputStream"
-import "java.io.FileInputStream"
 import "java.lang.System"
+import "android.content.Context"
 import "android.content.FileProvider"
-import "android.provider.MediaStore"
-import "android.content.ContentValues"
+import "android.net.Uri"
+import "android.webkit.URLUtil"
 activity.setContentView(loadlayout("layout/image"))
 
 
@@ -131,100 +131,67 @@ picpage.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，�
 
 picpage.setCurrentItem(now)
 
-
-local function copyFileToOutputStream(inputPath, outputStream)
-  local inputStream = FileInputStream(inputPath)
-  local buffer = byte[8192]
-  while true do
-    local len = inputStream.read(buffer)
-    if len == -1 then
-      break
-    end
-    outputStream.write(buffer,0,len)
-  end
-  outputStream.flush()
-  inputStream.close()
-  outputStream.close()
+local function 获取图片MimeType(fileName)
+  local ext = fileName:match("%.([^.]+)$")
+  ext = ext and ext:lower()
+  local mimeTypes = {
+    jpg = "image/jpeg",
+    jpeg = "image/jpeg",
+    png = "image/png",
+    gif = "image/gif",
+    webp = "image/webp",
+  }
+  return mimeTypes[ext] or "image/*"
 end
 
-local function saveImageToMediaStore(tempPath,fileName)
-  local values = ContentValues()
-  values.put(MediaStore.Images.Media.DISPLAY_NAME,fileName)
-  values.put(MediaStore.Images.Media.MIME_TYPE,"image/jpeg")
-  values.put(MediaStore.Images.Media.RELATIVE_PATH,Environment.DIRECTORY_PICTURES.."/Hydrogen")
-  values.put(MediaStore.Images.Media.IS_PENDING,1)
-
-  local resolver = activity.getContentResolver()
-  local collection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
-  local uri = resolver.insert(collection,values)
-  if uri == nil then
-    return false,"创建媒体文件失败"
+local function 下载图片到系统相册(url,fileName)
+  local downloadManager = activity.getSystemService(Context.DOWNLOAD_SERVICE)
+  local request = DownloadManager.Request(Uri.parse(url))
+  request.setAllowedNetworkTypes(
+    DownloadManager.Request.NETWORK_MOBILE
+    | DownloadManager.Request.NETWORK_WIFI
+  )
+  request.setNotificationVisibility(
+    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+  )
+  request.setTitle(fileName)
+  request.setDescription("正在保存图片…")
+  request.setMimeType(获取图片MimeType(fileName))
+  request.setAllowedOverRoaming(true)
+  request.allowScanningByMediaScanner()
+  if url:find("zhimg.com") then
+    request.addRequestHeader("Referer","https://www.zhihu.com/")
   end
+  request.setDestinationInExternalPublicDir(
+    Environment.DIRECTORY_PICTURES,
+    "Hydrogen/"..fileName
+  )
 
   local ok,err = pcall(function()
-    local outputStream = resolver.openOutputStream(uri)
-    copyFileToOutputStream(tempPath,outputStream)
+    downloadManager.enqueue(request)
   end)
-  if not ok then
-    resolver.delete(uri,nil,nil)
-    return false,tostring(err)
+  if ok then
+    提示("已开始保存，请查看通知栏进度")
+    return true
+   else
+    提示("保存失败："..tostring(err))
+    return false
   end
-
-  values.clear()
-  values.put(MediaStore.Images.Media.IS_PENDING,0)
-  resolver.update(uri,values,nil,nil)
-  return true,uri.toString()
 end
 
 ripple.onClick=function()
   local url=mls[""..picpage.getCurrentItem()]
-  import "android.webkit.URLUtil"
   local 文件名=URLUtil.guessFileName(url,nil,nil)
   if not 文件名:find("%.") then
     文件名=文件名..".jpg"
   end
-
-  local tempFile = File(activity.getExternalCacheDir(),"download_"..System.currentTimeMillis().."_"..文件名)
-  Http.download(url,tempFile.getAbsolutePath(),function(code,msg)
-    if code~=200 then
-      提示("保存失败")
-      return
-    end
-
-    if Build.VERSION.SDK_INT >= 29 then
-      local ok,result = saveImageToMediaStore(tempFile.getAbsolutePath(),文件名)
-      tempFile.delete()
-      if ok then
-        提示("已保存到系统相册")
-       else
-        提示("保存失败："..result)
-      end
-      return
-    end
-
+  if Build.VERSION.SDK_INT < 29 then
     local result=get_write_permissions(true)
     if result~=true then
-      tempFile.delete()
       return false
     end
-
-    local dir = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),"Hydrogen")
-    if not dir.exists() then
-      dir.mkdirs()
-    end
-    local destFile = File(dir,文件名)
-    local ok,err = pcall(function()
-      copyFileToOutputStream(tempFile.getAbsolutePath(),FileOutputStream(destFile))
-    end)
-    tempFile.delete()
-    if ok then
-      local MediaScannerConnection = luajava.bindClass "android.media.MediaScannerConnection"
-      MediaScannerConnection.scanFile(activity,{destFile.getAbsolutePath()},nil,nil)
-      提示("已保存到"..destFile.getAbsolutePath())
-     else
-      提示("保存失败："..tostring(err))
-    end
-  end)
+  end
+  下载图片到系统相册(url,文件名)
 end
 
 -- 长按分享图片功能
