@@ -56,6 +56,20 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
         return mContainerId;
     }
 
+    private void scheduleStartPostponedEnterTransition() {
+        if (mContainer == null) {
+            return;
+        }
+        mContainer.post(new Runnable() {
+            @Override
+            public void run() {
+                if (isAdded()) {
+                    startPostponedEnterTransition();
+                }
+            }
+        });
+    }
+
     public void setContainerView(View v) {
         if (v.getParent() instanceof ViewGroup) {
             ((ViewGroup) v.getParent()).removeView(v);
@@ -130,6 +144,7 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
 
         if (mVM.cachedContentView != null && mContainer.getChildCount() == 0) {
             setContainerView(mVM.cachedContentView);
+            scheduleStartPostponedEnterTransition();
         }
 
         return mContainer;
@@ -141,6 +156,7 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
         // 当 Fragment 的视图已经创建时调用
         runFunc("onViewCreated", view, savedInstanceState);
         if (mVM.luaFileLoaded && mContainer.getChildCount() > 0) {
+            scheduleStartPostponedEnterTransition();
             return;
         }
         try {
