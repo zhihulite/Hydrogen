@@ -164,7 +164,7 @@ MyWebViewUtils:initWebViewClient{
   onPageStarted=function(view,url,favicon)
     加载js(view,获取js("imgplus"))
     加载js(view,获取js("mdcopy"))
-    if this.getSharedData("eruda")
+    if this.getSharedData("eruda")=="true" then
       加载js(view,获取js("eruda"))
     end
     if 全局主题值=="Night" then
