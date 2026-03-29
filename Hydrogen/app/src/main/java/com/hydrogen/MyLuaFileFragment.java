@@ -6,13 +6,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProvider;
+import com.google.android.material.card.MaterialCardView;
 import com.androlua.*;
 import com.luajava.*;
 
@@ -25,7 +25,7 @@ import java.util.Map;
 public class MyLuaFileFragment extends Fragment implements LuaGcable {
 
     public LuaState L;
-    public FrameLayout mContainer;
+    public MaterialCardView mContainer;
     public LuaTable mlayoutTable;
     private int mContainerId;
     private LuaActivity mLuaActivity;
@@ -48,7 +48,7 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
 
     }
 
-    public FrameLayout getContainer() {
+    public MaterialCardView getContainer() {
         return mContainer;
     }
 
@@ -113,7 +113,12 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
         app = (LuaApplication) mLuaActivity.getApplication();
         if (mLuaFilePath.charAt(0) != '/') mLuaFilePath = mLuaActivity.getLuaDir() + "/" + mLuaFilePath;
         runFunc("onAttach", context);
-        mContainer = new FrameLayout(mLuaActivity);
+        mContainer = new MaterialCardView(mLuaActivity);
+        mContainer.setRadius(0f);
+        mContainer.setCardElevation(0f);
+        mContainer.setUseCompatPadding(false);
+        mContainer.setPreventCornerOverlap(false);
+        mContainer.setTransitionGroup(true);
         mContainer.setLayoutParams(
                 new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
