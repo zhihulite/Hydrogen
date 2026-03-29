@@ -12,6 +12,8 @@ import "com.bumptech.glide.Glide"
 import "com.bumptech.glide.request.RequestOptions"
 import "com.bumptech.glide.request.RequestListener"
 import "com.bumptech.glide.load.engine.DiskCacheStrategy"
+import "com.bumptech.glide.load.DecodeFormat"
+import "com.bumptech.glide.request.target.Target"
 import "android.graphics.Bitmap"
 import "android.os.Environment"
 import "java.io.File"
@@ -103,14 +105,16 @@ picpage.registerOnPageChangeCallback(OnPageChangeCallback{--除了名字变，�
         url=url:gsub("720w", "r")
       end
       if url:sub(1,3)=="v2-"
-        url="https://pic1.zhimg.com/100/"..url.."_r.jpg"
+        url="https://pic1.zhimg.com/"..url..""
       end
       mls[tostring(i)]=url
       Glide
       .with(activity)
       .asDrawable()--强制gif支持
       .load(url)
-      .diskCacheStrategy(DiskCacheStrategy.NONE)
+      .diskCacheStrategy(DiskCacheStrategy.DATA)
+      .override(Target.SIZE_ORIGINAL)
+      .format(DecodeFormat.PREFER_ARGB_8888)
       .listener(RequestListener{
         onResourceReady=function(a,b,c,d)
           parent.pg.visibility=8
@@ -148,11 +152,11 @@ local function 下载图片到系统相册(url,fileName)
   local downloadManager = activity.getSystemService(Context.DOWNLOAD_SERVICE)
   local request = DownloadManager.Request(Uri.parse(url))
   request.setAllowedNetworkTypes(
-    DownloadManager.Request.NETWORK_MOBILE
-    | DownloadManager.Request.NETWORK_WIFI
+  DownloadManager.Request.NETWORK_MOBILE
+  | DownloadManager.Request.NETWORK_WIFI
   )
   request.setNotificationVisibility(
-    DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+  DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
   )
   request.setTitle(fileName)
   request.setDescription("正在保存图片…")
@@ -163,8 +167,8 @@ local function 下载图片到系统相册(url,fileName)
     request.addRequestHeader("Referer","https://www.zhihu.com/")
   end
   request.setDestinationInExternalPublicDir(
-    Environment.DIRECTORY_PICTURES,
-    "Hydrogen/"..fileName
+  Environment.DIRECTORY_PICTURES,
+  "Hydrogen/"..fileName
   )
 
   local ok,err = pcall(function()
@@ -182,8 +186,11 @@ end
 ripple.onClick=function()
   local url=mls[""..picpage.getCurrentItem()]
   local 文件名=URLUtil.guessFileName(url,nil,nil)
-  if not 文件名:find("%.") then
+  if (not 文件名:find("%.")) then
     文件名=文件名..".jpg"
+  end
+  if (文件名:find("%.bin")) then
+    文件名=文件名:gsub("bin","jpg")
   end
   if Build.VERSION.SDK_INT < 29 then
     local result=get_write_permissions(true)
