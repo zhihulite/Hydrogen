@@ -6,14 +6,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
+import com.google.android.material.card.MaterialCardView;
 import com.androlua.*;
 import com.luajava.*;
 
@@ -26,7 +25,7 @@ import java.util.Map;
 public class MyLuaFileFragment extends Fragment implements LuaGcable {
 
     public LuaState L;
-    public FrameLayout mContainer;
+    public MaterialCardView mContainer;
     public LuaTable mlayoutTable;
     private int mContainerId;
     private LuaActivity mLuaActivity;
@@ -34,7 +33,7 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
     private boolean mGc;
     private LuaApplication app;
     private final Object[] mArgs;
-    private ViewModel mVM;
+    private MyFragmentViewmodel mVM;
     private HashMap<String, Object> mGlobal;
 
     public MyLuaFileFragment(String luaFilePath) {
@@ -46,10 +45,10 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
         mGlobal = global;
         mArgs = (args != null) ? args : new Object[0];
         mContainerId = R.id.fragment_container_view_tag;
-        
+
     }
 
-    public FrameLayout getContainer() {
+    public MaterialCardView getContainer() {
         return mContainer;
     }
 
@@ -57,8 +56,28 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
         return mContainerId;
     }
 
+    private void scheduleStartPostponedEnterTransition() {
+        if (mContainer == null) {
+            return;
+        }
+        mContainer.post(new Runnable() {
+            @Override
+            public void run() {
+                if (isAdded()) {
+                    startPostponedEnterTransition();
+                }
+            }
+        });
+    }
+
     public void setContainerView(View v) {
+        if (v.getParent() instanceof ViewGroup) {
+            ((ViewGroup) v.getParent()).removeView(v);
+        }
+        mContainer.removeAllViews();
         mContainer.addView(v);
+        mVM.cachedContentView = v;
+        mVM.luaFileLoaded = true;
     }
 
     @Override
@@ -94,13 +113,18 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
         app = (LuaApplication) mLuaActivity.getApplication();
         if (mLuaFilePath.charAt(0) != '/') mLuaFilePath = mLuaActivity.getLuaDir() + "/" + mLuaFilePath;
         runFunc("onAttach", context);
-        mContainer = new FrameLayout(mLuaActivity);
+        mContainer = new MaterialCardView(mLuaActivity);
+        mContainer.setRadius(0f);
+        mContainer.setCardElevation(0f);
+        mContainer.setUseCompatPadding(false);
+        mContainer.setPreventCornerOverlap(false);
+        mContainer.setTransitionGroup(true);
         mContainer.setLayoutParams(
                 new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         mContainer.setId(mContainerId);
         mVM = new ViewModelProvider(this).get(MyFragmentViewmodel.class);
-        
+
     }
 
     @Override
@@ -123,6 +147,11 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
         super.onCreateView(inflater, container, savedInstanceState);
         Object result = runFunc("onCreateView", inflater, container, savedInstanceState);
 
+        if (mVM.cachedContentView != null && mContainer.getChildCount() == 0) {
+            setContainerView(mVM.cachedContentView);
+            scheduleStartPostponedEnterTransition();
+        }
+
         return mContainer;
     }
 
@@ -131,6 +160,10 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
         super.onViewCreated(view, savedInstanceState);
         // 当 Fragment 的视图已经创建时调用
         runFunc("onViewCreated", view, savedInstanceState);
+        if (mVM.luaFileLoaded && mContainer.getChildCount() > 0) {
+            scheduleStartPostponedEnterTransition();
+            return;
+        }
         try {
             doFile(mLuaFilePath, mArgs);
         } catch (LuaException e) {
@@ -169,6 +202,11 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
 
     @Override
     public void onDestroyView() {
+        if (mContainer != null && mContainer.getChildCount() > 0) {
+            View cachedView = mContainer.getChildAt(0);
+            mContainer.removeView(cachedView);
+            mVM.cachedContentView = cachedView;
+        }
         super.onDestroyView();
         // 当与 Fragment 相关的视图被移除时调用
         runFunc("onDestroyView");
@@ -179,6 +217,10 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
         super.onDestroy();
         // 当 Fragment 被销毁时调用
         runFunc("onDestroy");
+        if (mVM != null) {
+            mVM.cachedContentView = null;
+            mVM.luaFileLoaded = false;
+        }
         gc();
     }
 

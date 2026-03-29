@@ -39,9 +39,16 @@ if activity.getSharedData("平行世界")~="false" then
     local height = rootView.height
     inSekai = width > dp2px(600, true)
     if f1 then
+      local leftWidth = inSekai and math.floor(width * 0.5) or width
       local lp = f1.LayoutParams
-      lp.width = inSekai and width * 0.5 or width
+      lp.width = leftWidth
       f1.setLayoutParams(lp)
+    end
+    if f2 then
+      local lp = f2.LayoutParams
+      lp.width = inSekai and math.max(0, width - math.floor(width * 0.5)) or 0
+      f2.setLayoutParams(lp)
+      f2.setVisibility(inSekai and View.VISIBLE or View.GONE)
     end
     return height, width
   end
@@ -479,6 +486,30 @@ page_home.addOnPageChangeListener(ViewPager.OnPageChangeListener {
 
 page_home.setAdapter(pagadp)
 page_home.setCurrentItem(startindex,false)
+
+local function updateHomeRecommendColumns()
+  if not home_recy then return end
+  local layoutManager = home_recy.getLayoutManager()
+  if not layoutManager or not luajava.instanceof(layoutManager, GridLayoutManager) then return end
+
+  local width = home_recy.getWidth()
+  if width <= 0 then return end
+
+  local targetSpanCount = math.max(1, math.min(2, math.floor(px2dp(width, true) / 280)))
+  if layoutManager.getSpanCount() ~= targetSpanCount then
+    layoutManager.setSpanCount(targetSpanCount)
+    home_recy.requestLayout()
+  end
+end
+
+home_recy.addOnLayoutChangeListener(View.OnLayoutChangeListener {
+  onLayoutChange=function(v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom)
+    if right - left ~= oldRight - oldLeft then
+      updateHomeRecommendColumns()
+    end
+  end
+})
+home_recy.post(updateHomeRecommendColumns)
 
 -- 如果 startindex 为 0，ViewPager 不会触发 onPageSelected，需要手动触发逻辑函数
 if startindex == 0 then
