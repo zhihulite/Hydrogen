@@ -105,7 +105,9 @@ function MyLuaFileFragment(a,b,c)
       this.getLuaState().setGlobal("currentFragment")
 
       local ff = f2
-      if tonumber(f1.getTag(R.id.tag_last_time))>tonumber(f2.getTag(R.id.tag_last_time))
+      if myLuaFileManager then
+        ff = myLuaFileManager:selectTargetContainer("empty")
+      elseif tonumber(f1.getTag(R.id.tag_last_time))>tonumber(f2.getTag(R.id.tag_last_time))
         ff=f2
        else
         ff=f1
@@ -169,17 +171,22 @@ function newActivity(f,b,c)
   --t.remove(activity.getSupportFragmentManager().findFragmentByTag("answer"))
   --t.add(thisF.getId(),MyLuaFileFragment(srcLuaDir..f..".lua",b,{fn=fn,fg=fg,inSekai=inSekai,onBackCancelled=onBackCancelled,onBackStarted=onBackStarted,onBackInvoked=onBackInvoked,onBackProgressed=onBackProgressed}))
   --t.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-  if tonumber(f1.getTag(R.id.tag_last_time))>tonumber(f2.getTag(R.id.tag_last_time))
-    ff=f2
+  if myLuaFileManager then
+    ff = myLuaFileManager:selectTargetContainer(f)
+    myLuaFileManager:markContainer(ff, f)
    else
-    ff=f1
+    if tonumber(f1.getTag(R.id.tag_last_time))>tonumber(f2.getTag(R.id.tag_last_time))
+      ff=f2
+     else
+      ff=f1
+    end
+    if f2.tag==f
+      ff=f2
+    end
+    if !inSekai then ff = f1 end
+    ff.tag=f
+    ff.setTag(R.id.tag_last_time,nt)
   end
-  if f2.tag==f
-    ff=f2
-  end
-  if !inSekai then ff = f1 end
-  ff.tag=f
-  ff.setTag(R.id.tag_last_time,nt)
   if nTView then
     --https://developer.android.google.cn/reference/android/view/RoundedCorner#POSITION_BOTTOM_LEFT
 

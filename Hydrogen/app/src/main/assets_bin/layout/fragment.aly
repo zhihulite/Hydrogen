@@ -6,56 +6,9 @@
   id="mainfLay";
   {
     LinearLayout,
-layoutTransition=LayoutTransition().enableTransitionType(LayoutTransition.CHANGING),
+    layoutTransition=LayoutTransition().enableTransitionType(LayoutTransition.CHANGING),
+    orientation="horizontal",
     layout_width="fill",id="fg";
     layout_height="fill",
-    {
-      FrameLayout,id="f1",
-      layout_width="fill",
-      layout_height="fill",
-      
-      {
-        LinearLayout,
-        gravity="center";
-        layout_width="fill",
-        layout_height="fill",
-        orientation="vertical";
-        {CircleImageView,layout_gravity="center";
-          imageDrawable=activity.getDrawable(R.drawable.welcome);
-          layout_width="64dp";
-          layout_height="64dp";
-        };
-        {TextView;
-          id="tttt";
-          layout_marginTop="6dp";
-          textColor=textc;layout_gravity="center";
-          text="Hydrogen，让每次点击都有意义";
-        };
-      },
-    },
-
-    {
-      FrameLayout;id="f2",
-      layout_width="fill",
-      layout_height="fill",
-      {
-        LinearLayout,
-        gravity="center";
-        layout_width="fill",
-        layout_height="fill",
-        orientation="vertical";
-        {CircleImageView,layout_gravity="center";
-          imageDrawable=activity.getDrawable(R.drawable.welcome);
-          layout_width="64dp";
-          layout_height="64dp";
-        };
-        {TextView;
-          id="tttt";
-          layout_marginTop="6dp";
-          textColor=textc;layout_gravity="center";
-          text="Hydrogen，让每次点击都有意义";
-        };
-      },
-    };
   },
 }
