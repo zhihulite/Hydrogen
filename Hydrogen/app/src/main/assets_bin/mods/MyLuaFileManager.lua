@@ -2,9 +2,20 @@ local MyLuaFileManager = {}
 MyLuaFileManager.__index = MyLuaFileManager
 
 local MaterialCardView = luajava.bindClass("com.google.android.material.card.MaterialCardView")
-local LinearLayout = luajava.bindClass("android.widget.LinearLayout")
 local FrameLayout = luajava.bindClass("android.widget.FrameLayout")
 local View = luajava.bindClass("android.view.View")
+local Gravity = luajava.bindClass("android.view.Gravity")
+
+local function resolveWidth(root)
+  local width = root.getWidth()
+  if not width or width <= 0 then
+    width = activity.getDecorView().getWidth()
+  end
+  if not width or width <= 0 then
+    width = activity.getResources().getDisplayMetrics().widthPixels
+  end
+  return width
+end
 
 local function newFrameLayout(activity)
   local frame = FrameLayout(activity)
@@ -15,7 +26,7 @@ end
 
 local function newCardContainer(activity)
   local card = MaterialCardView(activity)
-  card.setLayoutParams(LinearLayout.LayoutParams(0, -1, 1.0))
+  card.setLayoutParams(FrameLayout.LayoutParams(-1, -1))
   card.setCardElevation(0)
   card.setStrokeWidth(0)
   card.setRadius(0)
@@ -31,7 +42,6 @@ function MyLuaFileManager.new(rootContainer)
   self.containers = {}
 
   self.root.removeAllViews()
-  self.root.setOrientation(LinearLayout.HORIZONTAL)
 
   local firstCard = newCardContainer(activity)
   local secondCard = newCardContainer(activity)
@@ -46,16 +56,8 @@ function MyLuaFileManager.new(rootContainer)
   self.containers[1] = {card = firstCard, frame = firstFrame}
   self.containers[2] = {card = secondCard, frame = secondFrame}
 
-  self:setParallelMode(false, activity.getDecorView().width)
+  self:setParallelMode(false)
   return self
-end
-
-function MyLuaFileManager:getPrimaryContainer()
-  return self.containers[1].frame
-end
-
-function MyLuaFileManager:getSecondaryContainer()
-  return self.containers[2].frame
 end
 
 function MyLuaFileManager:getContainerPair()
@@ -64,25 +66,33 @@ end
 
 function MyLuaFileManager:setParallelMode(enabled, width)
   self.inSekai = enabled
+
   local firstCard = self.containers[1].card
   local secondCard = self.containers[2].card
+  local rootWidth = width or resolveWidth(self.root)
 
-  local firstParams = LinearLayout.LayoutParams(0, -1, 1.0)
-  local secondParams = LinearLayout.LayoutParams(0, -1, 1.0)
+  if enabled then
+    local half = math.floor(rootWidth * 0.5)
+    local gap = dp2px(8)
 
-  if enabled and width and width > 0 then
-    firstParams.width = math.floor(width * 0.5)
-    secondParams.width = 0
-    secondParams.setMarginStart(dp2px(8))
+    local firstParams = FrameLayout.LayoutParams(half - math.floor(gap / 2), -1)
+    firstParams.gravity = Gravity.START
+
+    local secondParams = FrameLayout.LayoutParams(half - math.floor(gap / 2), -1)
+    secondParams.gravity = Gravity.END
+
+    firstCard.setLayoutParams(firstParams)
+    secondCard.setLayoutParams(secondParams)
+    firstCard.setVisibility(View.VISIBLE)
+    secondCard.setVisibility(View.VISIBLE)
   else
-    local overlapWidth = width or activity.getDecorView().width
-    firstParams.width = overlapWidth
-    secondParams.width = overlapWidth
-    secondParams.setMarginStart(-1 * overlapWidth)
+    local overlayParams = FrameLayout.LayoutParams(-1, -1)
+    overlayParams.gravity = Gravity.START
+    firstCard.setLayoutParams(overlayParams)
+    secondCard.setLayoutParams(FrameLayout.LayoutParams(-1, -1))
+    firstCard.setVisibility(View.VISIBLE)
+    secondCard.setVisibility(View.VISIBLE)
   end
-
-  firstCard.setLayoutParams(firstParams)
-  secondCard.setLayoutParams(secondParams)
 end
 
 function MyLuaFileManager:selectTargetContainer(pageTag)

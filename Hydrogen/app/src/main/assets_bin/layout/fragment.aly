@@ -5,9 +5,8 @@
   layout_width="fill";
   id="mainfLay";
   {
-    LinearLayout,
+    FrameLayout,
     layoutTransition=LayoutTransition().enableTransitionType(LayoutTransition.CHANGING),
-    orientation="horizontal",
     layout_width="fill",id="fg";
     layout_height="fill",
   },
