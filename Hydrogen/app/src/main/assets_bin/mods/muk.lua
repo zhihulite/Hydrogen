@@ -53,6 +53,7 @@ layout_dir="layout/item_layout/"
 
 import "android.animation.ObjectAnimator"
 import "android.view.animation.*"
+local TransitionSet = luajava_bindClass "android.transition.TransitionSet"
 
 function addAutoHideListener(recs,views)
   local appbar
@@ -118,6 +119,34 @@ function MyLuaFileFragment(a,b,c)
   },a,b,c)
 end
 
+local function buildMixedTransition(isForward, targetView, startView, endView, shapeModel)
+  local set = TransitionSet()
+  set.setOrdering(TransitionSet.ORDERING_TOGETHER)
+
+  local axis = MaterialSharedAxis(MaterialSharedAxis.Z, isForward)
+  if targetView then
+    axis.addTarget(targetView)
+  end
+
+  local container = MaterialContainerTransform(activity, isForward)
+  if startView then
+    container.setStartView(startView)
+  end
+  if endView then
+    container.setEndView(endView)
+    container.addTarget(endView)
+  end
+  if shapeModel then
+    container.setStartShapeAppearanceModel(shapeModel)
+  end
+  container.setPathMotion(MaterialArcMotion())
+  container.setScrimColor(0x99000000)
+
+  set.addTransition(container)
+  set.addTransition(axis)
+  return set
+end
+
 function 设置视图(t)
   if tostring(this.getSharedData("预见性返回手势"))=="false"
     this.getSupportFragmentManager().enablePredictiveBack(false)
@@ -134,20 +163,11 @@ function 设置视图(t)
     end
     thisFragment.setContainerView(lay)
     if nOView~=nil
-      local backward=MaterialContainerTransform(activity,false)
-      .setStartView(thisFragment.container)
-      .setEndView(nOView)
-      .setPathMotion(MaterialArcMotion())
-      .setScrimColor(0x99000000)
-      .addTarget(nOView)
-      .setStartShapeAppearanceModel(OldWindowShape)
+      local backward=buildMixedTransition(false,thisFragment.container,thisFragment.container,nOView,OldWindowShape)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
       thisFragment.startPostponedEnterTransition()
      else
-      local backward = MaterialSharedAxis(MaterialSharedAxis.Z, false)
-      .addTarget(thisFragment.container)
-      .addTarget(thisFragment.container)
-      --.addTarget(ff)
+      local backward = buildMixedTransition(false,thisFragment.container,nil,thisFragment.container)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
       thisFragment.startPostponedEnterTransition()
     end
@@ -213,11 +233,8 @@ function newActivity(f,b,c)
     end
     fragment=MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,nOView=nTView,OldWindowShape=WindowShape.build()} )
     fragment.postponeEnterTransition()
-    local forward=MaterialContainerTransform(activity,true)
-    .setStartView(nTView)
-    .setPathMotion(MaterialArcMotion())
-    .setEndShapeAppearanceModel(WindowShape.build())
-    .setScrimColor(0x99000000)
+    local forward=buildMixedTransition(true,ff,nTView,ff)
+    local backward=buildMixedTransition(false,ff,ff,nTView,WindowShape.build())
     --.setAllContainerColors(转0x(backgroundc))
     --.setFadeMode(3)
     --backward = MaterialSharedAxis(MaterialSharedAxis.Z, false);
