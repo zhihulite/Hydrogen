@@ -73,6 +73,19 @@ function MyLuaFileManager:getCardContainerByFrame(frame)
   return frame
 end
 
+function MyLuaFileManager:getCardContainerByView(view)
+  local current = view
+  while current do
+    for _, item in ipairs(self.containers) do
+      if current == item.card then
+        return item.card
+      end
+    end
+    current = current.getParent and current.getParent() or nil
+  end
+  return nil
+end
+
 function MyLuaFileManager:setParallelMode(enabled, width)
   self.inSekai = enabled
 
