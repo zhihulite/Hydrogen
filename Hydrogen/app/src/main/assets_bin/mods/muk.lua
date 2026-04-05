@@ -53,7 +53,7 @@ layout_dir="layout/item_layout/"
 
 import "android.animation.ObjectAnimator"
 import "android.view.animation.*"
-local TransitionSet = luajava_bindClass "android.transition.TransitionSet"
+local TransitionSet = luajava_bindClass "androidx.transition.TransitionSet"
 
 function addAutoHideListener(recs,views)
   local appbar
