@@ -19,6 +19,7 @@ import "androidx.core.view.WindowInsetsCompat"
 
 --导入 MyViewPager
 MyViewPager = require "views/MyViewPager"
+MyLuaFileManager = require "mods.MyLuaFileManager"
 
 taskUI(function()
   local cookie = 获取Cookie("https://www.zhihu.com/")
@@ -31,6 +32,8 @@ activity.setContentView(loadlayout("layout/fragment"))
 --activity.window.setNavigationBarContrastEnforced(false)
 --edgeToedge(mainfLay,true)
 Protection=luajava.bindClass("androidx.core.view.insets.Protection")
+myLuaFileManager = MyLuaFileManager.new(fg)
+f1, f2 = myLuaFileManager:getContainerPair()
 inSekai=false
 if activity.getSharedData("平行世界")~="false" then
   local rootView = activity.getDecorView()
@@ -38,11 +41,7 @@ if activity.getSharedData("平行世界")~="false" then
     local width = rootView.width
     local height = rootView.height
     inSekai = width > dp2px(600, true)
-    if f1 then
-      local lp = f1.LayoutParams
-      lp.width = inSekai and width * 0.5 or width
-      f1.setLayoutParams(lp)
-    end
+    myLuaFileManager:setParallelMode(inSekai, width)
     return height, width
   end
   
@@ -54,19 +53,16 @@ if activity.getSharedData("平行世界")~="false" then
       end
     end
   }))
+else
+  myLuaFileManager:setParallelMode(false, activity.getDecorView().width)
 end
 
-f1.setId(View.generateViewId())
-f2.setId(View.generateViewId())
 fragmentManager = activity.getSupportFragmentManager()
 fragmentManager.beginTransaction()
 .add(f1.id,LuaFragment(loadlayout("layout/home")))
 .commit()
 
-f1.setTag("home")
-f1.setTag(R.id.tag_last_time,tonumber(os.time()))
-f2.setTag("empty")
-f2.setTag(R.id.tag_last_time,tonumber(os.time())-114514)
+myLuaFileManager:initDefaultTags()
 
 
 nav.setNavigationItemSelectedListener(NavigationView.OnNavigationItemSelectedListener{

@@ -53,6 +53,7 @@ layout_dir="layout/item_layout/"
 
 import "android.animation.ObjectAnimator"
 import "android.view.animation.*"
+local TransitionSet = luajava_bindClass "androidx.transition.TransitionSet"
 
 function addAutoHideListener(recs,views)
   local appbar
@@ -105,7 +106,9 @@ function MyLuaFileFragment(a,b,c)
       this.getLuaState().setGlobal("currentFragment")
 
       local ff = f2
-      if tonumber(f1.getTag(R.id.tag_last_time))>tonumber(f2.getTag(R.id.tag_last_time))
+      if myLuaFileManager then
+        ff = myLuaFileManager:selectTargetContainer("empty")
+      elseif tonumber(f1.getTag(R.id.tag_last_time))>tonumber(f2.getTag(R.id.tag_last_time))
         ff=f2
        else
         ff=f1
@@ -116,6 +119,34 @@ function MyLuaFileFragment(a,b,c)
   },a,b,c)
 end
 
+local function buildMixedTransition(isForward, axisTargetView, startView, endView, shapeModel)
+  local set = TransitionSet()
+  set.setOrdering(TransitionSet.ORDERING_TOGETHER)
+
+  local axis = MaterialSharedAxis(MaterialSharedAxis.Z, isForward)
+  if axisTargetView then
+    axis.addTarget(axisTargetView)
+  end
+
+  local container = MaterialContainerTransform(activity, isForward)
+  if startView then
+    container.setStartView(startView)
+  end
+  if endView then
+    container.setEndView(endView)
+    container.addTarget(endView)
+  end
+  if shapeModel then
+    container.setStartShapeAppearanceModel(shapeModel)
+  end
+  container.setPathMotion(MaterialArcMotion())
+  container.setScrimColor(0x99000000)
+
+  set.addTransition(container)
+  set.addTransition(axis)
+  return set
+end
+
 function 设置视图(t)
   if tostring(this.getSharedData("预见性返回手势"))=="false"
     this.getSupportFragmentManager().enablePredictiveBack(false)
@@ -123,6 +154,14 @@ function 设置视图(t)
 
   if thisFragment
     thisFragment.container.setBackgroundColor(0x99000000)
+    local thisCardContainer = thisFragment.container
+    local lastCardContainer = LastContainer
+    if myLuaFileManager then
+      thisCardContainer = myLuaFileManager:getCardContainerByFrame(thisFragment.container)
+      if not lastCardContainer then
+        lastCardContainer = thisCardContainer
+      end
+    end
     local lay = loadlayout(t)
     if lay.id == "mainLay" then
       lay.setBackgroundColor(0)
@@ -132,20 +171,11 @@ function 设置视图(t)
     end
     thisFragment.setContainerView(lay)
     if nOView~=nil
-      local backward=MaterialContainerTransform(activity,false)
-      .setStartView(thisFragment.container)
-      .setEndView(nOView)
-      .setPathMotion(MaterialArcMotion())
-      .setScrimColor(0x99000000)
-      .addTarget(nOView)
-      .setStartShapeAppearanceModel(OldWindowShape)
+      local backward=buildMixedTransition(false,lastCardContainer,thisCardContainer,nOView,OldWindowShape)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
       thisFragment.startPostponedEnterTransition()
      else
-      local backward = MaterialSharedAxis(MaterialSharedAxis.Z, false)
-      .addTarget(thisFragment.container)
-      .addTarget(thisFragment.container)
-      --.addTarget(ff)
+      local backward = buildMixedTransition(false,thisCardContainer,nil,thisCardContainer)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
       thisFragment.startPostponedEnterTransition()
     end
@@ -169,17 +199,22 @@ function newActivity(f,b,c)
   --t.remove(activity.getSupportFragmentManager().findFragmentByTag("answer"))
   --t.add(thisF.getId(),MyLuaFileFragment(srcLuaDir..f..".lua",b,{fn=fn,fg=fg,inSekai=inSekai,onBackCancelled=onBackCancelled,onBackStarted=onBackStarted,onBackInvoked=onBackInvoked,onBackProgressed=onBackProgressed}))
   --t.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
-  if tonumber(f1.getTag(R.id.tag_last_time))>tonumber(f2.getTag(R.id.tag_last_time))
-    ff=f2
+  if myLuaFileManager then
+    ff = myLuaFileManager:selectTargetContainer(f)
+    myLuaFileManager:markContainer(ff, f)
    else
-    ff=f1
+    if tonumber(f1.getTag(R.id.tag_last_time))>tonumber(f2.getTag(R.id.tag_last_time))
+      ff=f2
+     else
+      ff=f1
+    end
+    if f2.tag==f
+      ff=f2
+    end
+    if !inSekai then ff = f1 end
+    ff.tag=f
+    ff.setTag(R.id.tag_last_time,nt)
   end
-  if f2.tag==f
-    ff=f2
-  end
-  if !inSekai then ff = f1 end
-  ff.tag=f
-  ff.setTag(R.id.tag_last_time,nt)
   if nTView then
     --https://developer.android.google.cn/reference/android/view/RoundedCorner#POSITION_BOTTOM_LEFT
 
@@ -204,13 +239,21 @@ function newActivity(f,b,c)
         WindowShape.setBottomLeftCornerSize(0)
       end
     end
-    fragment=MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,nOView=nTView,OldWindowShape=WindowShape.build()} )
+    local lastCardContainer = nil
+    if myLuaFileManager then
+      lastCardContainer = myLuaFileManager:getCardContainerByView(nTView)
+    end
+    local ffCardContainer = ff
+    if myLuaFileManager then
+      ffCardContainer = myLuaFileManager:getCardContainerByFrame(ff)
+    end
+    if not lastCardContainer then
+      lastCardContainer = ffCardContainer
+    end
+    fragment=MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,nOView=nTView,OldWindowShape=WindowShape.build(),LastContainer=lastCardContainer} )
     fragment.postponeEnterTransition()
-    local forward=MaterialContainerTransform(activity,true)
-    .setStartView(nTView)
-    .setPathMotion(MaterialArcMotion())
-    .setEndShapeAppearanceModel(WindowShape.build())
-    .setScrimColor(0x99000000)
+    local forward=buildMixedTransition(true,lastCardContainer,nTView,ffCardContainer,nil)
+    local backward=buildMixedTransition(false,lastCardContainer,ffCardContainer,nTView,WindowShape.build())
     --.setAllContainerColors(转0x(backgroundc))
     --.setFadeMode(3)
     --backward = MaterialSharedAxis(MaterialSharedAxis.Z, false);
@@ -221,10 +264,14 @@ function newActivity(f,b,c)
     t.addSharedElement(nTView,"t")
     fragment.setSharedElementEnterTransition(forward).setSharedElementReturnTransition(backward).setEnterTransition(forward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
     t.add(ff.id,fragment)
-   else
+  else
     backward = MaterialSharedAxis(MaterialSharedAxis.Z, false);
     forward = MaterialSharedAxis(MaterialSharedAxis.Z, true);
-    local fragment = MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,})
+    local lastCardContainer = ff
+    if myLuaFileManager then
+      lastCardContainer = myLuaFileManager:getCardContainerByFrame(ff)
+    end
+    local fragment = MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,LastContainer=lastCardContainer})
     fragment.postponeEnterTransition()
     t.add(ff.id,fragment.setEnterTransition(forward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward))
 
