@@ -154,6 +154,10 @@ function 设置视图(t)
 
   if thisFragment
     thisFragment.container.setBackgroundColor(0x99000000)
+    local thisCardContainer = thisFragment.container
+    if myLuaFileManager then
+      thisCardContainer = myLuaFileManager:getCardContainerByFrame(thisFragment.container)
+    end
     local lay = loadlayout(t)
     if lay.id == "mainLay" then
       lay.setBackgroundColor(0)
@@ -163,11 +167,11 @@ function 设置视图(t)
     end
     thisFragment.setContainerView(lay)
     if nOView~=nil
-      local backward=buildMixedTransition(false,thisFragment.container,thisFragment.container,nOView,OldWindowShape)
+      local backward=buildMixedTransition(false,thisCardContainer,thisCardContainer,nOView,OldWindowShape)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
       thisFragment.startPostponedEnterTransition()
      else
-      local backward = buildMixedTransition(false,thisFragment.container,nil,thisFragment.container)
+      local backward = buildMixedTransition(false,thisCardContainer,nil,thisCardContainer)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
       thisFragment.startPostponedEnterTransition()
     end
@@ -233,8 +237,12 @@ function newActivity(f,b,c)
     end
     fragment=MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,nOView=nTView,OldWindowShape=WindowShape.build()} )
     fragment.postponeEnterTransition()
-    local forward=buildMixedTransition(true,ff,nTView,ff)
-    local backward=buildMixedTransition(false,ff,ff,nTView,WindowShape.build())
+    local ffCardContainer = ff
+    if myLuaFileManager then
+      ffCardContainer = myLuaFileManager:getCardContainerByFrame(ff)
+    end
+    local forward=buildMixedTransition(true,ffCardContainer,nTView,ffCardContainer)
+    local backward=buildMixedTransition(false,ffCardContainer,ffCardContainer,nTView,WindowShape.build())
     --.setAllContainerColors(转0x(backgroundc))
     --.setFadeMode(3)
     --backward = MaterialSharedAxis(MaterialSharedAxis.Z, false);

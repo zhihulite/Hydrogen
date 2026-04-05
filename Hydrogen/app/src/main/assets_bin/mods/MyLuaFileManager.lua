@@ -64,6 +64,15 @@ function MyLuaFileManager:getContainerPair()
   return self.containers[1].frame, self.containers[2].frame
 end
 
+function MyLuaFileManager:getCardContainerByFrame(frame)
+  for _, item in ipairs(self.containers) do
+    if item.frame == frame then
+      return item.card
+    end
+  end
+  return frame
+end
+
 function MyLuaFileManager:setParallelMode(enabled, width)
   self.inSekai = enabled
 
