@@ -85,13 +85,15 @@ function MyLuaFileManager:setParallelMode(enabled, width)
     secondCard.setLayoutParams(secondParams)
     firstCard.setVisibility(View.VISIBLE)
     secondCard.setVisibility(View.VISIBLE)
+    firstCard.bringToFront()
   else
     local overlayParams = FrameLayout.LayoutParams(-1, -1)
     overlayParams.gravity = Gravity.START
     firstCard.setLayoutParams(overlayParams)
     secondCard.setLayoutParams(FrameLayout.LayoutParams(-1, -1))
     firstCard.setVisibility(View.VISIBLE)
-    secondCard.setVisibility(View.VISIBLE)
+    secondCard.setVisibility(View.GONE)
+    firstCard.bringToFront()
   end
 end
 
