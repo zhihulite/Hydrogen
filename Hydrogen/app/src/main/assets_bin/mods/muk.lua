@@ -119,16 +119,13 @@ function MyLuaFileFragment(a,b,c)
   },a,b,c)
 end
 
-local function buildMixedTransition(isForward, axisTargetView, axisFallbackView, startView, endView, shapeModel)
+local function buildMixedTransition(isForward, axisTargetView, startView, endView, shapeModel)
   local set = TransitionSet()
   set.setOrdering(TransitionSet.ORDERING_TOGETHER)
 
   local axis = MaterialSharedAxis(MaterialSharedAxis.Z, isForward)
   if axisTargetView then
     axis.addTarget(axisTargetView)
-  end
-  if axisFallbackView and axisFallbackView ~= axisTargetView then
-    axis.addTarget(axisFallbackView)
   end
 
   local container = MaterialContainerTransform(activity, isForward)
@@ -174,11 +171,11 @@ function 设置视图(t)
     end
     thisFragment.setContainerView(lay)
     if nOView~=nil
-      local backward=buildMixedTransition(false,lastCardContainer,thisCardContainer,thisCardContainer,nOView,OldWindowShape)
+      local backward=buildMixedTransition(false,lastCardContainer,thisCardContainer,nOView,OldWindowShape)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
       thisFragment.startPostponedEnterTransition()
      else
-      local backward = buildMixedTransition(false,thisCardContainer,thisCardContainer,nil,thisCardContainer)
+      local backward = buildMixedTransition(false,thisCardContainer,nil,thisCardContainer)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
       thisFragment.startPostponedEnterTransition()
     end
@@ -255,8 +252,8 @@ function newActivity(f,b,c)
     end
     fragment=MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,nOView=nTView,OldWindowShape=WindowShape.build(),LastContainer=lastCardContainer} )
     fragment.postponeEnterTransition()
-    local forward=buildMixedTransition(true,lastCardContainer,ffCardContainer,nTView,ffCardContainer,nil)
-    local backward=buildMixedTransition(false,lastCardContainer,ffCardContainer,ffCardContainer,nTView,WindowShape.build())
+    local forward=buildMixedTransition(true,lastCardContainer,nTView,ffCardContainer,nil)
+    local backward=buildMixedTransition(false,lastCardContainer,ffCardContainer,nTView,WindowShape.build())
     --.setAllContainerColors(转0x(backgroundc))
     --.setFadeMode(3)
     --backward = MaterialSharedAxis(MaterialSharedAxis.Z, false);
