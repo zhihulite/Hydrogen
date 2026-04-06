@@ -3,10 +3,10 @@ package com.hydrogen;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.FrameLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -15,6 +15,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModel;
 import androidx.lifecycle.ViewModelProvider;
 import com.androlua.*;
+import com.google.android.material.card.MaterialCardView;
 import com.luajava.*;
 
 import java.io.File;
@@ -26,11 +27,13 @@ import java.util.Map;
 public class MyLuaFileFragment extends Fragment implements LuaGcable {
 
     public LuaState L;
-    public FrameLayout mContainer;
+    public MaterialCardView mContainer;
     public LuaTable mlayoutTable;
     private int mContainerId;
     private LuaActivity mLuaActivity;
     private String mLuaFilePath;
+    private String mFragmentType;
+    private String mFragmentId;
     private boolean mGc;
     private LuaApplication app;
     private final Object[] mArgs;
@@ -45,11 +48,12 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
         mLuaFilePath = luaFilePath;
         mGlobal = global;
         mArgs = (args != null) ? args : new Object[0];
-        mContainerId = R.id.fragment_container_view_tag;
-        
+        mContainerId = View.generateViewId();
+        mFragmentId = MyLuaFileManager.createFragmentId();
+        mFragmentType = luaFilePath;
     }
 
-    public FrameLayout getContainer() {
+    public MaterialCardView getContainer() {
         return mContainer;
     }
 
@@ -59,6 +63,21 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
 
     public void setContainerView(View v) {
         mContainer.addView(v);
+    }
+
+    public String getFragmentIdString() {
+        return mFragmentId;
+    }
+
+    public String getFragmentType() {
+        return mFragmentType;
+    }
+
+    public MyLuaFileFragment setFragmentType(String fragmentType) {
+        mFragmentType = fragmentType;
+        MyLuaFileManager.registerFragment(
+                mFragmentId, this, mContainer, mFragmentType, mContainerId, mLuaFilePath);
+        return this;
     }
 
     @Override
@@ -92,15 +111,22 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
         // 初始化一些变量
         mLuaActivity = (LuaActivity) getActivity();
         app = (LuaApplication) mLuaActivity.getApplication();
+        MyLuaFileManager.init(context);
         if (mLuaFilePath.charAt(0) != '/') mLuaFilePath = mLuaActivity.getLuaDir() + "/" + mLuaFilePath;
         runFunc("onAttach", context);
-        mContainer = new FrameLayout(mLuaActivity);
+        mContainer = new MaterialCardView(mLuaActivity);
         mContainer.setLayoutParams(
                 new ViewGroup.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
         mContainer.setId(mContainerId);
+        mContainer.setRadius(0f);
+        mContainer.setCardElevation(0f);
+        mContainer.setUseCompatPadding(false);
+        mContainer.setPreventCornerOverlap(false);
+        mContainer.setForegroundGravity(Gravity.FILL);
+        MyLuaFileManager.registerFragment(
+                mFragmentId, this, mContainer, mFragmentType, mContainerId, mLuaFilePath);
         mVM = new ViewModelProvider(this).get(MyFragmentViewmodel.class);
-        
     }
 
     @Override
@@ -179,6 +205,7 @@ public class MyLuaFileFragment extends Fragment implements LuaGcable {
         super.onDestroy();
         // 当 Fragment 被销毁时调用
         runFunc("onDestroy");
+        MyLuaFileManager.unregisterFragment(mFragmentId);
         gc();
     }
 

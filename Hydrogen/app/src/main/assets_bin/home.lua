@@ -43,6 +43,9 @@ if activity.getSharedData("平行世界")~="false" then
       lp.width = inSekai and width * 0.5 or width
       f1.setLayoutParams(lp)
     end
+    if 更新并排重叠圆角 then
+      更新并排重叠圆角()
+    end
     return height, width
   end
   
@@ -887,6 +890,21 @@ end)
 
 
 local MyLuaFileFragment=luajava.bindClass("com.hydrogen.MyLuaFileFragment")
+local MyLuaFileManager=luajava.bindClass("com.hydrogen.MyLuaFileManager")
+
+function 获取LuaFragment记录(fragmentId)
+  if not fragmentId then
+    return nil
+  end
+  return {
+    id=fragmentId,
+    type=MyLuaFileManager.getType(fragmentId),
+    containerId=MyLuaFileManager.getContainerId(fragmentId),
+    luaPath=MyLuaFileManager.getLuaPath(fragmentId),
+    container=MyLuaFileManager.getContainer(fragmentId),
+    fragment=MyLuaFileManager.getFragment(fragmentId),
+  }
+end
 
 function onKeyDown(code,event)
   if this.getSharedData("音量键选择tab")~="true" then

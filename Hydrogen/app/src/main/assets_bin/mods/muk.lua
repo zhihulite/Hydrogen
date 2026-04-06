@@ -26,6 +26,8 @@ local xpcall = xpcall
 local luajava_bindClass = luajava.bindClass
 local luajava_override = luajava.override
 local luajava_astable = luajava.astable
+local MyLuaFileManager = luajava_bindClass("com.hydrogen.MyLuaFileManager")
+local TransitionSet = luajava_bindClass("androidx.transition.TransitionSet")
 
 initApp=true
 useCustomAppToolbar=true
@@ -132,13 +134,19 @@ function 设置视图(t)
     end
     thisFragment.setContainerView(lay)
     if nOView~=nil
-      local backward=MaterialContainerTransform(activity,false)
+      local containerBackward=MaterialContainerTransform(activity,false)
       .setStartView(thisFragment.container)
       .setEndView(nOView)
       .setPathMotion(MaterialArcMotion())
       .setScrimColor(0x99000000)
       .addTarget(nOView)
       .setStartShapeAppearanceModel(OldWindowShape)
+      local axisBackward = MaterialSharedAxis(MaterialSharedAxis.Z, false)
+      .addTarget(thisFragment.container)
+      local backward = TransitionSet()
+      .setOrdering(TransitionSet.ORDERING_TOGETHER)
+      .addTransition(containerBackward)
+      .addTransition(axisBackward)
       thisFragment.setSharedElementReturnTransition(backward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward)
       thisFragment.startPostponedEnterTransition()
      else
@@ -204,13 +212,28 @@ function newActivity(f,b,c)
         WindowShape.setBottomLeftCornerSize(0)
       end
     end
-    fragment=MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,nOView=nTView,OldWindowShape=WindowShape.build()} )
+    fragment=MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,nOView=nTView,OldWindowShape=WindowShape.build()} ).setFragmentType(f)
+    ff.setTag(R.id.fragment_container,fragment.getFragmentIdString())
     fragment.postponeEnterTransition()
-    local forward=MaterialContainerTransform(activity,true)
+    local containerForward=MaterialContainerTransform(activity,true)
     .setStartView(nTView)
     .setPathMotion(MaterialArcMotion())
     .setEndShapeAppearanceModel(WindowShape.build())
     .setScrimColor(0x99000000)
+    local containerBackward=MaterialContainerTransform(activity,false)
+    .setEndView(nTView)
+    .setPathMotion(MaterialArcMotion())
+    .setScrimColor(0x99000000)
+    local axisForward = MaterialSharedAxis(MaterialSharedAxis.Z, true).addTarget(ff)
+    local axisBackward = MaterialSharedAxis(MaterialSharedAxis.Z, false).addTarget(ff)
+    local forward = TransitionSet()
+    .setOrdering(TransitionSet.ORDERING_TOGETHER)
+    .addTransition(containerForward)
+    .addTransition(axisForward)
+    local backward = TransitionSet()
+    .setOrdering(TransitionSet.ORDERING_TOGETHER)
+    .addTransition(containerBackward)
+    .addTransition(axisBackward)
     --.setAllContainerColors(转0x(backgroundc))
     --.setFadeMode(3)
     --backward = MaterialSharedAxis(MaterialSharedAxis.Z, false);
@@ -224,15 +247,85 @@ function newActivity(f,b,c)
    else
     backward = MaterialSharedAxis(MaterialSharedAxis.Z, false);
     forward = MaterialSharedAxis(MaterialSharedAxis.Z, true);
-    local fragment = MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,})
+    local fragment = MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,}).setFragmentType(f)
+    ff.setTag(R.id.fragment_container,fragment.getFragmentIdString())
     fragment.postponeEnterTransition()
     t.add(ff.id,fragment.setEnterTransition(forward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward))
 
   end
   t.addToBackStack(nil)
   t.commit()
+  task(20,function()
+    if 更新并排重叠圆角 then
+      更新并排重叠圆角()
+    end
+  end)
   --print(activity.findViewById(fragment.getContainerId()))
   nTView=nil
+end
+
+function 更新并排重叠圆角()
+  local topLeft, topRight, bottomRight, bottomLeft = 0, 0, 0, 0
+  pcall(function()
+    local insets = window.getDecorView().getRootWindowInsets()
+    if not insets then
+      return
+    end
+    topLeft = insets.getRoundedCorner(0).getRadius()
+    topRight = insets.getRoundedCorner(1).getRadius()
+    bottomRight = insets.getRoundedCorner(2).getRadius()
+    bottomLeft = insets.getRoundedCorner(3).getRadius()
+  end)
+
+  if topLeft == 0 and topRight == 0 and bottomRight == 0 and bottomLeft == 0 then
+    topLeft = tonumber(dp2px(16, true))
+    topRight = tonumber(dp2px(16, true))
+    bottomRight = tonumber(dp2px(16, true))
+    bottomLeft = tonumber(dp2px(16, true))
+  end
+
+  local leftId = f1 and f1.getTag(R.id.fragment_container)
+  local rightId = f2 and f2.getTag(R.id.fragment_container)
+
+  if inSekai then
+    if leftId then
+      MyLuaFileManager.updateContainerCornerRadii(
+      tostring(leftId),
+      topLeft,
+      0,
+      0,
+      bottomLeft
+      )
+    end
+    if rightId then
+      MyLuaFileManager.updateContainerCornerRadii(
+      tostring(rightId),
+      0,
+      topRight,
+      bottomRight,
+      0
+      )
+    end
+   else
+    if leftId then
+      MyLuaFileManager.updateContainerCornerRadii(
+      tostring(leftId),
+      topLeft,
+      topRight,
+      bottomRight,
+      bottomLeft
+      )
+    end
+    if rightId then
+      MyLuaFileManager.updateContainerCornerRadii(
+      tostring(rightId),
+      topLeft,
+      topRight,
+      bottomRight,
+      bottomLeft
+      )
+    end
+  end
 end
 
 --inSekai=true
