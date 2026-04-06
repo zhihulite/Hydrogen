@@ -244,23 +244,65 @@ function newActivity(f,b,c)
 end
 
 function 更新并排重叠圆角()
-  local radius = tonumber(dp2px(16, true))
+  local topLeft, topRight, bottomRight, bottomLeft = 0, 0, 0, 0
+  pcall(function()
+    local insets = window.getDecorView().getRootWindowInsets()
+    if not insets then
+      return
+    end
+    topLeft = insets.getRoundedCorner(0).getRadius()
+    topRight = insets.getRoundedCorner(1).getRadius()
+    bottomRight = insets.getRoundedCorner(2).getRadius()
+    bottomLeft = insets.getRoundedCorner(3).getRadius()
+  end)
+
+  if topLeft == 0 and topRight == 0 and bottomRight == 0 and bottomLeft == 0 then
+    topLeft = tonumber(dp2px(16, true))
+    topRight = tonumber(dp2px(16, true))
+    bottomRight = tonumber(dp2px(16, true))
+    bottomLeft = tonumber(dp2px(16, true))
+  end
+
   local leftId = f1 and f1.getTag(R.id.fragment_container)
   local rightId = f2 and f2.getTag(R.id.fragment_container)
 
   if inSekai then
     if leftId then
-      MyLuaFileManager.updateContainerCornerRadii(tostring(leftId), radius, 0, 0, radius)
+      MyLuaFileManager.updateContainerCornerRadii(
+      tostring(leftId),
+      topLeft,
+      0,
+      0,
+      bottomLeft
+      )
     end
     if rightId then
-      MyLuaFileManager.updateContainerCornerRadii(tostring(rightId), 0, radius, radius, 0)
+      MyLuaFileManager.updateContainerCornerRadii(
+      tostring(rightId),
+      0,
+      topRight,
+      bottomRight,
+      0
+      )
     end
    else
     if leftId then
-      MyLuaFileManager.updateContainerCornerRadii(tostring(leftId), radius, radius, radius, radius)
+      MyLuaFileManager.updateContainerCornerRadii(
+      tostring(leftId),
+      topLeft,
+      topRight,
+      bottomRight,
+      bottomLeft
+      )
     end
     if rightId then
-      MyLuaFileManager.updateContainerCornerRadii(tostring(rightId), radius, radius, radius, radius)
+      MyLuaFileManager.updateContainerCornerRadii(
+      tostring(rightId),
+      topLeft,
+      topRight,
+      bottomRight,
+      bottomLeft
+      )
     end
   end
 end
