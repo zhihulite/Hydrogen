@@ -43,6 +43,9 @@ if activity.getSharedData("平行世界")~="false" then
       lp.width = inSekai and width * 0.5 or width
       f1.setLayoutParams(lp)
     end
+    if 更新并排重叠圆角 then
+      更新并排重叠圆角()
+    end
     return height, width
   end
   

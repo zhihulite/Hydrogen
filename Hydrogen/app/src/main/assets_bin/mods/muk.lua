@@ -26,6 +26,7 @@ local xpcall = xpcall
 local luajava_bindClass = luajava.bindClass
 local luajava_override = luajava.override
 local luajava_astable = luajava.astable
+local MyLuaFileManager = luajava_bindClass("com.hydrogen.MyLuaFileManager")
 
 initApp=true
 useCustomAppToolbar=true
@@ -233,8 +234,35 @@ function newActivity(f,b,c)
   end
   t.addToBackStack(nil)
   t.commit()
+  task(20,function()
+    if 更新并排重叠圆角 then
+      更新并排重叠圆角()
+    end
+  end)
   --print(activity.findViewById(fragment.getContainerId()))
   nTView=nil
+end
+
+function 更新并排重叠圆角()
+  local radius = tonumber(dp2px(16, true))
+  local leftId = f1 and f1.getTag(R.id.fragment_container)
+  local rightId = f2 and f2.getTag(R.id.fragment_container)
+
+  if inSekai then
+    if leftId then
+      MyLuaFileManager.updateContainerCornerRadii(tostring(leftId), radius, 0, 0, radius)
+    end
+    if rightId then
+      MyLuaFileManager.updateContainerCornerRadii(tostring(rightId), 0, radius, radius, 0)
+    end
+   else
+    if leftId then
+      MyLuaFileManager.updateContainerCornerRadii(tostring(leftId), radius, radius, radius, radius)
+    end
+    if rightId then
+      MyLuaFileManager.updateContainerCornerRadii(tostring(rightId), radius, radius, radius, radius)
+    end
+  end
 end
 
 --inSekai=true

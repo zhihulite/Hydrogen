@@ -8,6 +8,7 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import com.google.android.material.card.MaterialCardView;
+import com.google.android.material.shape.ShapeAppearanceModel;
 
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -125,6 +126,27 @@ public final class MyLuaFileManager {
             return sp.getString(KEY_LUA_PATH_PREFIX + fragmentId, null);
         }
         return null;
+    }
+
+    public static void updateContainerCornerRadii(
+            String fragmentId,
+            float topLeft,
+            float topRight,
+            float bottomRight,
+            float bottomLeft
+    ) {
+        MaterialCardView container = getContainer(fragmentId);
+        if (container == null) {
+            return;
+        }
+        ShapeAppearanceModel currentModel = container.getShapeAppearanceModel();
+        ShapeAppearanceModel newModel = currentModel.toBuilder()
+                .setTopLeftCornerSize(topLeft)
+                .setTopRightCornerSize(topRight)
+                .setBottomRightCornerSize(bottomRight)
+                .setBottomLeftCornerSize(bottomLeft)
+                .build();
+        container.setShapeAppearanceModel(newModel);
     }
 
     public static final class FragmentRecord {
