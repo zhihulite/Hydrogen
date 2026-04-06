@@ -204,7 +204,8 @@ function newActivity(f,b,c)
         WindowShape.setBottomLeftCornerSize(0)
       end
     end
-    fragment=MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,nOView=nTView,OldWindowShape=WindowShape.build()} )
+    fragment=MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,nOView=nTView,OldWindowShape=WindowShape.build()} ).setFragmentType(f)
+    ff.setTag(R.id.fragment_container,fragment.getFragmentIdString())
     fragment.postponeEnterTransition()
     local forward=MaterialContainerTransform(activity,true)
     .setStartView(nTView)
@@ -224,7 +225,8 @@ function newActivity(f,b,c)
    else
     backward = MaterialSharedAxis(MaterialSharedAxis.Z, false);
     forward = MaterialSharedAxis(MaterialSharedAxis.Z, true);
-    local fragment = MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,})
+    local fragment = MyLuaFileFragment(srcLuaDir..f..".lua",b,{f1=f1,f2=f2,inSekai=inSekai,ff=ff,}).setFragmentType(f)
+    ff.setTag(R.id.fragment_container,fragment.getFragmentIdString())
     fragment.postponeEnterTransition()
     t.add(ff.id,fragment.setEnterTransition(forward).setReenterTransition(backward).setExitTransition(backward).setReturnTransition(backward))
 
