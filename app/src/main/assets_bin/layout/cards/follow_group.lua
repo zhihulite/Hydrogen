@@ -1,0 +1,105 @@
+-- layout/cards/follow_group.lua
+-- 关注流分组卡片（可展开/收起）
+
+import "androidx.appcompat.widget.LinearLayoutCompat"
+import "com.google.android.material.card.MaterialCardView"
+import "com.google.android.material.textview.MaterialTextView"
+import "androidx.appcompat.widget.AppCompatImageView"
+import "com.google.android.material.imageview.ShapeableImageView"
+import "com.google.android.material.shape.ShapeAppearanceModel"
+import "com.google.android.material.shape.RelativeCornerSize"
+import "androidx.recyclerview.widget.RecyclerView"
+import "android.view.View"
+
+local colors = AppTheme.getColors()
+
+local circleShape = ShapeAppearanceModel.builder()
+.setAllCornerSizes(RelativeCornerSize(0.5))
+.build()
+
+return {
+  LinearLayoutCompat,
+  layout_width = "match_parent",
+  layout_height = "wrap_content",
+  {
+    MaterialCardView,
+    id = "card",
+    layout_margin = "8dp",
+    layout_marginLeft = "16dp",
+    layout_marginRight = "16dp",
+    layout_width = "match_parent",
+    layout_height = "wrap_content",
+    clickable = true,
+    {
+      LinearLayoutCompat,
+      layout_width = "match_parent",
+      orientation = "vertical",
+      padding = "12dp",
+      {
+        LinearLayoutCompat,
+        orientation = "horizontal",
+        layout_width = "match_parent",
+        gravity = "center_vertical",
+        {
+          ShapeableImageView,
+          id = "avatar",
+          layout_width = "28dp",
+          layout_height = "28dp",
+          shapeAppearanceModel = circleShape,
+        },
+        {
+          MaterialTextView,
+          id = "action_text",
+          layout_marginLeft = "10dp",
+          layout_weight = 1,
+          textSize = AppTextStyle.caption.size,
+          textColor = AppTextStyle.caption.color,
+          typeface = AppTextStyle.caption.font,
+          maxLines = 1,
+          ellipsize = "end",
+          layout_gravity = "center",
+        }
+      },
+      {
+        LinearLayoutCompat,
+        id = "sub_container",
+        orientation = "vertical",
+        layout_width = "match_parent",
+        layout_marginTop = "8dp",
+        visibility = View.GONE,
+        {
+          RecyclerView,
+          id = "sub_list",
+          layout_width = "match_parent",
+          layout_height = "wrap_content",
+          nestedScrollingEnabled = false,
+        }
+      },
+      {
+        LinearLayoutCompat,
+        id = "expand_btn_layout",
+        orientation = "horizontal",
+        layout_width = "match_parent",
+        layout_marginTop = "8dp",
+        gravity = "center",
+        visibility = View.VISIBLE,
+        {
+          MaterialTextView,
+          id = "expand_text",
+          text = "展开",
+          textSize = AppTextStyle.label.size,
+          textColor = AppTextStyle.label.color,
+          typeface = AppTextStyle.label.font,
+        },
+        {
+          AppCompatImageView,
+          id = "expand_icon",
+          layout_width = "20dp",
+          layout_height = "20dp",
+          layout_marginLeft = "4dp",
+          colorFilter = colors.onSurfaceVariant,
+        },
+      }
+    }
+  }
+}

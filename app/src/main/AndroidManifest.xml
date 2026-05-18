@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest
+        xmlns:tools="http://schemas.android.com/tools"
+        xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 查看 WLAN 状态 -->
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+
+    <!-- 查看网络连接 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- 完全的网络访问权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- 请求安装文件包 -->
+    <uses-permission
+            android:name="android.permission.REQUEST_INSTALL_PACKAGES"
+            tools:ignore="ProtectedPermissions" />
+
+    <!-- 修改或删除 SD 卡中的内容 -->
+    <uses-permission
+            android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+            tools:ignore="ScopedStorage" />
+
+    <!-- 读取存储卡中的内容 -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <!-- 安卓10.0以上 读取存储卡中的内容 -->
+    <uses-permission
+            android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+            tools:ignore="ScopedStorage" />
+
+
+    <application
+            android:name="com.androlua.LuaApplication"
+            android:resizeableActivity="true"
+            android:supportsPictureInPicture="true"
+            android:icon="@mipmap/ic_launcher"
+            android:label="@string/app_name"
+            android:usesCleartextTraffic="true"
+            android:enableOnBackInvokedCallback="true"
+            android:requestLegacyExternalStorage="true"
+            android:theme="@style/Theme.Default"
+            tools:targetApi="33">
+
+        <uses-library
+                android:name="org.apache.http.legacy"
+                android:required="false" />
+
+        <meta-data
+                android:name="android.supports_size_changes"
+                android:value="true" />
+
+        <meta-data
+                android:name="android.max_aspect"
+                android:value="4" />
+
+        <activity
+                android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+                android:launchMode="singleTask"
+                android:resizeableActivity="true"
+                android:windowSoftInputMode="adjustResize|stateHidden"
+                android:name="com.hydrogen.MainActivity"
+                android:exported="true"
+                android:theme="@style/Theme.Splash">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+
+            <intent-filter>
+                <action
+                        android:name="android.intent.action.VIEW" />
+                <action
+                        android:name="android.intent.action.EDIT" />
+                <category
+                        android:name="android.intent.category.DEFAULT" />
+                <category
+                        android:name="android.intent.category.BROWSABLE" />
+                <data
+                        android:scheme="zhihu"
+                        android:host="*" />
+            </intent-filter>
+
+            <intent-filter android:autoVerify="false">
+                <action
+                        android:name="android.intent.action.VIEW" />
+                <action
+                        android:name="android.intent.action.EDIT" />
+                <category
+                        android:name="android.intent.category.DEFAULT" />
+                <category
+                        android:name="android.intent.category.BROWSABLE" />
+                <data
+                        android:scheme="https"
+                        android:host="zhihu.com" />
+            </intent-filter>
+
+            <intent-filter android:autoVerify="false">
+                <action
+                        android:name="android.intent.action.VIEW" />
+                <action
+                        android:name="android.intent.action.EDIT" />
+                <category
+                        android:name="android.intent.category.DEFAULT" />
+                <category
+                        android:name="android.intent.category.BROWSABLE" />
+                <data
+                        android:scheme="https"
+                        android:host="*.zhihu.com" />
+            </intent-filter>
+
+        </activity>
+
+        <activity
+                android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|uiMode"
+                android:windowSoftInputMode="adjustResize|stateHidden"
+                android:exported="true"
+                android:name="com.hydrogen.LuaActivity" />
+
+        <activity
+                android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|uiMode"
+                android:documentLaunchMode="intoExisting"
+                android:windowSoftInputMode="adjustResize|stateHidden"
+                android:excludeFromRecents="false"
+                android:exported="true"
+                android:name="com.hydrogen.LuaActivityX" />
+
+        <activity
+                android:configChanges="mcc|mnc|locale|touchscreen|keyboard|navigation|screenLayout|fontScale|smallestScreenSize|keyboardHidden|orientation|screenSize|uiMode"
+                android:windowSoftInputMode="adjustResize|stateHidden"
+                android:exported="true"
+                android:name="com.hydrogen.Welcome"
+                android:theme="@style/Theme.Welcome" />
+
+        <activity
+                android:name="com.hydrogen.RunActivity"
+                android:exported="true"
+                android:launchMode="singleTask"
+                android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize"
+                android:windowSoftInputMode="adjustResize|stateHidden" />
+
+        <provider
+                android:name="androidx.core.content.FileProvider"
+                android:authorities="${applicationId}.FileProvider"
+                android:grantUriPermissions="true"
+                android:exported="false">
+            <meta-data
+                    android:name="android.support.FILE_PROVIDER_PATHS"
+                    android:resource="@xml/file_paths" />
+        </provider>
+
+
+    </application>
+
+</manifest>

@@ -1,0 +1,66 @@
+-- layout/cards/underline.lua
+-- 用户划线内容卡片
+
+import "androidx.appcompat.widget.LinearLayoutCompat"
+import "com.google.android.material.card.MaterialCardView"
+import "com.google.android.material.textview.MaterialTextView"
+import "com.google.android.material.divider.MaterialDivider"
+
+local colors = AppTheme.getColors()
+
+return {
+  LinearLayoutCompat,
+  layout_width = "fill",
+  layout_height = "wrap",
+  {
+    MaterialCardView,
+    id = "card",
+    layout_width = "fill",
+    layout_height = "wrap",
+    layout_marginLeft = "16dp",
+    layout_marginRight = "16dp",
+    layout_marginTop = "4dp",
+    layout_marginBottom = "4dp",
+    cardBackgroundColor = colors.surface,
+    strokeColor = colors.outline,
+    clickable = true,
+    {
+      LinearLayoutCompat,
+      orientation = "vertical",
+      padding = "16dp",
+      {
+        MaterialTextView,
+        id = "content",
+        textSize  = AppTextStyle.body.size,
+        textColor = AppTextStyle.body.color,
+        typeface  = AppTextStyle.body.font,
+        maxLines  = 5,
+        ellipsize = "end",
+      },
+      {
+        MaterialDivider,
+        layout_width = "match_parent",
+        layout_height = "wrap_content",
+        layout_marginTop = "8dp",
+      },
+      {
+        MaterialTextView,
+        id = "source_title",
+        textSize  = AppTextStyle.caption.size,
+        textColor = AppTextStyle.caption.color,
+        typeface  = AppTextStyle.caption.font,
+        layout_marginTop = "8dp",
+        maxLines  = 1,
+        ellipsize = "end",
+      },
+      {
+        MaterialTextView,
+        id = "bottom_text",
+        textSize  = AppTextStyle.caption.size,
+        textColor = AppTextStyle.caption.color,
+        typeface  = AppTextStyle.caption.font,
+        layout_marginTop = "4dp",
+      }
+    }
+  }
+}

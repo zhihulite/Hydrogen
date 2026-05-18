@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hydrogen</string>
+    <string name="settings">设置</string>
+    <string name="exit_toast">再按一次退出程序</string>
+    <string name="Hydrogen_data">Hydrogen的数据</string>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!--增加启动图-->
+    <style name="Theme.Welcome" parent="Theme.Default" />
+
+    <!--splash-->
+    <style name="Theme.Splash" parent="Theme.SplashScreen">
+    <item name="windowSplashScreenAnimatedIcon">@xml/avd</item>
+    <item name="windowSplashScreenAnimationDuration">400</item>
+   
+        <item name="postSplashScreenTheme">@style/Theme.Default</item>
+    </style>
+    
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hydrogen</string>
+    <string name="settings">Settings</string>
+    <string name="exit_toast">Press again to exit the program.</string>
+    <string name="Hydrogen_data">Data on Hydrogen</string>
+</resources>

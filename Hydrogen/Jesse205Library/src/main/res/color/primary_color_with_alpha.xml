@@ -1,5 +1,0 @@
-<!-- res/color/primary_color_with_alpha.xml -->
-<selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="@color/md_theme_monet_primary" 
-          android:alpha="0.5" /> 
-</selector>

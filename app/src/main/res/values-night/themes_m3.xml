@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="AppTheme" parent="Theme.Material3Expressive.Dark.NoActionBar">
+        <item name="android:navigationBarColor">?colorSurface</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+        <item name="android:statusBarColor">?colorSurface</item>
+    </style>
+
+    <style name="Theme.Default" parent="AppTheme.Blue"/>
+    <style name="Theme.Monet" parent="AppTheme.Monet"/>
+    <style name="Theme.Red" parent="AppTheme.Red"/>
+    <style name="Theme.Teal" parent="AppTheme.Teal"/>
+    <style name="Theme.Orange" parent="AppTheme.Orange"/>
+    <style name="Theme.Pink" parent="AppTheme.Pink"/>
+</resources>

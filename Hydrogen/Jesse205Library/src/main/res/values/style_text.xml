@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="TextAppearance.Jesse205.Widget.PopupMenu.Header" parent="TextAppearance.AppCompat.Widget.PopupMenu.Header">
-        <item name="android:textColor">?colorAccent</item>
-    </style>
-</resources>

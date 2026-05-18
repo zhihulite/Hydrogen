@@ -22,7 +22,6 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          cd Hydrogen
           chmod +x gradlew
           ./gradlew app:assembleRelease
 
@@ -31,5 +30,5 @@ jobs:
         with:
           name: release-apk
           path: |
-            Hydrogen/app/build/outputs/apk/release/*.apk
-            Hydrogen/app/build/outputs/mapping/release/mapping.txt
+            app/build/outputs/apk/release/*.apk
+            app/build/outputs/mapping/release/mapping.txt

@@ -1,0 +1,50 @@
+<resources>
+    <style name="AppTheme.Blue" parent="AppTheme">
+        <item name="colorPrimary">#BAC3FF</item>
+        <item name="colorOnPrimary">#08218A</item>
+        <item name="colorPrimaryContainer">#3F51B5</item>
+        <item name="colorOnPrimaryContainer">#CACFFF</item>
+        <item name="colorSecondary">#BEC4F2</item>
+        <item name="colorOnSecondary">#272E53</item>
+        <item name="colorSecondaryContainer">#3E446B</item>
+        <item name="colorOnSecondaryContainer">#ADB2DF</item>
+        <item name="colorTertiary">#FFA9FD</item>
+        <item name="colorOnTertiary">#58055F</item>
+        <item name="colorTertiaryContainer">#893A8D</item>
+        <item name="colorOnTertiaryContainer">#FFBDFB</item>
+        <item name="colorError">#FFB4AB</item>
+        <item name="colorOnError">#690005</item>
+        <item name="colorErrorContainer">#93000A</item>
+        <item name="colorOnErrorContainer">#FFDAD6</item>
+        <item name="android:colorBackground">#121319</item>
+        <item name="colorOnBackground">#E3E1EA</item>
+        <item name="colorSurface">#121319</item>
+        <item name="colorOnSurface">#E3E1EA</item>
+        <item name="colorSurfaceVariant">#454652</item>
+        <item name="colorOnSurfaceVariant">#C5C5D4</item>
+        <item name="colorOutline">#8F909E</item>
+        <item name="colorOutlineVariant">#454652</item>
+        <item name="colorSurfaceInverse">#E3E1EA</item>
+        <item name="colorOnSurfaceInverse">#2F3037</item>
+        <item name="colorPrimaryInverse">#4355B9</item>
+        <item name="colorPrimaryFixed">#DEE0FF</item>
+        <item name="colorOnPrimaryFixed">#00105C</item>
+        <item name="colorPrimaryFixedDim">#BAC3FF</item>
+        <item name="colorOnPrimaryFixedVariant">#293CA0</item>
+        <item name="colorSecondaryFixed">#DEE0FF</item>
+        <item name="colorOnSecondaryFixed">#12183D</item>
+        <item name="colorSecondaryFixedDim">#BEC4F2</item>
+        <item name="colorOnSecondaryFixedVariant">#3E446B</item>
+        <item name="colorTertiaryFixed">#FFD6FA</item>
+        <item name="colorOnTertiaryFixed">#37003C</item>
+        <item name="colorTertiaryFixedDim">#FFA9FD</item>
+        <item name="colorOnTertiaryFixedVariant">#722578</item>
+        <item name="colorSurfaceDim">#121319</item>
+        <item name="colorSurfaceBright">#383940</item>
+        <item name="colorSurfaceContainerLowest">#0D0E14</item>
+        <item name="colorSurfaceContainerLow">#1A1B22</item>
+        <item name="colorSurfaceContainer">#1F1F26</item>
+        <item name="colorSurfaceContainerHigh">#292930</item>
+        <item name="colorSurfaceContainerHighest">#34343B</item>
+    </style>
+</resources>
