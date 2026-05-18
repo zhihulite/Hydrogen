@@ -119,6 +119,9 @@ function MainActivity:onCreate(params)
   if Extensions.Config.getBool(Constants.SharedDataKeys.AUTO_CHECK_UPDATE) then
     AppInfo.showUpdateDialog(false)
   end
+  if Extensions.Config.getBool(Constants.SharedDataKeys.PREDICTIVE_BACK) == false then
+    activity.getSupportFragmentManager().enablePredictiveBack(false)
+  end
 end
 
 import "androidx.core.view.ViewCompat"

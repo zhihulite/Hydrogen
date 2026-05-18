@@ -31,12 +31,12 @@ _G.Services.Permission.init()
 _G.Helpers.BottomDialog = helpers.bottom_dialog
 
 _G.json = require("json")
-_G.Constants = require("core/constants")
-_G.AppTheme = require("core/app_theme")
+_G.Constants = require("core.constants")
+_G.AppTheme = require("core.app_theme")
 _G.NetWork = services.api.client
 -- 初始化
 _G.AppTheme.init()
-_G.AppInfo = require("core/app_info")
+_G.AppInfo = require("core.app_info")
 _G.HistoryService = require("services.cache.history")
 
 --常用函数
@@ -222,9 +222,5 @@ _G.AppTextStyle = {
     color = colors.onSurfaceVariant
   }
 }
-
-if Extensions.Config.getBool(Constants.SharedDataKeys.PREDICTIVE_BACK) == false then
-  activity.getSupportFragmentManager().enablePredictiveBack(false)
-end
 
 return M

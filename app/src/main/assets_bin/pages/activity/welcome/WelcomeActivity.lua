@@ -8,8 +8,6 @@ import "com.google.android.material.card.MaterialCardView"
 import "com.google.android.material.checkbox.MaterialCheckBox"
 
 local BaseActivity = require("pages.base.BaseActivity")
-local layout = Layouts.init
-local AppTheme = require("core.app_theme")
 
 local WelcomeActivity = Extensions.Class(BaseActivity)
 WelcomeActivity:chainUp("onDestroy")

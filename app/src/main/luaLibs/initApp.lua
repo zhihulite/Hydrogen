@@ -5,6 +5,8 @@ if _G.INIT_APP_PATCHED then
   return
 end
 
+-- 标记已初始化，防止重复加载
+_G.INIT_APP_PATCHED = true
 
 local function detectEnvironment()
   local isAndroLua = pcall(function() luajava.bindClass("com.luajava.LuaJavaAPI") end)
@@ -109,6 +111,19 @@ if activity then
   local MaterialAlertDialogBuilder = luajava.bindClass("com.google.android.material.dialog.MaterialAlertDialogBuilder")
   local androidR = luajava.bindClass("android.R")
   local message_id = androidR.id.message
+
+  local function alert(title, msg)
+    title = title or "提示"
+    activity.runOnUiThread(function()
+      local dialog = MaterialAlertDialogBuilder(activity)
+      .setTitle(title)
+      .setMessage(tostring(msg))
+      .setPositiveButton("确定", nil)
+      .show()
+      dialog.window.findViewById(message_id).setTextIsSelectable(true)
+    end)
+  end
+
   -- 禁用默认 Toast 行为
   activity.setDebug(false)
   _G.print = function(...)
@@ -119,16 +134,7 @@ if activity then
       table.insert(buf, tostring(select(i, ...)))
     end
     local msg = table.concat(buf, "\t\t")
-
-    activity.runOnUiThread(function()
-      local dialog = MaterialAlertDialogBuilder(activity)
-      .setTitle("Print")
-      .setMessage(msg)
-      .setPositiveButton("确定", nil)
-      .show()
-      dialog.window.findViewById(message_id).setTextIsSelectable(true)
-    end)
-
+    alert("Print", msg)
   end
 
   local crashDir = activity.getExternalFilesDir(nil).getAbsolutePath() .. "/crash"
@@ -142,14 +148,11 @@ if activity then
   _G.onError = function(title, message)
     local content = tostring(title) .. os.date(" %Y-%m-%d %H:%M:%S") .. "\n" .. tostring(message) .. "\n\n"
     io.open(path, "a"):write(content):close()
-    print(title,message)
+    alert(title, message)
     return true
   end
 
 end
-
--- 标记已初始化，防止重复加载
-_G.INIT_APP_PATCHED = true
 
 -- 加载核心初始化模块
 require("core/init")

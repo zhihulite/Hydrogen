@@ -94,17 +94,16 @@ end
 
 local function calcImageSize(w, h)
   if not w or not h or w <= 0 or h <= 0 then return 0, 0 end
-  local ratio = w / h
-  local isSquare = math.abs(ratio - 1.0) < 0.05 -- 比例在0.95~1.05之间视为正方形
-  if ratio < 0.67 then
-    -- 长图（竖长）：100x200
+
+  if h > w then
+    -- 竖图（高度大于宽度）
     return dp2px(100), dp2px(200)
-   elseif isSquare then
-    -- 正方形：200x200
-    return dp2px(200), dp2px(200)
-   else
-    -- 其他长方形（横图比例）：200x100
+   elseif w > h then
+    -- 横图（宽度大于高度）
     return dp2px(200), dp2px(100)
+   else
+    -- 正方形（宽高相等）
+    return dp2px(200), dp2px(200)
   end
 end
 
