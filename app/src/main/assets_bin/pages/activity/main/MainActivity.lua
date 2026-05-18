@@ -121,6 +121,8 @@ function MainActivity:onCreate(params)
   end
   if Extensions.Config.getBool(Constants.SharedDataKeys.PREDICTIVE_BACK) == false then
     activity.getSupportFragmentManager().enablePredictiveBack(false)
+    else
+    activity.getSupportFragmentManager().enablePredictiveBack(true)
   end
 end
 
