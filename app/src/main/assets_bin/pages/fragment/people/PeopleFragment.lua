@@ -317,8 +317,4 @@ function PeopleFragment:formatNumber(num)
   return tostring(num)
 end
 
-function PeopleFragment:onBackPressed()
-  Router.back()
-end
-
 return PeopleFragment

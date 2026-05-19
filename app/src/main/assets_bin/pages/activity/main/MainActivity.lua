@@ -69,7 +69,7 @@ end
 
 function MainActivity:setupSmartNoImage()
   if Extensions.Config.getBool(Constants.SharedDataKeys.SMART_NO_IMAGE) then
-    onStart = function()
+    _G.onStart = function()
       if self.noImageReminded then return end
       local connMgr = activity.getSystemService(Context.CONNECTIVITY_SERVICE)
       local info = connMgr.getActiveNetworkInfo()
@@ -121,7 +121,7 @@ function MainActivity:onCreate(params)
   end
   if Extensions.Config.getBool(Constants.SharedDataKeys.PREDICTIVE_BACK) == false then
     activity.getSupportFragmentManager().enablePredictiveBack(false)
-    else
+   else
     activity.getSupportFragmentManager().enablePredictiveBack(true)
   end
 end
@@ -341,19 +341,6 @@ function MainActivity:onConfigurationChanged(newConfig)
   self:updateParallelWorld()
 end
 
-function MainActivity:onBackPressed()
-  if self.isParallelWorld and self.currentRightFragment then
-    local transaction = activity.getSupportFragmentManager().beginTransaction()
-    transaction.remove(self.currentRightFragment:getFragment())
-    transaction.commit()
-    self.currentRightFragment = nil
-   elseif activity.getSupportFragmentManager().getBackStackEntryCount() > 0 then
-    activity.getSupportFragmentManager().popBackStack()
-   else
-    activity.finish()
-  end
-end
-
 function MainActivity:setupVolumeController()
   _G.VolumeController = {
     activeFragment = nil,
@@ -476,6 +463,18 @@ function MainActivity:setupTalkBack()
   })
 
   doUpdateAccessibility()
+end
+
+function MainActivity:onDestroy()
+  -- 清空 Router 的 fragmentLoader
+  Router.setFragmentLoader(nil)
+
+  -- 清空 Fragment 引用
+  self.currentLeftFragment = nil
+  self.currentRightFragment = nil
+  self.leftContainer = nil
+  self.rightContainer = nil
+  self.views = nil
 end
 
 return MainActivity

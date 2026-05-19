@@ -178,11 +178,30 @@ function PageToolModel:setupTabs(viewPager, tabLayout, defaultTab)
   return self.pageTool
 end
 
--- 公共方法（透传，单页模式请勿传入key）---------------------------------------------
+--- 检测是否存活
+function PageToolModel:isAlive()
+  return not self.isDestroyed
+end
+
+--- 安全执行回调
+function PageToolModel:runIfAlive(callback)
+  if not callback then
+    return function() end
+  end
+
+  return function(...)
+    if self:isAlive() then
+      callback(...)
+    end
+  end
+end
+
+-- 公共方法（单页模式请勿传入key）---------------------------------------------
 
 --- 刷新页面（单页模式请勿传入key）
 --- @param key string|nil
 function PageToolModel:refresh(key)
+  if not self:isAlive() then return end
   key = key or self:getCurrentKey()
   if self.pageTool then self.pageTool:refresh(key) end
 end
@@ -190,6 +209,7 @@ end
 --- 加载更多（下一页）（单页模式请勿传入key）
 --- @param key string|nil
 function PageToolModel:loadMore(key)
+  if not self:isAlive() then return end
   if self.pageTool then self.pageTool:loadPage(key, false) end
 end
 
@@ -197,12 +217,14 @@ end
 --- @param key string|nil
 --- @return table
 function PageToolModel:getItems(key)
+  if not self:isAlive() then return {} end
   return self.pageTool and self.pageTool:getDataList(key) or {}
 end
 
 --- 判断当前页面是否为前置页面
 --- @return boolean
 function PageToolModel:isCurrentPagePrePage()
+  if not self:isAlive() then return false end
   return self.pageTool and self.pageTool:isCurrentPagePrePage() or false
 end
 
@@ -210,15 +232,15 @@ end
 --- @param key string
 --- @return boolean
 function PageToolModel:isPrePageByKey(key)
+  if not self:isAlive() then return false end
   return self.pageTool and self.pageTool:isPrePageByKey(key) or false
 end
 
 --- 确保页面数据已加载，如果当前无数据则自动刷新
 --- @param key string|nil 页面标识（多页模式可选，单页模式请勿传入key）
 function PageToolModel:ensureLoaded(key)
-  if self:isCurrentPagePrePage() then
-    return
-  end
+  if not self:isAlive() then return end
+  if self:isCurrentPagePrePage() then return end
   key = key or self:getCurrentKey()
   local items = self:getItems(key)
   if #items > 0 then return end
@@ -228,18 +250,21 @@ end
 --- 清空指定页面的数据（单页模式请勿传入key)
 --- @param key string|nil
 function PageToolModel:clear(key)
+  if not self:isAlive() then return end
   if self.pageTool then self.pageTool:clearPage(key) end
 end
 
 --- 获取当前页面标识（仅多页模式有效）
 --- @return string|nil
 function PageToolModel:getCurrentKey()
+  if not self:isAlive() then return nil end
   return self.pageTool and self.pageTool:getCurrentPageKey() or nil
 end
 
 --- 获取当前页面的 RecyclerView 实例（单页模式直接返回，多页模式返回当前 Tab 的 RecyclerView）
 --- @return RecyclerView|nil
 function PageToolModel:getCurrentRecyclerView()
+  if not self:isAlive() then return nil end
   if not self.pageTool then return nil end
   local key = self:getCurrentKey() or self.pageTool.singleKey
   local rv = self.pageTool:getPageView(key)
@@ -251,10 +276,10 @@ end
 --- @return table RecyclerView 列表
 function PageToolModel:getAllRecyclerViews()
   local rvs = {}
+  if not self:isAlive() then return rvs end
   if not self.pageTool then return rvs end
 
   for i, key in ipairs(self.pageTool.pageKeys or {}) do
-    -- 跳过前置页面
     if not self:isPrePageByKey(key) then
       local rv = self.pageTool:getPageView(key)
       if rv then
@@ -263,7 +288,6 @@ function PageToolModel:getAllRecyclerViews()
     end
   end
 
-  -- 单页模式兜底
   if #rvs == 0 and self.pageTool.isSingle and not self:isCurrentPagePrePage() then
     local rv = self.pageTool:getPageView()
     if rv then
@@ -276,9 +300,13 @@ end
 
 --- 销毁实例
 function PageToolModel:destroy()
+  self.isDestroyed = true
   if self.pageTool then
+    self.pageTool:destroy()
     self.pageTool = nil
   end
 end
+
+return PageToolModel
 
 return PageToolModel

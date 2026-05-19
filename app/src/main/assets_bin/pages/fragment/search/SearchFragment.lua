@@ -155,7 +155,6 @@ function SearchFragment:performSearch(query)
   })
 end
 
-local SimpleBaseAdapter = require("components.adapter.SimpleBaseAdapter")
 function SearchFragment:setupAdapter(dataType, containerView)
   if not containerView then return end
 
@@ -166,12 +165,16 @@ function SearchFragment:setupAdapter(dataType, containerView)
   local adapterKey = dataType == "hot" and "hotAdapter" or "suggestAdapter"
   local s = self
 
-  local adapter = SimpleBaseAdapter.new({
-    items = getItems(), -- 初始数据
-    onCreateView = function()
-      return Layouts.cards.search_suggestion
+  local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+  local adapter = SimpleAdapter.new({
+    items = getItems(),
+    getItemViewType = function(position, item)
+      return 0
     end,
-    onBind = function(views, item)
+    onCreateView = function(viewType)
+      return SimpleAdapter.inflate(Layouts.cards.search_suggestion)
+    end,
+    onBind = function(views, item, position, holder)
       views.text.text = tostring(item)
     end,
   })
@@ -179,10 +182,30 @@ function SearchFragment:setupAdapter(dataType, containerView)
   self[adapterKey] = adapter
   containerView.setAdapter(adapter)
 
-  containerView.onItemClick = function(parent, view, pos, id)
-    local item = getItems()[pos + 1]
-    if item then s:performSearch(item) end
-  end
+  -- GridView/RecyclerView 的点击处理
+  import "android.view.GestureDetector"
+  local gestureDetector = GestureDetector(activity, {
+    onSingleTapUp = function(e)
+      local child = containerView.findChildViewUnder(e.getX(), e.getY())
+      if child then
+        local pos = containerView.getChildAdapterPosition(child)
+        if pos ~= -1 then
+          local item = getItems()[pos + 1]
+          if item then s:performSearch(item) end
+          return true
+        end
+      end
+      return false
+    end,
+  })
+
+  containerView.addOnItemTouchListener({
+    onInterceptTouchEvent = function(rv, e)
+      return gestureDetector.onTouchEvent(e)
+    end,
+    onTouchEvent = function(rv, e) end,
+    onRequestDisallowInterceptTouchEvent = function(disallow) end
+  })
 end
 
 function SearchFragment:setupHistory()

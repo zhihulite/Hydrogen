@@ -26,14 +26,14 @@ page:start(page_params)
 -- 代理所有生命周期方法给 page
 local activityMethods = {
   "onResume", "onResume", "onPause", "onDestroy",
-  "onBackPressed", "onKeyDown", "onKeyUp", "onConfigurationChanged",
+  "onKeyDown", "onKeyUp", "onConfigurationChanged",
   "onActivityResult"
 }
 
 for _, method in ipairs(activityMethods) do
   if page[method] then
     _G[method] = function(...)
-      return page[method](page, ...) or true
+      return page[method](page, ...)
     end
   end
 end

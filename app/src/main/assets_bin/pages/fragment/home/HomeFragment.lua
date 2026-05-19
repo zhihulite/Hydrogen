@@ -108,12 +108,43 @@ function HomeFragment:_scrollCurrentPageToTop()
   end
 end
 
+-- 给所有 Model 的 RecyclerView 添加底部导航栏 padding
+function HomeFragment:applyNavBarPaddingToAllModels(navBarHeight)
+  local function applyPadding(rv)
+    if not rv then return end
+    rv.setPadding(rv.getPaddingLeft(), rv.getPaddingTop(), rv.getPaddingRight(), navBarHeight)
+    rv.setClipToPadding(false)
+  end
+
+  local function processModel(model)
+    if not model or not model.getAllRecyclerViews then return end
+    for _, rv in ipairs(model:getAllRecyclerViews()) do applyPadding(rv) end
+  end
+
+  -- 处理所有独立页面 Model
+  for key, model in pairs(self.pageModels) do
+    if key ~= "home" then processModel(model) end
+  end
+
+  -- 处理主页下的子 Model
+  if self.pageModels.home then
+    for _, model in pairs(self.pageModels.home) do processModel(model) end
+  end
+end
 
 function HomeFragment:initViews()
+  self:initAllPages()
+  self:initDrawer()
+  self:switchToPage("主页")
+
   local views = self.views
+
   self:setupEdgeToEdge({
     top = { views.main_container, views.nav_view },
-    -- bottom 手动在 initPageWithModel 处理
+    callback = function(statusBarHeight, navBarHeight)
+      -- 统一给所有 RecyclerView 添加底部导航栏 padding
+      self:applyNavBarPaddingToAllModels(navBarHeight)
+    end
   })
   -- 双击标题栏返回顶部
   import "android.view.GestureDetector"
@@ -131,10 +162,6 @@ function HomeFragment:initViews()
       return detector.onTouchEvent(event)
     end
   })
-
-  self:initAllPages()
-  self:initDrawer()
-  self:switchToPage("主页")
 end
 
 function HomeFragment:initConfig()
@@ -226,17 +253,14 @@ function HomeFragment:initHomePage(views)
       if tab.modelClass == HotModel then
         -- HotModel 使用 PageModel，调用 init
         model:init(tabViews.recycler_view, tabViews.swipe_refresh)
-        HomeFragment:applyNavBarPaddingToRecyclers(model)
        elseif tab.modelClass == ThinkModel or tab.modelClass == RecommendModel then
         -- PageToolModel 单页模式
         model:setupSingle(tabViews.recycler_view, tabViews.swipe_refresh)
-        HomeFragment:applyNavBarPaddingToRecyclers(model)
        elseif tab.modelClass == FollowModel then
         -- FollowModel 多 Tab 模式
         if tabViews.sub_view_pager and tabViews.sub_tab_layout then
           local defaultTabKey = Extensions.Config.getString(Constants.SharedDataKeys.FOLLOW_DEFAULT_TAB)
           model:setupTabs(tabViews.sub_view_pager, tabViews.sub_tab_layout, defaultTabKey)
-          HomeFragment:applyNavBarPaddingToRecyclers(model)
         end
       end
     end
@@ -329,15 +353,12 @@ function HomeFragment:initPageWithModel(pageType, views)
       if userId then model:setUserId(userId) end
     end
     self.pageModels.collections = model
-    -- 通过 model 获取所有 RecyclerView 并设置 padding
-    self:applyNavBarPaddingToRecyclers(model)
    elseif pageType == "daily" then
     local model = DailyModel()
     if hasList then
       model:init(recyclerView, swipeRefresh)
     end
     self.pageModels.daily = model
-    self:applyNavBarPaddingToRecyclers(model)
    elseif pageType == "follow_content" then
     local model = FollowContentModel()
     if hasPager then
@@ -345,42 +366,6 @@ function HomeFragment:initPageWithModel(pageType, views)
       if userId then model:setUserId(userId) end
     end
     self.pageModels.follow_content = model
-    self:applyNavBarPaddingToRecyclers(model)
-  end
-end
-
--- 统一为 model 中的所有 RecyclerView 设置底部导航栏 padding
-function HomeFragment:applyNavBarPaddingToRecyclers(model)
-  if not model or not model.getAllRecyclerViews then return end
-
-  local allRecyclers = model:getAllRecyclerViews()
-  if not allRecyclers then return end
-
-  local function applyPadding(view)
-    view.addOnAttachStateChangeListener(View.OnAttachStateChangeListener{
-      onViewAttachedToWindow = function(v)
-        local insets = v.getRootWindowInsets()
-        if insets then
-          local navBarHeight = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
-          v.setPadding(
-          v.getPaddingLeft(),
-          v.getPaddingTop(),
-          v.getPaddingRight(),
-          v.getPaddingBottom() + navBarHeight
-          )
-          v.setClipToPadding(false)
-          v.setClipChildren(false)
-        end
-      end,
-      onViewDetachedFromWindow = function() end
-    })
-  end
-
-  -- 遍历所有 RecyclerView 并应用 padding
-  for _, recycler in ipairs(allRecyclers) do
-    if recycler then
-      applyPadding(recycler)
-    end
   end
 end
 

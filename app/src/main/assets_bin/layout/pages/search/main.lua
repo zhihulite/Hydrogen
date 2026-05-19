@@ -6,12 +6,16 @@ import "com.google.android.material.appbar.MaterialToolbar"
 import "androidx.appcompat.widget.SearchView"
 import "com.google.android.material.textview.MaterialTextView"
 import "androidx.core.widget.NestedScrollView"
-import "android.widget.GridView"
-import "android.widget.ListView"
+import "androidx.recyclerview.widget.RecyclerView"
+import "androidx.recyclerview.widget.GridLayoutManager"
+import "androidx.recyclerview.widget.LinearLayoutManager"
 import "com.google.android.material.chip.ChipGroup"
 import "android.view.View"
 
 local colors = AppTheme.getColors()
+
+local hotGridLayoutManager = GridLayoutManager(activity, 2)
+local suggestLayoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
 
 return {
   LinearLayoutCompat,
@@ -34,7 +38,6 @@ return {
     queryHint = "搜索知乎内容",
   },
   {
-    -- 主内容（热门搜索 + 历史记录）
     NestedScrollView,
     id = "main_content",
     layout_width = "fill",
@@ -48,23 +51,22 @@ return {
       {
         MaterialTextView,
         text = "热门搜索",
-        textSize  = AppTextStyle.label.size,
+        textSize = AppTextStyle.label.size,
         textColor = AppTextStyle.label.color,
-        typeface  = AppTextStyle.label.font,
+        typeface = AppTextStyle.label.font,
         layout_marginLeft = "20dp",
         layout_marginTop = "16dp",
         layout_marginBottom = "8dp",
       },
       {
-        GridView,
+        RecyclerView,
         id = "hot_grid",
         layout_width = "fill",
         layout_height = "wrap_content",
         layout_marginLeft = "12dp",
         layout_marginRight = "12dp",
-        numColumns = 2,
-        horizontalSpacing = "8dp",
-        verticalSpacing = "4dp",
+        layoutManager = hotGridLayoutManager,
+        nestedScrollingEnabled = false,
       },
       {
         LinearLayoutCompat,
@@ -78,18 +80,18 @@ return {
         {
           MaterialTextView,
           text = "历史记录",
-          textSize  = AppTextStyle.label.size,
+          textSize = AppTextStyle.label.size,
           textColor = AppTextStyle.label.color,
-          typeface  = AppTextStyle.label.font,
+          typeface = AppTextStyle.label.font,
           layout_weight = 1,
         },
         {
           MaterialTextView,
           id = "clear_btn",
           text = "清空",
-          textSize  = AppTextStyle.label.size,
+          textSize = AppTextStyle.label.size,
           textColor = AppTextStyle.label.color,
-          typeface  = AppTextStyle.label.font,
+          typeface = AppTextStyle.label.font,
           clickable = true,
         }
       },
@@ -103,11 +105,11 @@ return {
     }
   },
   {
-    -- 搜索建议（初始隐藏）
-    ListView,
+    RecyclerView,
     id = "suggest_list",
     layout_width = "fill",
     layout_height = "fill",
     visibility = View.GONE,
+    layoutManager = suggestLayoutManager,
   }
 }

@@ -12,6 +12,27 @@ function BaseModel:ctor()
   self.needLogin = false -- 是否需要登录
   self.requestHeadKey = "defaultHead" -- 请求头 key (对应 _G.Headers)
   self.urlProcessor = nil -- URL/Headers 预处理函数 function(url, headers) return newUrl, newHeaders end
+  self.isDestroyed = false -- 新增：销毁标志，防止销毁后回调执行
+end
+
+--- 检测 Model 是否未被销毁
+--- @return boolean
+function BaseModel:isAlive()
+  return not self.isDestroyed
+end
+
+--- 安全执行回调（如果 Model 已销毁则不执行）
+--- @param callback function 需要安全执行的回调函数
+--- @return function 包装后的函数
+function BaseModel:runIfAlive(callback)
+  if type(callback) ~= "function" then
+    error("BaseModel:runIfAlive 必须为 function 类型")
+  end
+  return function(...)
+    if self:isAlive() then
+      callback(...)
+    end
+  end
 end
 
 --- 子类必须实现：自定义加载逻辑（一般不直接调用，由 fetch 或子类实现）
@@ -96,8 +117,9 @@ end
 --- 通用 GET 请求（使用 getUrl/getHeaders/urlProcessor）
 --- @param url string 请求地址（若提供则优先，否则使用 getUrl(params)）
 --- @param params table 请求参数（会传递给 getHeaders 和 parseResponse）
---- @param callback function 回调 function(success, data, code)
+--- @param callback function 回调函数 function(success, data, code)
 function BaseModel:fetch(url, params, callback)
+  if not self:isAlive() then return end
   if self.needLogin and not Extensions.Config.has(Constants.SharedDataKeys.USER_ID) then
     self:setError("请登录后使用")
     if callback then callback(false, nil, -1) end
@@ -112,7 +134,8 @@ function BaseModel:fetch(url, params, callback)
     url, headers = self.urlProcessor(url, headers)
   end
 
-  NetWork.get(url, headers, function(code, content)
+  -- 使用 runIfAlive 包装网络回调
+  local wrappedCallback = self:runIfAlive(function(code, content)
     self.isLoading = false
     self:notifyListeners("loading", false)
 
@@ -141,6 +164,8 @@ function BaseModel:fetch(url, params, callback)
 
     if callback then callback(true, self.data, code) end
   end)
+
+  NetWork.get(url, headers, wrappedCallback)
 end
 
 --- 通用 POST 请求
@@ -149,6 +174,7 @@ end
 --- @param params table 额外参数（传递给 getHeaders）
 --- @param callback function 回调 function(success, data, code)
 function BaseModel:post(url, postData, params, callback)
+  if not self:isAlive() then return end
   if self.needLogin and not Extensions.Config.has(Constants.SharedDataKeys.USER_ID) then
     self:setError("请登录后使用")
     if callback then callback(false, nil, -1) end
@@ -165,7 +191,8 @@ function BaseModel:post(url, postData, params, callback)
     url, headers = self.urlProcessor(url, headers)
   end
 
-  NetWork.post(url, postData, headers, function(code, content)
+  -- 使用 runIfAlive 包装网络回调
+  local wrappedCallback = self:runIfAlive(function(code, content)
     self.isLoading = false
     self:notifyListeners("loading", false)
 
@@ -185,6 +212,8 @@ function BaseModel:post(url, postData, params, callback)
       if callback then callback(true, content, code) end
     end
   end)
+
+  NetWork.post(url, postData, headers, wrappedCallback)
 end
 
 --- 通用 PUT 请求
@@ -193,6 +222,7 @@ end
 --- @param params table 额外参数
 --- @param callback function 回调 function(success, data, code)
 function BaseModel:put(url, putData, params, callback)
+  if not self:isAlive() then return end
   if self.needLogin and not Extensions.Config.has(Constants.SharedDataKeys.USER_ID) then
     self:setError("请登录后使用")
     if callback then callback(false, nil, -1) end
@@ -209,7 +239,8 @@ function BaseModel:put(url, putData, params, callback)
     url, headers = self.urlProcessor(url, headers)
   end
 
-  NetWork.put(url, putData, headers, function(code, content)
+  -- 使用 runIfAlive 包装网络回调
+  local wrappedCallback = self:runIfAlive(function(code, content)
     self.isLoading = false
     self:notifyListeners("loading", false)
 
@@ -229,6 +260,8 @@ function BaseModel:put(url, putData, params, callback)
       if callback then callback(true, content, code) end
     end
   end)
+
+  NetWork.put(url, putData, headers, wrappedCallback)
 end
 
 --- 通用 DELETE 请求
@@ -236,6 +269,7 @@ end
 --- @param params table 额外参数
 --- @param callback function 回调 function(success, data, code)
 function BaseModel:delete(url, params, callback)
+  if not self:isAlive() then return end
   if self.needLogin and not Extensions.Config.has(Constants.SharedDataKeys.USER_ID) then
     self:setError("请登录后使用")
     if callback then callback(false, nil, -1) end
@@ -250,7 +284,8 @@ function BaseModel:delete(url, params, callback)
     url, headers = self.urlProcessor(url, headers)
   end
 
-  NetWork.delete(url, headers, function(code, content)
+  -- 使用 runIfAlive 包装网络回调
+  local wrappedCallback = self:runIfAlive(function(code, content)
     self.isLoading = false
     self:notifyListeners("loading", false)
 
@@ -270,6 +305,8 @@ function BaseModel:delete(url, params, callback)
       if callback then callback(true, content, code) end
     end
   end)
+
+  NetWork.delete(url, headers, wrappedCallback)
 end
 
 --- 设置错误并通知监听器
@@ -329,6 +366,9 @@ end
 --- @param event string 事件名
 --- @param ... any 参数
 function BaseModel:notifyListeners(event, ...)
+  -- 已销毁则不再通知
+  if self.isDestroyed then return end
+
   if self.listeners[event] then
     for _, listener in ipairs(self.listeners[event]) do
       if type(listener) == "function" then
@@ -347,6 +387,7 @@ end
 
 --- 销毁实例
 function BaseModel:destroy()
+  self.isDestroyed = true
   self:clearListeners()
   self.data = nil
   self.error = nil

@@ -73,7 +73,7 @@ function LoginActivity:switchMode(isPC)
   if isPC then
     self.webViewHelper:setPCUA()
    else
-    self:setUA()
+    self.webViewHelper:setUA()
   end
   self.webViewHelper.webView.loadUrl("https://www.zhihu.com/signin")
 end
@@ -84,35 +84,36 @@ function LoginActivity:checkLogin()
     return
   end
 
-  NetWork.get("https://www.zhihu.com/api/v4/me", { cookie = cookie }, function(success, data)
+  NetWork.get("https://www.zhihu.com/api/v4/me", { cookie = cookie }, self:runIfAlive(function(success, data)
     if success and data then
       local result = json.decode(data)
       if result and result.id then
         Extensions.Config.set(Constants.SharedDataKeys.USER_ID, result.id)
         CookieManager.getInstance().flush()
         tip("登录成功")
-        task(500, function() self:finish() end)
+        task(500, self:runIfAlive(function()
+          self:finish()
+        end))
       end
     end
-  end)
+  end))
 end
 
 function LoginActivity:clearCookie()
-  Helpers.BottomDialog.confirm("确定清除 Cookie 吗？", function()
+  Helpers.BottomDialog.confirm("确定清除 Cookie 吗？", self:runIfAlive(function()
     CookieManager.getInstance().removeAllCookies(nil)
     CookieManager.getInstance().flush()
     if self.webViewHelper then self.webViewHelper:reload() end
     tip("已清除 Cookie")
-  end)
+  end))
 end
 
--- 返回
-function LoginActivity:onBackPressed()
-  if self.webViewHelper and self.webViewHelper:canGoBack() then
-    self.webViewHelper:goBack()
-   else
-    self:finish()
+function LoginActivity:onDestroy()
+  if self.webViewHelper then
+    self.webViewHelper:destroy()
+    self.webViewHelper = nil
   end
+  self.views = nil
 end
 
 return LoginActivity

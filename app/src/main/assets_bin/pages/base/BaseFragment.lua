@@ -29,17 +29,19 @@ function BaseFragment:createFragment(params)
         selfRef.fragmentView = selfRef:build()
         selfRef.container = selfRef.fragmentView
       end
+      -- 修复点击穿透
+      selfRef.fragmentView.setClickable(true)
+      -- 鼠标点击适配
+      selfRef.fragmentView.setOnGenericMotionListener(luajava.createProxy("android.view.View$OnGenericMotionListener",{
+        onGenericMotion = function()
+          return false
+        end
+      }))
       return selfRef.fragmentView
     end,
 
     onViewCreated = function(view, savedState)
       selfRef:onViewCreated(view, savedState)
-      -- 鼠标点击适配
-      view.setOnGenericMotionListener(luajava.createProxy("android.view.View$OnGenericMotionListener",{
-        OnGenericMotionListener = function()
-          return true
-        end
-      }))
       if selfRef.onViewCreatedCallback then
         selfRef.onViewCreatedCallback(selfRef.container)
         selfRef.onViewCreatedCallback = nil
@@ -56,7 +58,6 @@ function BaseFragment:createFragment(params)
 
     onDestroy = function()
       selfRef:onDestroy()
-      selfRef:clear()
     end,
   })
 
@@ -102,6 +103,38 @@ function BaseFragment:clear()
   self.fragment = nil
   self.container = nil
   self.onViewCreatedCallback = nil
+  self:removeAllBackPressedCallbacks()
+end
+
+
+import "androidx.activity.OnBackPressedCallback"
+
+function BaseFragment:addBackPressedCallback(options)
+  if type(options) ~= "table" then
+    error("BaseFragment:addBackPressedCallback 需要传入 table 参数")
+  end
+
+  local fragment = self.fragment
+  local activity = fragment.getActivity()
+
+  local callback = luajava.override(OnBackPressedCallback, {
+    handleOnBackPressed = options.handleOnBackPressed,
+    handleOnBackStarted = options.onBackStarted,
+    handleOnBackProgressed = options.onBackProgressed,
+    handleOnBackCancelled = options.onBackCancelled,
+  }, options.enabled == nil or options.enabled)
+
+  activity.getOnBackPressedDispatcher().addCallback(fragment, callback)
+  return callback
+end
+
+function BaseFragment:removeAllBackPressedCallbacks()
+  if self.backPressedCallbacks then
+    for _, callback in ipairs(self.backPressedCallbacks) do
+      callback.remove()
+    end
+    self.backPressedCallbacks = nil
+  end
 end
 
 -- 生命周期方法（子类覆盖）
@@ -109,7 +142,9 @@ function BaseFragment:onCreate(params) end
 function BaseFragment:onViewCreated(view, savedState) end
 function BaseFragment:onResume() end
 function BaseFragment:onPause() end
-function BaseFragment:onDestroy() end
+function BaseFragment:onDestroy()
+  self:clear()
+end
 
 BaseFragment:final(
 "createFragment",

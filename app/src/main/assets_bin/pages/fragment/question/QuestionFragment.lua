@@ -274,8 +274,4 @@ function QuestionFragment:reportQuestion()
   })
 end
 
-function QuestionFragment:onBackPressed()
-  Router.back()
-end
-
 return QuestionFragment

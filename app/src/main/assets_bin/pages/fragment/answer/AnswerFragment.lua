@@ -307,13 +307,14 @@ function AnswerFragment:setupBottomBar()
   views.vote_btn.onClick = function() self:onVote() end
   views.thank_btn.onClick = function() self:onThank() end
   views.comment_btn.onClick = function() self:onComment() end
+  -- 收藏按钮：点击弹出选择对话框，长按自动切换默认收藏夹
   views.collect_btn.onClick = function() self:onCollect(false) end
   views.collect_btn.onLongClick = function() self:onCollect(true) return true end
 end
 
 function AnswerFragment:updateBottomBar(data)
   local views = self.views
-  if not data then return end
+  if not data then error("updateBottomBar 传入 data 为空。") return end
 
   views.vote_count.setText(tostring(data.voteupCount or 0))
   views.thank_count.setText(tostring(data.thanksCount or 0))
@@ -374,8 +375,10 @@ function AnswerFragment:setupWebView(webview, answerId, pageIds)
 
   local helper = WebViewHelper.new(webview)
   helper:initSettings():setZhiHuUA():initNoImageMode():initDownloadListener()
+  -- 设置回答页配置
   helper:setSettings({
     pageType = "answer",
+    -- 开始记录历史记录
     enableScrollTracking = self.isFirstLoad,
     codeScrollDisabled = Constants.SharedDataKeys.ANSWER_SINGLE_PAGE
   })
@@ -415,10 +418,12 @@ end
 function AnswerFragment:setupViewPager2()
   local viewPager = self.views.view_pager
 
+  -- 检查是否启用回答单页模式
   if Extensions.Config.getBool(Constants.SharedDataKeys.ANSWER_SINGLE_PAGE) then
     viewPager.setUserInputEnabled(false)
   end
 
+  -- 调整滑动灵敏度
   local scrollSense = Extensions.Config.getNumber(Constants.SharedDataKeys.SCROLL_SENSE)
   pcall(function()
     local ViewPager2 = luajava.bindClass("androidx.viewpager2.widget.ViewPager2")
@@ -488,20 +493,20 @@ function AnswerFragment:createPageView(answerId)
 
     -- 测量卡片高度后加载WebView
     pageIds.user_card_wrapper.post({
-      run = function()
+      run = self:runIfAlive(function()
         local cardHeight = pageIds.user_card_wrapper.getHeight()
         self.pageData[answerId].cardHeight = cardHeight
         self:loadWebView(answerId, pageIds)
-      end
+      end)
     })
 
     -- 超时保护：1秒后还没加载就直接加载
-    task(1000, function()
+    task(1000, self:runIfAlive(function()
       if self.pageData[answerId] and not self.pageData[answerId].loading then
         self:loadWebView(answerId, pageIds)
       end
-    end)
-  end)
+    end))
+  end))
 
   return view
 end
@@ -561,8 +566,9 @@ function AnswerFragment:updatePageCard(pageIds, data)
   end
 end
 
+-- 处理视频回答
 function AnswerFragment:handleVideoAttachment(pageIds, data)
-  if not data then return end
+  if not data then error("handleVideoAttachment 传入data不存在") return end
 
   local attachmentUrl = data.attachmentUrl
   if not attachmentUrl then return end
@@ -639,14 +645,14 @@ function AnswerFragment:onThank()
   local data = self:getCurrentData()
   if not data then return end
 
-  self.model:thank(self.currentAnswerId, data.isThanked, function(success, isThank)
+  self.model:thank(self.currentAnswerId, data.isThanked, self:runIfAlive(function(success, isThank) -- 添加 runIfAlive
     if success then
       data.isThanked = isThank
       data.thanksCount = data.thanksCount + (isThank and 1 or -1)
       self:updateBottomBar(data)
       tip(isThank and "感谢成功" or "取消感谢")
     end
-  end)
+  end))
 end
 
 function AnswerFragment:onComment()
@@ -692,6 +698,7 @@ end
 function AnswerFragment:setupFloatButtons()
   local views = self.views
 
+  -- 根据配置显示/隐藏
   if Extensions.Config.getBool(Constants.SharedDataKeys.SHOW_VIRTUAL_SCROLL) then
     views.float_scroll_container.Visibility = 0
    else
@@ -701,8 +708,8 @@ function AnswerFragment:setupFloatButtons()
   local function scrollWebView(direction)
     if not self.currentPageIds or not self.currentPageIds.webview then return end
     local js = direction == "up"
-    and "window.scrollBy(0, -window.innerHeight + 40)"
-    or "window.scrollBy(0, window.innerHeight - 40)"
+    and "window.scrollBy(0, -window.innerHeight)"
+    or "window.scrollBy(0, window.innerHeight)"
     self.currentPageIds.webview.evaluateJavascript(js, nil)
   end
 
@@ -714,14 +721,10 @@ function AnswerFragment:initViews()
   self:setupEdgeToEdge({
     top = {self.views.appbar},
     callback = function(statusBarHeight, navBarHeight)
-      if self.views.floating_toolbar then
-        local params = self.views.floating_toolbar.getLayoutParams()
-        if params and luajava.instanceof(params, CoordinatorLayout.LayoutParams) then
-          params.bottomMargin = navBarHeight
-          self.views.floating_toolbar.setLayoutParams(params)
-        end
-      end
+      -- 浮动工具栏避让导航栏
+      -- floating_toolbar 是 FloatingToolbarLayout，会自动处理 EdgeToEdge ，无需设置 bottomMargin。
 
+      -- 浮动滚动按钮避让导航栏
       if self.views.float_scroll_container then
         local params = self.views.float_scroll_container.getLayoutParams()
         if params and luajava.instanceof(params, CoordinatorLayout.LayoutParams) then
@@ -730,6 +733,15 @@ function AnswerFragment:initViews()
         end
       end
 
+      --[[
+      -- ViewPager2 底部留出导航栏间距
+      self.views.view_pager.setPadding(
+      self.views.view_pager.getPaddingLeft(),
+      self.views.view_pager.getPaddingTop(),
+      self.views.view_pager.getPaddingRight(),
+      navBarHeight
+      )
+      ]]
       self.views.view_pager.setClipToPadding(false)
     end
   })
@@ -738,17 +750,22 @@ function AnswerFragment:initViews()
   self:setupBottomBar()
   self:setupViewPager2()
   self:setupFloatButtons()
-  self:loadQuestionInfo()
-
   self.views.floating_toolbar.setOnGenericMotionListener(luajava.createProxy("android.view.View$OnGenericMotionListener", {
     onGenericMotion = function(v, event) return true end
   }))
   self.views.float_scroll_container.setOnGenericMotionListener(luajava.createProxy("android.view.View$OnGenericMotionListener", {
     onGenericMotion = function(v, event) return true end
   }))
+
+  self:loadQuestionInfo()
 end
 
 function AnswerFragment:onVolumeUp()
+  -- 检查是否开启音量键切换
+  if not Extensions.Config.getBool(Constants.SharedDataKeys.VOLUME_SWITCH_TAB) then
+    return false
+  end
+
   local viewPager = self.views.view_pager
   local current = viewPager.getCurrentItem()
   if current > 0 then
@@ -759,6 +776,11 @@ function AnswerFragment:onVolumeUp()
 end
 
 function AnswerFragment:onVolumeDown()
+  -- 检查是否开启音量键切换
+  if not Extensions.Config.getBool(Constants.SharedDataKeys.VOLUME_SWITCH_TAB) then
+    return false
+  end
+
   local viewPager = self.views.view_pager
   local current = viewPager.getCurrentItem()
   local adapter = viewPager.getAdapter()
@@ -769,6 +791,7 @@ function AnswerFragment:onVolumeDown()
   return false
 end
 
+import "android.view.View"
 function AnswerFragment:onResume()
   if _G.VolumeController and _G.VolumeController.setActive then
     _G.VolumeController.setActive(self)

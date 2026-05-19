@@ -27,12 +27,48 @@ function BaseActivity:finish()
   activity.finish()
 end
 
+import "androidx.activity.OnBackPressedCallback"
+
+
+function BaseActivity:addBackPressedCallback(options)
+  if type(options) ~= "table" then
+    error("BaseFragment:addBackPressedCallback 需要传入 table 参数")
+  end
+ 
+  local callback = luajava.override(OnBackPressedCallback, {
+    handleOnBackPressed = options.handleOnBackPressed,
+    handleOnBackStarted = options.onBackStarted,
+    handleOnBackProgressed = options.onBackProgressed,
+    handleOnBackCancelled = options.onBackCancelled,
+  }, options.enabled == nil or options.enabled)
+  
+  activity.getOnBackPressedDispatcher().addCallback(activity, callback)
+
+  if not self.backPressedCallbacks then
+    self.backPressedCallbacks = {}
+  end
+  table.insert(self.backPressedCallbacks, callback)
+
+  return callback
+end
+
+function BaseActivity:removeAllBackPressedCallbacks()
+  if self.backPressedCallbacks then
+    for _, callback in ipairs(self.backPressedCallbacks) do
+      callback.remove()
+    end
+    self.backPressedCallbacks = nil
+  end
+end
+
+
 -- 子类可覆盖的生命周期方法
 function BaseActivity:onCreate(params) end
 function BaseActivity:onResume() end
 function BaseActivity:onPause() end
-function BaseActivity:onDestroy() end
-function BaseActivity:onBackPressed() end
+function BaseActivity:onDestroy()
+  self:removeAllBackPressedCallbacks()
+end
 function BaseActivity:onKeyDown(keyCode, event) end
 function BaseActivity:onKeyUp(keyCode, event) end
 function BaseActivity:onConfigurationChanged(newConfig) end

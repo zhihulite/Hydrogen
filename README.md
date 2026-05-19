@@ -1,7 +1,9 @@
 # Hydrogen
 
 > ⚠️ **项目维护延缓**  
+>
 > 由于相关原因，Hydrogen 项目维护已延缓。  
+>
 > 推荐使用同类优秀项目：[Zhihu++](https://github.com/zly2006/zhihu-plus-plus)
 
 **注意**：请勿在 Gitee 反馈问题或提交 PR，请前往 GitHub 提交。Gitee 仓库仅用于代码同步。
@@ -9,7 +11,6 @@
 [![License](https://img.shields.io/github/license/zhihulite/Hydrogen)](LICENSE)
 [![Gitee 仓库](https://img.shields.io/badge/Gitee-仓库-C71D23?logo=gitee)](https://gitee.com/huajicloud/Hydrogen)
 [![Github 仓库](https://img.shields.io/badge/Github-仓库-0969DA?logo=github)](https://github.com/zhihulite/Hydrogen)
-
 ## 目录
 
 - [项目介绍](#项目介绍)
@@ -18,7 +19,7 @@
 - [特别致谢](#特别致谢)
 - [打包说明](#打包说明)
 - [Aide Lua 调试指南](#aide-lua-调试指南)
-- [架构设计](#架构设计)
+- [贡献指南](#贡献指南)
 
 ## 项目介绍
 
@@ -90,18 +91,20 @@ apksigner sign --ks hydrogen.jks --ks-key-alias hydrogen --ks-pass pass:zhihu --
 3. **开始调试**：
    完成上述两步后，即可在 Aide Lua 中加载项目进行调试。
 
-## 架构设计
+## 贡献指南
+
+### 架构概览
 
 Hydrogen 采用分层架构，Lua 编写业务逻辑，桥接 Android 原生 API。
 
-### 技术栈
+#### 技术栈
 
 - 语言：Lua 5.3 + Java（仅桥接层）
 - UI：Material Design Components（原生控件）
 - 网络：HTTP + Cookie + ZSE96 加密
 - 混合渲染：原生列表 + WebView（注入 JS）
 
-### 分层说明
+#### 分层说明
 
 | 层级           | 职责                                                         |
 | -------------- | ------------------------------------------------------------ |
@@ -114,7 +117,7 @@ Hydrogen 采用分层架构，Lua 编写业务逻辑，桥接 Android 原生 API
 | **luaLibs**    | Lua 层基础库（import、loadlayout、json、md5、base64 等），支撑整个框架的运行 |
 | **Core**       | 应用核心（初始化、常量、主题、路由、应用信息），在 Pages/Model 等之前加载，提供全局配置和基础能力 |
 
-### 核心基础：initApp 与 Core
+#### 核心基础：initApp 与 Core
 
 - **initApp.lua**：每个 Lua 文件执行前必须引入的环境初始化脚本。负责检测运行环境（AndroLua/LuaJ++）、设置 Lua 模块搜索路径（`package.path`）、注入全局工具函数（`print`、`onError` 崩溃记录），是整个应用的**启动入口和运行环境基石**。
 - **Core**：应用核心模块集合，在 `initApp` 之后加载，提供：
@@ -126,13 +129,164 @@ Hydrogen 采用分层架构，Lua 编写业务逻辑，桥接 Android 原生 API
 
 > **加载顺序**：`initApp` → `core/init` → Extensions/Helpers → Pages/Model/Components
 
-### 核心设计
+#### 核心设计
 
 - **Model 即控制器**：`PageToolModel` 封装完整列表逻辑（下拉刷新、上拉加载、分页、多 Tab），内部直接管理 RecyclerView/ViewPager 和适配器。一个 Model 即可驱动一个列表页，Fragment 仅需调用 `setupSingle` 或 `setupTabs`。
 - **路由系统**：统一管理 Activity/Fragment 跳转，支持共享元素动画和返回栈。
 - **WebView 混合**：`WebViewHelper` 封装 WebView 设置与 JS 桥接，注入的 JS 实现暗色模式、图片查看、滚动恢复、截图等，与知乎 Hybrid 页面无缝配合。
 - **布局定义**：使用 Lua 表描述布局（类似 XML），运行时通过 `loadlayout` 转换为原生 View，支持主题属性和数据绑定。
 - **主题系统**：遵循 Material Design 3 颜色规范，支持日间/夜间/OLED 模式，动态切换。
+
+### 生命周期安全机制（isAlive / runIfAlive）
+
+为防止 Fragment/Activity 销毁后异步回调仍执行导致崩溃，项目实现了统一的生命周期安全机制。
+
+#### 基类支持
+
+**BasePage** 和 **BaseModel** 均实现了：
+
+```lua
+-- 检测是否存活（未销毁）
+function isAlive()
+    return not self.isDestroyed
+end
+
+-- 安全执行回调（存活时执行）
+function runIfAlive(callback)
+    if not callback then return function() end end
+    return function(...)
+        if self:isAlive() then
+            callback(...)
+        end
+    end
+end
+```
+
+#### 使用规范
+
+| 场景 | 做法 | 示例 |
+|------|------|------|
+| **网络回调** | 使用 `runIfAlive` 包装 | `NetWork.get(url, headers, self:runIfAlive(function(code, data) ... end))` |
+| **post/runnable** | 使用 `runIfAlive` 包装 | `view.post(self:runIfAlive(function() ... end))` |
+| **task 延迟任务** | 使用 `runIfAlive` 包装 | `task(1000, self:runIfAlive(function() ... end))` |
+| **PageTool** | PageTool 已自动处理，无需额外包装 | `pageTool:setupLoadFunction()` 内部已包装 |
+| **PageToolModel** | PageToolModel 已自动处理，无需额外包装 | `PageToolModel:refresh(key)` 内部已包装 |
+| **Model 回调** | BaseModel 已自动处理，无需额外包装 | `model:load(params, callback)` 内部已包装 |
+| **addListener** | BaseModel 已自动处理，销毁时清除监听器 | `model:addListener("event", handler)` |
+
+#### 销毁链
+
+```lua
+function SomeFragment:onDestroy()
+    -- chainUp 确保父类 onDestroy 自动调用
+    if self.model then
+        self.model:destroy()  -- 设置 isDestroyed = true
+        self.model = nil
+    end
+    if self.webViewHelper then
+        self.webViewHelper:destroy()  -- 子模块自行销毁
+        self.webViewHelper = nil
+    end
+end
+```
+
+#### 重要说明
+
+> **1. `isAlive` / `runIfAlive` 的使用范围**
+>
+> 子模块（如 `WebViewHelper`、自定义 Model 等）可以在**内部实现**自己的 `isAlive` 和 `runIfAlive` 方法，用于内部异步回调的安全包装。但**外部调用方**（如 Fragment）应统一使用 `BasePage` 提供的 `isAlive` 和 `runIfAlive` 方法，而非直接调用子模块的对应方法。
+>
+> 原因：正确实现销毁链后，`BasePage` 会在 `onDestroy` 中统一销毁所有子模块，子模块的销毁状态与 `BasePage` 保持一致。外部通过 `BasePage` 的方法可以确保生命周期判断的统一性，避免因直接依赖子模块状态而导致的不一致问题。
+>
+> **推荐做法**：
+> - 子模块内部：实现私有 `isAlive` / `runIfAlive` 供内部回调使用
+> - 外部调用：使用 `self:isAlive()` 或 `self:runIfAlive()`（来自 `BasePage`）
+> - Fragment/Activity：始终使用继承自 `BasePage` 的生命周期方法
+>
+>
+> **2. BaseModel 已自动处理**
+>
+> `BaseModel` 已自动对网络回调和监听器进行 `runIfAlive` 包装，子类无需关心。所有继承 `BaseModel` 的子类自动获得生命周期安全保护。
+>
+> **3. 新增子模块的销毁检测**
+>
+> 如果需要增加子模块（如 `WebViewHelper`），你需要正确实现销毁检测：
+> - 在 `ctor` 中初始化 `self.isDestroyed = false`
+> - 在 `destroy()` 方法中将 `self.isDestroyed = true`
+> - 所有异步回调在调用前和 callback 设置做相关判断
+> - 在当前被使用方的 `onDestroy` 中调用子模块的 `destroy()` 方法
+>
+> 子模块（如 `WebViewHelper`、自定义组件等）可以在内部实现 `isAlive` 和 `runIfAlive` 方法，作为快捷方式供内部异步回调使用：
+>
+> ```lua
+> -- 子模块内部实现
+> function WebViewHelper:isAlive()
+>     return not self.isDestroyed
+> end
+>
+> function WebViewHelper:runIfAlive(callback)
+>     if not callback then return function() end end
+>     return function(...)
+>         if self:isAlive() then
+>             callback(...)
+>         end
+>     end
+> end
+>
+> -- 子模块内部使用
+> function WebViewHelper:loadData()
+>     NetWork.get(url, headers, self:runIfAlive(function(code, data)
+>         self:processData(data)
+>     end))
+> end
+> ```
+> 在子模块实现完成后，建议使用 `final` 关键字锁定 `isAlive` 和 `runIfAlive` 方法，防止外部继承时意外覆盖，例如：
+> -- 锁定方法，禁止子类覆盖
+> WebViewHelper:final("isAlive", "runIfAlive")
+> ```
+> 当前网络操作模块较少，如果后续增多，建议参考 BasePagee 编写一个基类自动实现销毁检测，只需在销毁函数中调用模块销毁函数即可。
+>
+> **4. 网络请求必须包装**
+>
+> 所有 `NetWork.get/post/put/delete` 等网络请求，应在调用前和回调中正确使用 `runIfAlive`。
+
+#### 正确示例
+
+```lua
+-- Fragment 中发起网络请求
+function MyFragment:loadData()
+    NetWork.get("https://api.example.com/data", headers, self:runIfAlive(function(code, data)
+        if code == 200 then
+            self:updateUI(data)  -- 仅在 Fragment 存活时执行
+        end
+    end))
+end
+
+-- 子模块实现示例（如 WebViewHelper）
+function WebViewHelper:new(webView)
+    local self = {
+        webView = webView,
+        isDestroyed = false,
+    }
+    return self
+end
+
+function WebViewHelper:runIfAlive(callback)
+    return function(...)
+        if not self.isDestroyed then
+            callback(...)
+        end
+    end
+end
+
+function WebViewHelper:destroy()
+    self.isDestroyed = true
+    if self.webView then
+        self.webView.destroy()
+        self.webView = nil
+    end
+end
+```
 
 ### 快速上手
 
@@ -141,4 +295,4 @@ Hydrogen 采用分层架构，Lua 编写业务逻辑，桥接 Android 原生 API
 3. 新列表页：继承 `PageToolModel` → 实现 `getInitialUrl`、`parseItem`、`createAdapter` → Fragment 中调用 `setupSingle`
 4. 新详情页：继承 `BaseModel` → 实现 `load` → Fragment 中手动调用并更新 UI
 
-掌握 `PageToolModel` 和 `WebViewHelper` 是快速开发大部分页面的关键。
+掌握 `PageToolModel`、`WebViewHelper` 以及生命周期安全机制（`runIfAlive`）是快速开发大部分页面的关键。

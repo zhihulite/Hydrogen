@@ -395,4 +395,11 @@ function WelcomeActivity:finishWelcome()
   activity.finish()
 end
 
+function WelcomeActivity:onDestroy()
+  -- 清空容器引用
+  self.currentContainer = nil
+  self.container = nil
+  self.views = nil
+end
+
 return WelcomeActivity

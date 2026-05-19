@@ -251,8 +251,4 @@ function CollectionsFragment:showItemMenu(data)
   popup.show()
 end
 
-function CollectionsFragment:onBackPressed()
-  Router.back()
-end
-
 return CollectionsFragment

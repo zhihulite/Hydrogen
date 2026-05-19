@@ -151,6 +151,7 @@ function M.new(config)
     loadFunction = nil,
     isSingle = isSingle,
     singleKey = singleKey,
+    isDestroyed = false,
   }
 
   if isSingle then
@@ -190,6 +191,24 @@ function M.new(config)
   end
 
   return self
+end
+
+-- 检测是否存活
+function M:isAlive()
+  return not self.isDestroyed
+end
+
+-- 安全执行回调
+function M:runIfAlive(callback)
+  if not callback then
+    return function() end
+  end
+
+  return function(...)
+    if self:isAlive() then
+      callback(...)
+    end
+  end
 end
 
 -- 内部规范化 key
@@ -323,7 +342,7 @@ function M:setupLoadFunction()
       error("页面 " .. tostring(key) .. " 的适配器为空")
     end
 
-    NetWork.get(url, headers, function(success, content)
+    NetWork.get(self:runIfAlive(url, headers, function(success, content)
       if not success then
         state.loadPrev = false
         state.canLoad = true
@@ -363,14 +382,14 @@ function M:setupLoadFunction()
         end
 
         if state.needCheckFullPage then
-          selfRef.contentView.postDelayed({
-            run = function()
+          self.contentView.postDelayed({
+            run = self:runIfAlive(function()
               if isLastItemVisible(rv) and state.canLoad then
-                selfRef.loadFunction(key, loadPrev, false)
+                self.loadFunction(key, loadPrev, false)
                else
                 state.needCheckFullPage = false
               end
-            end
+            end)
           }, 50)
         end
 
@@ -416,7 +435,7 @@ function M:setupLoadFunction()
        else
         update()
       end
-    end)
+    end))
 
     if isRefresh or state.isFirstLoad then
       if sr then
@@ -594,11 +613,9 @@ function M:throttleTabClick(key, action)
 
   if self.tabThrottleFlags[key] then
     self.tabThrottleFlags[key] = false
-    Handler().postDelayed({
-      run = function()
-        self.tabThrottleFlags[key] = true
-      end
-    }, 1050)
+    task(1050, self:runIfAlive(function()
+      self.tabThrottleFlags[key] = true
+    end))
     action()
   end
 end
@@ -704,6 +721,13 @@ function M:getPageView(key)
     error("未找到 key 为 " .. tostring(key) .. " 的 RecyclerView 视图")
   end
   return rv, self.viewIds[srId]
+end
+
+function M:destroy()
+  self.isDestroyed = true
+  self.pages = nil
+  self.viewIds = nil
+  self.pageKeys = nil
 end
 
 return M

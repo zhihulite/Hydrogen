@@ -6,7 +6,6 @@ require("initApp")
 import "androidx.viewpager2.widget.ViewPager2"
 import "com.hydrogen.adapter.LuaPager2Adapter"
 import "com.bumptech.glide.Glide"
-import "com.bumptech.glide.request.RequestListener"
 import "com.bumptech.glide.load.engine.DiskCacheStrategy"
 import "android.graphics.Bitmap"
 import "android.os.Environment"
@@ -67,6 +66,7 @@ function ImageActivity:initViews()
     return true
   end
 
+  -- TODO fix 点击切换底栏
   -- 点击根布局切换底栏显示/隐藏
   self.views.main_container.onClick = function() self:toggleBottomBar() end
 end
@@ -105,23 +105,32 @@ function ImageActivity:loadImage(index)
 
   local url = self:processImageUrl(self.imageUrls[imgidx])
   views.loading_container.setVisibility(View.VISIBLE)
-  
+
   Glide.with(activity)
   .load(url)
   .diskCacheStrategy(DiskCacheStrategy.ALL)
-  .listener(RequestListener{
-    onResourceReady = function(resource, model, target, dataSource, isFirstResource)
-      views.loading_container.setVisibility(View.GONE)
-      views.photo_view.setVisibility(View.VISIBLE)
+  .listener(luajava.createProxy("com.bumptech.glide.request.RequestListener", {
+    -- 这两个回调在 Activity 销毁后仍可能执行
+    onResourceReady = self:runIfAlive(function(resource, model, target, dataSource, isFirstResource)
+      if not self.pageViews or not self.pageViews[index] then return end
+      local v = self.pageViews[index].ids
+      if v then
+        v.loading_container.setVisibility(View.GONE)
+        v.photo_view.setVisibility(View.VISIBLE)
+      end
       return false
-    end,
-    onLoadFailed = function(e, model, target, isFirstResource)
-      views.loading_container.setVisibility(View.GONE)
-      views.photo_view.setVisibility(View.VISIBLE)
+    end),
+    onLoadFailed = self:runIfAlive(function(e, model, target, isFirstResource)
+      if not self.pageViews or not self.pageViews[index] then return end
+      local v = self.pageViews[index].ids
+      if v then
+        v.loading_container.setVisibility(View.GONE)
+        v.photo_view.setVisibility(View.VISIBLE)
+      end
       tip("图片加载失败")
       return false
-    end
-  })
+    end)
+  }))
   .into(views.photo_view)
 end
 
@@ -140,10 +149,10 @@ end
 function ImageActivity:updatePageInfo()
   if self.totalCount > 0 then
     -- 使用 post 防止部分情况下文本绘制出现问题
-    self.views.main_container.post(function()
+    self.views.main_container.post(self:runIfAlive(function()
       self.views.now_count.text = tostring(self.currentIndex + 1)
       self.views.all_count.text = tostring(self.totalCount)
-    end)
+    end))
   end
 end
 
@@ -184,12 +193,12 @@ function ImageActivity:shareCurrentImage()
     dup.get(bytes)
     dup.clear()
     Helpers.UI.shareBytes(bytes, fileName, mimeType)
-  else
+   else
     -- 静态图：直接获取 bitmap 分享
     local bitmap = drawable.getBitmap()
     if bitmap then
       Helpers.UI.shareBitmap(bitmap, fileName)
-    else
+     else
       tip("无法获取图片数据")
     end
   end
@@ -219,10 +228,6 @@ function ImageActivity:setFullScreen()
   | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
   | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
   )
-end
-
-function ImageActivity:onBackPressed()
-  activity.finish()
 end
 
 function ImageActivity:onDestroy()

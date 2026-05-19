@@ -1,5 +1,5 @@
 -- pages/base/BasePage.lua
--- 所有页面的基类（一次性设置版，不用回调）
+-- 所有页面的基类
 
 import "androidx.activity.EdgeToEdge"
 import "androidx.core.view.ViewCompat"
@@ -12,11 +12,28 @@ function BasePage:ctor(name)
   self.name = name or "BasePage"
   self.views = {}
   self.root_view = nil
+  self.isDestroyed = false
 end
 
 function BasePage:initLayout() end
 function BasePage:initViews() end
 
+-- 检测是否存活
+function BasePage:isAlive()
+  return not self.isDestroyed and self.views ~= nil
+end
+
+-- 安全执行回调
+function BasePage:runIfAlive(callback)
+  if type(callback) ~= "function" then
+    error("BasePage:runIfAlive 必须为 function 类型")
+  end
+  return function(...)
+    if self:isAlive() then
+      callback(...)
+    end
+  end
+end
 
 -- 初始化设置左右边距
 import "androidx.core.view.OnApplyWindowInsetsListener"
@@ -101,6 +118,7 @@ function BasePage:onResume() end
 function BasePage:onPause() end
 
 function BasePage:onDestroy()
+  self.isDestroyed = true
   self.views = nil
   self.root_view = nil
 end
@@ -130,7 +148,7 @@ function BasePage:setTitle(title)
   self.views.title.setText(title)
 end
 
-BasePage:final("build", "setupEdgeToEdge", "findViewById", "setTitle")
+BasePage:final("build", "setupEdgeToEdge", "findViewById", "setTitle", "isAlive", "runIfAlive")
 BasePage:abstract("initLayout")
 
 return BasePage

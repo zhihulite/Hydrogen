@@ -167,11 +167,8 @@ function LocalContentFragment:initWebView()
     end,
     onProgressChanged = function(view, progress)
       local bar = self.views.progress_bar
-      if not bar then return end
       if progress == 100 then
-        task(300, function()
-          if bar then bar.setVisibility(View.GONE) bar.setProgress(0) end
-        end)
+        bar.setVisibility(View.GONE) bar.setProgress(0)
        else
         if bar.getVisibility() ~= View.VISIBLE then bar.setVisibility(View.VISIBLE) end
         bar.setProgress(progress)
@@ -320,14 +317,6 @@ function LocalContentFragment:saveAsPdf()
   .build()
 
   printManager.print(self.title .. ".pdf", printAdapter, attributes)
-end
-
-function LocalContentFragment:onBackPressed()
-  if self.webView and self.webView.canGoBack() then
-    self.webView.goBack()
-   else
-    Router.back()
-  end
 end
 
 return LocalContentFragment

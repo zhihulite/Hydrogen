@@ -60,7 +60,7 @@ function ScanFragment:startScan()
       local text = tostring(result.getText() or "")
       if text == "" then
         tip("未识别到内容，请重试")
-        task(300, function() selfRef:startScan() end)
+        selfRef:startScan()
         return
       end
 
@@ -114,10 +114,6 @@ function ScanFragment:onDestroy()
     self.barcodeView.pauseAndWait()
     self.barcodeView = nil
   end
-end
-
-function ScanFragment:onBackPressed()
-  Router.back()
 end
 
 return ScanFragment

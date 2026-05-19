@@ -14,6 +14,7 @@ function ContentFragment:ctor()
   self.model = nil
   self.webViewHelper = nil
   self.menuItems = {}
+  self.backCallback = nil
 end
 
 function ContentFragment:onCreate(params)
@@ -88,7 +89,7 @@ function ContentFragment:onBridgeMessage(action, data)
         contentType = contentType,
         onSuccess = function(stillInAnyCollection, addCount)
           local collected = tostring(stillInAnyCollection)
-          local sendobj='{"id":"'..callbackId..'","type":"success","params":{"contentType":"'..contentType..'","contentId":"'..contentId..'","collected":'..collected..'}}'
+          local sendobj = '{"id":"'..callbackId..'","type":"success","params":{"contentType":"'..contentType..'","contentId":"'..contentId..'","collected":'..collected..'}}'
           self.webViewHelper:evaluateJavascript('window.zhihuWebApp && window.zhihuWebApp.callback('..sendobj..')')
         end,
         onError = function(err)
@@ -120,7 +121,7 @@ function ContentFragment:initWebView()
       -- 评论
       local commentType, id = url:match("comment/list/([^/]+)/(%d+)$")
       if commentType and id then
-        local CommentSheet = require("components/dialog/CommentSheet")
+        local CommentSheet = require("components.dialog/CommentSheet")
         CommentSheet.show({ contentId = id, contentType = commentType })
         return true
       end
@@ -144,7 +145,7 @@ function ContentFragment:initWebView()
     onPageFinished = function(view, url)
       views.progress_bar.setVisibility(View.GONE)
       views.swipe_refresh.setRefreshing(false)
-    end
+    end,
   })
 
   self.webViewHelper:setWebChromeClient({
@@ -157,19 +158,19 @@ function ContentFragment:initWebView()
 
   Helpers.UI.setupSwipeRefresh(views.swipe_refresh)
   views.swipe_refresh.setOnRefreshListener({
-    onRefresh = function()
+    onRefresh = self:runIfAlive(function()
       self.webViewHelper:reload()
-    end
+    end)
   })
 end
 
 function ContentFragment:loadContent()
-  self.model:load(nil, function(success, data)
+  self.model:load(nil, self:runIfAlive(function(success, data)
     if success and data and data.webUrl then
       self.webViewHelper.webView.loadUrl(data.webUrl)
       self.views.toolbar.setTitle(data.title)
     end
-  end)
+  end))
 end
 
 -- 菜单动作
@@ -202,14 +203,6 @@ function ContentFragment:showFavoriteMoveSheet()
       tip(err or "操作失败")
     end
   })
-end
-
-function ContentFragment:onBackPressed()
-  if self.webViewHelper and self.webViewHelper:canGoBack() then
-    self.webViewHelper:goBack()
-   else
-    Router.back()
-  end
 end
 
 return ContentFragment

@@ -14,6 +14,7 @@ function BrowserFragment:ctor()
   self.pageTitle = nil
   self.menuItems = {}
   self.uaMode = nil
+  self.backCallback = nil
 end
 
 function BrowserFragment:onCreate(params)
@@ -51,6 +52,26 @@ function BrowserFragment:initViews()
 
   self:initWebView()
   self:loadUrl()
+  self:registerBackHandler()
+end
+
+function BrowserFragment:registerBackHandler()
+  local callback
+  callback = self:addBackPressedCallback({
+    enabled = false, -- 初始禁用
+    handleOnBackPressed = function()
+      self:goForward()
+    end
+  })
+  self.backCallback = callback
+  self:updateBackButtonState()
+end
+
+function BrowserFragment:updateBackButtonState()
+  if self.backCallback and self.webViewHelper then
+    local canGoBack = self.webViewHelper:canGoBack()
+    self.backCallback.setEnabled(canGoBack)
+  end
 end
 
 function BrowserFragment:initWebView()
@@ -68,9 +89,9 @@ function BrowserFragment:initWebView()
   local ua = self.ua
   if ua == "pc" then
     self.webViewHelper:setPCUA()
-  elseif ua == "zhihu" then
+   elseif ua == "zhihu" then
     self.webViewHelper:setZhiHuUA()
-  elseif ua then
+   elseif ua then
     -- 自定义 UA 字符串
     self.webViewHelper:setUA(ua)
   end
@@ -95,9 +116,12 @@ function BrowserFragment:initWebView()
         end)
         return true
       end
-
-      Helpers.ZhihuParser.goUrl(url)
-      return true
+      local parsed = Helpers.ZhihuParser.parse(url)
+      if parsed then
+        Helpers.ZhihuParser.goFrom(parsed)
+        return true
+      end
+      return false
     end,
     onPageStarted = function(view, url)
       self.views.swipe_refresh.setRefreshing(true)
@@ -106,6 +130,10 @@ function BrowserFragment:initWebView()
     onPageFinished = function(view, url)
       self.views.swipe_refresh.setRefreshing(false)
       self.views.webview.setVisibility(View.VISIBLE)
+      self:updateBackButtonState()
+    end,
+    doUpdateVisitedHistory = function(view, url, isReload)
+      self:updateBackButtonState()
     end
   })
 
@@ -116,9 +144,7 @@ function BrowserFragment:initWebView()
     onProgressChanged = function(view, progress)
       local bar = self.views.progress_bar
       if progress == 100 then
-        task(300, function()
-          bar.setVisibility(View.GONE) bar.setProgress(0)
-        end)
+        bar.setVisibility(View.GONE) bar.setProgress(0)
        else
         if bar.getVisibility() ~= View.VISIBLE then bar.setVisibility(View.VISIBLE) end
         bar.setProgress(progress)
@@ -169,9 +195,9 @@ function BrowserFragment:onResume()
 end
 
 function BrowserFragment:onDestroy()
-  if self.webView then
-    self.webView.destroy()
-    self.webView = nil
+  if self.webViewHelper then
+    self.webViewHelper:destroy()
+    self.webViewHelper = nil
   end
 end
 

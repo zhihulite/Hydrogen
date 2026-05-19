@@ -176,8 +176,4 @@ function TopicFragment:copyTopicLink()
   tip("链接已复制")
 end
 
-function TopicFragment:onBackPressed()
-  Router.back()
-end
-
 return TopicFragment
