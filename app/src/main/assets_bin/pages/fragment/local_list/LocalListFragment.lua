@@ -10,7 +10,7 @@ import "java.io.File"
 import "android.view.View"
 
 local BaseFragment = require("pages.base.BaseFragment")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 local BottomDialog = require("helpers.bottom_dialog")
 
 local LocalListFragment = Extensions.Class(BaseFragment, {"local_list"})
@@ -112,9 +112,9 @@ end
 function LocalListFragment:initListView()
   local views = self.views
   local selfRef = self
-  self.adapter = SimpleAdapter.new({
+  self.adapter = SimpleRecyclerAdapter.new({
     items = self.items,
-    onCreateView = function() return SimpleAdapter.inflate(Layouts.cards.local_list) end,
+    onCreateView = function() return SimpleRecyclerAdapter.inflate(Layouts.cards.local_list) end,
     onBind = function(views, item, position)
       views.title.text = item.title or ""
       views.count.text = string.format("%d个内容", #item.authors)

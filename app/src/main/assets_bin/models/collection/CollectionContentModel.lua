@@ -2,7 +2,7 @@
 -- 收藏夹内容列表（分页模型）- PageToolModel
 
 local PageToolModel = require("models.base.PageToolModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 local CollectionMoveSheet = require("components.dialog.CollectionMoveSheet")
 
 local CollectionContentModel = Extensions.Class(PageToolModel)
@@ -66,10 +66,10 @@ end
 function CollectionContentModel:createAdapter(dataList)
   local selfRef = self
 
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
-      return SimpleAdapter.inflate(Layouts.cards.collection_content)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.collection_content)
     end,
     onBind = function(views, item, position, holder)
       views.title.text = item.title or ""

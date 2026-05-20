@@ -342,7 +342,7 @@ function M:setupLoadFunction()
       error("页面 " .. tostring(key) .. " 的适配器为空")
     end
 
-    NetWork.get(self:runIfAlive(url, headers, function(success, content)
+    NetWork.get(url, headers, self:runIfAlive(function(success, content)
       if not success then
         state.loadPrev = false
         state.canLoad = true

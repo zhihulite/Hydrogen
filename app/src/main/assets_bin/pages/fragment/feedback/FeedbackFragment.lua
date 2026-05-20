@@ -5,7 +5,7 @@ import "androidx.recyclerview.widget.LinearLayoutManager"
 import "com.google.android.material.divider.MaterialDividerItemDecoration"
 
 local BaseFragment = require("pages.base.BaseFragment")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local FeedbackFragment = Extensions.Class(BaseFragment, {"feedback"})
 FeedbackFragment:chainUp("onDestroy")
@@ -59,7 +59,7 @@ function FeedbackFragment:initListView()
   views.recycler_view.addItemDecoration(divider)
 
   local selfRef = self
-  self.adapter = SimpleAdapter.new({
+  self.adapter = SimpleRecyclerAdapter.new({
     items = self.items,
     getItemViewType = function(position, item)
       if item.type == "title" then return 0
@@ -69,11 +69,11 @@ function FeedbackFragment:initListView()
     end,
     onCreateView = function(viewType)
       if viewType == 0 then
-        return SimpleAdapter.inflate(titleLayout)
+        return SimpleRecyclerAdapter.inflate(titleLayout)
        elseif viewType == 1 then
-        return SimpleAdapter.inflate(buttonLayout)
+        return SimpleRecyclerAdapter.inflate(buttonLayout)
       end
-      return SimpleAdapter.inflate(titleLayout)
+      return SimpleRecyclerAdapter.inflate(titleLayout)
     end,
     onBind = function(views, item, position, holder)
       if item.type == "title" then

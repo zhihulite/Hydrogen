@@ -137,6 +137,59 @@ Hydrogen 采用分层架构，Lua 编写业务逻辑，桥接 Android 原生 API
 - **布局定义**：使用 Lua 表描述布局（类似 XML），运行时通过 `loadlayout` 转换为原生 View，支持主题属性和数据绑定。
 - **主题系统**：遵循 Material Design 3 颜色规范，支持日间/夜间/OLED 模式，动态切换。
 
+#### LuaJava 使用规范
+
+为避免意外重写所有非抽象方法（包括 `equals`、`hashCode` 等），请遵循以下规范：
+
+**1. 重写类方法：使用 `luajava.override`**
+
+```
+-- ❌ 错误：会重写该类所有非抽象方法
+local adapter = {
+    getCount = function() return 10 end,
+    getItem = function(position) return data[position] end
+}
+
+-- ✅ 正确：只重写指定方法
+local adapter = luajava.override(BaseAdapter, {
+    getCount = function() return 10 end,
+    getItem = function(position) return data[position] end
+})
+```
+
+**2. 实现接口：使用 `Extensions.UI.createFixedProxy`**
+
+lua
+
+```
+-- ❌ 错误：ViewTreeObserver 等特殊监听器无法正确移除
+local listener = luajava.createProxy("android.view.ViewTreeObserver$OnGlobalLayoutListener", {
+    onGlobalLayout = function() print("layout changed") end
+})
+
+-- ✅ 正确：可以正确添加和移除各类监听器
+local listener = Extensions.UI.createFixedProxy("android.view.ViewTreeObserver$OnGlobalLayoutListener", {
+    onGlobalLayout = function() print("layout changed") end
+})
+view.getViewTreeObserver().addOnGlobalLayoutListener(listener)
+-- 后续可以正确移除：view.getViewTreeObserver().removeOnGlobalLayoutListener(listener)
+```
+
+**原因说明**：
+
+- 直接使用 `{}` 简写会重写指定类的**所有非抽象方法**，即使表中未定义该方法也会被重写，可能造成意外行为
+- `luajava.createProxy` 创建的代理缺少正确的 `equals` 方法实现，导致 ViewTreeObserver 等特殊监听器无法正确移除。
+- `Extensions.UI.createFixedProxy` 已正确处理 `equals` 方法，确保各类监听器均可正确注销，避免内存泄漏
+
+#### 扩展模块补充文档
+
+- **Helpers.material_widgets**：Material Design 组件库，支持以**原本只能在 XML 中设置的自定义属性**动态创建 Material 组件。
+- **Helpers.resource**：资源快速访问工具，提供颜色、字符串、尺寸、Drawable 等资源的便捷获取方法。
+
+---
+
+项目模块较多，其余部分请自行阅读相关源码。
+
 ### 生命周期安全机制（isAlive / runIfAlive）
 
 为防止 Fragment/Activity 销毁后异步回调仍执行导致崩溃，项目实现了统一的生命周期安全机制。
@@ -243,12 +296,13 @@ end
 > 在子模块实现完成后，建议使用 `final` 关键字锁定 `isAlive` 和 `runIfAlive` 方法，防止外部继承时意外覆盖，例如：
 > -- 锁定方法，禁止子类覆盖
 > WebViewHelper:final("isAlive", "runIfAlive")
-> ```
+> 
 > 当前网络操作模块较少，如果后续增多，建议参考 BasePagee 编写一个基类自动实现销毁检测，只需在销毁函数中调用模块销毁函数即可。
 >
 > **4. 网络请求必须包装**
 >
 > 所有 `NetWork.get/post/put/delete` 等网络请求，应在调用前和回调中正确使用 `runIfAlive`。
+> 注：部分未使用 BaseModel 的组件，如果涉及网络请求，请在调用设置 callback 自行添加 `runIfAlive` 包装。例如 `CollectionMoveSheet.show({..., onSuccess = self.runIfAlive(function() ... end), onError = self.runIfAlive(function() ... end)})`
 
 #### 正确示例
 

@@ -2,7 +2,7 @@
 -- 推荐流 - PageToolModel
 
 local PageToolModel = require("models.base.PageToolModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 local Storage = require("services.cache.storage")
 
 local RecommendModel = Extensions.Class(PageToolModel)
@@ -191,10 +191,10 @@ end
 function RecommendModel:createAdapter(dataList)
   local selfRef = self
 
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
-      return SimpleAdapter.inflate(Layouts.cards.recommend)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.recommend)
     end,
     onBind = function(views, item, position, holder)
       views.title.text = item.title or ""

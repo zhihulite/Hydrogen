@@ -13,7 +13,7 @@ import "androidx.recyclerview.widget.LinearLayoutManager"
 import "com.google.android.material.checkbox.MaterialCheckBox"
 import "com.google.android.material.divider.MaterialDivider"
 
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 local MaterialWidgets = Helpers.MaterialWidgets
 local CollectionEditSheet = require("components.dialog.CollectionEditSheet")
 
@@ -315,10 +315,10 @@ function M:showSelectionDialog(opts)
   self.views.recycler_view.setLayoutManager(lm)
 
   -- 创建适配器
-  self.adapter = SimpleAdapter.new({
+  self.adapter = SimpleRecyclerAdapter.new({
     items = self.collections,
     onCreateView = function()
-      return SimpleAdapter.inflate({
+      return SimpleRecyclerAdapter.inflate({
         LinearLayoutCompat,
         orientation = "horizontal",
         layout_width = "match_parent",

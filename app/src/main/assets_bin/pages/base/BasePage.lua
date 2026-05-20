@@ -51,7 +51,7 @@ ViewCompat.setOnApplyWindowInsetsListener(activity.getWindow().getDecorView(), O
 -- https://github.com/material-components/material-components-android/blob/master/lib/java/com/google/android/material/appbar/CollapsingToolbarLayout.java
 -- CollapsingToolbarLayout onWindowInsetChanged 返回 insets.consumeSystemWindowInsets() 会吞掉 insets 所以不注册回调了
 
-local MaterialToolbar = luajava.bindClass("com.google.android.material.appbar.MaterialToolbar")
+local Toolbar = luajava.bindClass("androidx.appcompat.widget.Toolbar")
 function BasePage:setupEdgeToEdge(options)
   options = options or {}
 
@@ -67,8 +67,8 @@ function BasePage:setupEdgeToEdge(options)
     if options.top then
       local list = type(options.top) == "table" and options.top or { options.top }
       for _, v in ipairs(list) do
-        if luajava.instanceof(v, MaterialToolbar) then
-          error("不支持设置too为 MaterialToolbar ，请尝试设置为 MaterialToolbar 父布局。")
+        if luajava.instanceof(v, Toolbar) then
+          error("不支持直接为 Toolbar 设置 top，请尝试改为 Toolbar 的父布局")
          else
           v.setPadding(v.getPaddingLeft(), statusBarHeight, v.getPaddingRight(), v.getPaddingBottom())
         end

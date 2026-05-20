@@ -8,7 +8,7 @@ import "com.google.android.material.shape.RelativeCornerSize"
 import "android.view.View"
 
 local BaseFragment = require("pages.base.BaseFragment")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local SettingsFragment = Extensions.Class(BaseFragment, { "SettingsFragment" })
 SettingsFragment:chainUp("onDestroy")
@@ -161,7 +161,7 @@ function SettingsFragment:initListView()
 
   local selfRef = self
 
-  self.adapter = SimpleAdapter.new({
+  self.adapter = SimpleRecyclerAdapter.new({
     items = self.items,
     getItemViewType = function(position, item)
       if item.type == "title" then return 0
@@ -172,10 +172,10 @@ function SettingsFragment:initListView()
       return 1
     end,
     onCreateView = function(viewType)
-      return SimpleAdapter.inflate(ITEM_LAYOUTS[viewType + 1])
+      return SimpleRecyclerAdapter.inflate(ITEM_LAYOUTS[viewType + 1])
     end,
     onBind = function(views, item, position, holder)
-      if not views
+      if not views then
         print(dump(item))
       end
       if item.title then
@@ -510,16 +510,16 @@ function SettingsFragment:showHomeLayoutDialog()
 
 
   local adapter
-  adapter = SimpleAdapter.new({
+  adapter = SimpleRecyclerAdapter.new({
     items = pageData,
     getItemViewType = function(pos, item)
       return item.header and 1 or 0
     end,
     onCreateView = function(viewType)
       if viewType == 1 then
-        return SimpleAdapter.inflate(Layouts.pages.settings.items.home_tab_header)
+        return SimpleRecyclerAdapter.inflate(Layouts.pages.settings.items.home_tab_header)
        else
-        return SimpleAdapter.inflate(Layouts.pages.settings.items.home_tab_item)
+        return SimpleRecyclerAdapter.inflate(Layouts.pages.settings.items.home_tab_item)
       end
     end,
     onBind = function(views, item, position, holder)

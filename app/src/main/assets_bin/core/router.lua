@@ -67,12 +67,12 @@ function M.go(name, params, options)
     local blankActivityPath = getBlankActivityPath()
     activity.newActivity(blankActivityPath, { name, params })
     return true
-  else
+   else
     if not fragmentLoader then
       print("错误: Fragment 模式需要先调用 router.setFragmentLoader() 注册加载器")
       return false
     end
-  
+
     local loaderData = {
       name = name,
       params = params,
@@ -94,7 +94,7 @@ function M.back()
     if #history > 0 then
       table.remove(history)
     end
-  else
+   else
     activity.finish()
     history = {}
   end
@@ -104,7 +104,7 @@ end
 function M.clearBackStack()
   local fm = activity.getSupportFragmentManager()
   if fm.getBackStackEntryCount() > 0 then
-    fm.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+    fm.popBackStack(nil, FragmentManager.POP_BACK_STACK_INCLUSIVE)
   end
 end
 

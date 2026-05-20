@@ -2,7 +2,7 @@
 -- 问题页面 - PageToolModel（包含详情 + 答案列表）
 
 local PageToolModel = require("models.base.PageToolModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local QuestionModel = Extensions.Class(PageToolModel)
 QuestionModel:chainUp("destroy")
@@ -43,10 +43,10 @@ end
 function QuestionModel:createAdapter(dataList)
   local selfRef = self
 
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
-      return SimpleAdapter.inflate(Layouts.cards.question_answer)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.question_answer)
     end,
     onBind = function(views, item, position, holder)
       views.title.text = item.title

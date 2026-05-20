@@ -2,7 +2,7 @@
 -- 关注内容（问题/收藏夹/话题/专栏/用户等）- PageToolModel，多 Tab
 
 local PageToolModel = require("models.base.PageToolModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local FollowContentModel = Extensions.Class(PageToolModel)
 FollowContentModel:chainUp("destroy")
@@ -129,13 +129,13 @@ end
 function FollowContentModel:createAdapter(dataList)
   local selfRef = self
 
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = dataList,
     getItemViewType = function(position, item)
       return 0
     end,
     onCreateView = function(viewType)
-      return SimpleAdapter.inflate(Layouts.cards.basic)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.basic)
     end,
     onBind = function(views, item, position, holder)
       views.title.text = item.title or ""

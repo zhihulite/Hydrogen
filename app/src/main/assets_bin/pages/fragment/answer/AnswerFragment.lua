@@ -506,7 +506,7 @@ function AnswerFragment:createPageView(answerId)
         self:loadWebView(answerId, pageIds)
       end
     end))
-  end))
+  end)
 
   return view
 end
@@ -645,14 +645,14 @@ function AnswerFragment:onThank()
   local data = self:getCurrentData()
   if not data then return end
 
-  self.model:thank(self.currentAnswerId, data.isThanked, self:runIfAlive(function(success, isThank) -- 添加 runIfAlive
+  self.model:thank(self.currentAnswerId, data.isThanked, function(success, isThank)
     if success then
       data.isThanked = isThank
       data.thanksCount = data.thanksCount + (isThank and 1 or -1)
       self:updateBottomBar(data)
       tip(isThank and "感谢成功" or "取消感谢")
     end
-  end))
+  end)
 end
 
 function AnswerFragment:onComment()
@@ -674,7 +674,7 @@ function AnswerFragment:onCollect(autoToggle)
     contentId = self.currentAnswerId,
     contentType = "answer",
     autoToggle = autoToggle or false,
-    onSuccess = function(stillInAnyCollection, addCount)
+    onSuccess = self:runIfAlive(function(stillInAnyCollection, addCount)
       if stillInAnyCollection then
         data.favlistsCount = (data.favlistsCount or 0) + 1
         data.isFavorited = true
@@ -688,10 +688,10 @@ function AnswerFragment:onCollect(autoToggle)
       and (autoToggle and "已收藏到默认收藏夹" or "已添加到收藏夹")
       or (autoToggle and "已从默认收藏夹取消收藏" or "已从收藏夹移除")
       tip(msg)
-    end,
-    onError = function(err)
+    end),
+    onError = self:runIfAlive(function(err)
       tip(err or "操作失败")
-    end
+    end)
   })
 end
 

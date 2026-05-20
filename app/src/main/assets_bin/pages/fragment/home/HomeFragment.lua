@@ -464,7 +464,7 @@ function HomeFragment:showMoreOptionsDialog()
       local url = urls[selectedIndex] or urls[1]
       if url == "block_manage" then
         Router.go("people_list", { title = "屏蔽用户列表",id = "self", type = "block_all" })
-       elseif url == "ask" Router.go("browser", { url = "https://www.zhihu.com", type = "ask", ua = "pc" })
+       elseif url == "ask" then Router.go("browser", { url = "https://www.zhihu.com", type = "ask", ua = "pc" })
        else Router.go("browser", { url = url })
       end
   end })

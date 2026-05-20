@@ -6,7 +6,7 @@ import "android.net.Uri"
 import "androidx.recyclerview.widget.LinearLayoutManager"
 
 local BaseFragment = require("pages.base.BaseFragment")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local OpenSourceFragment = Extensions.Class(BaseFragment)
 OpenSourceFragment:chainUp("onDestroy")
@@ -73,10 +73,10 @@ function OpenSourceFragment:initListView()
   if not views.recycler_view then return end
   local selfRef = self
 
-  self.adapter = SimpleAdapter.new({
+  self.adapter = SimpleRecyclerAdapter.new({
     items = self.items,
     onCreateView = function()
-      return SimpleAdapter.inflate(Layouts.pages.open_source.item)
+      return SimpleRecyclerAdapter.inflate(Layouts.pages.open_source.item)
     end,
     onBind = function(views, item, position, holder)
       views.name.text = item.name

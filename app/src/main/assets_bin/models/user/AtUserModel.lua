@@ -2,7 +2,7 @@
 -- @用户搜索模型（使用 PageToolModel，自带搜索和分页）
 
 local PageToolModel = require("models.base.PageToolModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local AtUserModel = Extensions.Class(PageToolModel)
 AtUserModel:chainUp("destroy")
@@ -48,10 +48,10 @@ function AtUserModel:createAdapter(dataList, key)
   local selfRef = self
   local colors = AppTheme.getColors()
 
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
-      return SimpleAdapter.inflate({
+      return SimpleRecyclerAdapter.inflate({
         LinearLayoutCompat,
         orientation = "horizontal",
         layout_width = "match_parent",

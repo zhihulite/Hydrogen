@@ -251,7 +251,7 @@ end
 ---@param super table|nil 父类（可选）
 ---@param default_args table|function|nil 默认构造参数（无参实例化时自动传入）
 ---@return table 新创建的类
-function class(super, default_args)
+local function class(super, default_args)
   local cls = {}
   local vtb = {}
   _class_vtb[cls] = vtb

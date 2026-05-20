@@ -2,7 +2,7 @@
 -- 用户主页 - PageToolModel
 
 local PageToolModel = require("models.base.PageToolModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 local UserModel = require("models.user.UserModel")
 
 local PeopleModel = Extensions.Class(PageToolModel)
@@ -396,7 +396,7 @@ end
 
 function PeopleModel:createAdapter(dataList)
   local selfRef = self
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = dataList,
     getItemViewType = function(position, item)
       if not item.voteupCount and not item.commentCount then return 3 end
@@ -405,7 +405,7 @@ function PeopleModel:createAdapter(dataList)
       return 0
     end,
     onCreateView = function(viewType)
-      return SimpleAdapter.inflate(Layouts.cards.people_content)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.people_content)
     end,
     onBind = function(views, item, position, holder)
       views.action_text.text = item.actionText or ""

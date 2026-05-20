@@ -4,7 +4,7 @@
 import "androidx.recyclerview.widget.LinearLayoutManager"
 
 local BaseFragment = require("pages.base.BaseFragment")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local ThemePickerFragment = Extensions.Class(BaseFragment)
 ThemePickerFragment:chainUp("onDestroy")
@@ -90,13 +90,13 @@ function ThemePickerFragment:initListView()
 
   local selfRef = self
 
-  self.adapter = SimpleAdapter.new({
+  self.adapter = SimpleRecyclerAdapter.new({
     items = self.items,
     getItemViewType = function(position, item)
       return 0
     end,
     onCreateView = function()
-      return SimpleAdapter.inflate(Layouts.pages.theme_picker.item)
+      return SimpleRecyclerAdapter.inflate(Layouts.pages.theme_picker.item)
     end,
     onBind = function(views, item, position, holder)
       if views.title then

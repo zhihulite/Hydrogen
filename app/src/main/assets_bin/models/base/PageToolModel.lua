@@ -53,7 +53,7 @@ end
 --- 创建适配器
 --- @param dataList table 当前页的数据列表
 --- @param key string 页面标识
---- @return SimpleAdapter
+--- @return SimpleRecyclerAdapter
 function PageToolModel:createAdapter(dataList, key)
   error("必须实现 createAdapter(dataList, key)")
 end
@@ -178,6 +178,8 @@ function PageToolModel:setupTabs(viewPager, tabLayout, defaultTab)
   return self.pageTool
 end
 
+-- 公共方法（单页模式请勿传入key）---------------------------------------------
+
 --- 检测是否存活
 function PageToolModel:isAlive()
   return not self.isDestroyed
@@ -195,8 +197,6 @@ function PageToolModel:runIfAlive(callback)
     end
   end
 end
-
--- 公共方法（单页模式请勿传入key）---------------------------------------------
 
 --- 刷新页面（单页模式请勿传入key）
 --- @param key string|nil
@@ -280,6 +280,7 @@ function PageToolModel:getAllRecyclerViews()
   if not self.pageTool then return rvs end
 
   for i, key in ipairs(self.pageTool.pageKeys or {}) do
+    -- 跳过前置页面
     if not self:isPrePageByKey(key) then
       local rv = self.pageTool:getPageView(key)
       if rv then
@@ -288,6 +289,7 @@ function PageToolModel:getAllRecyclerViews()
     end
   end
 
+  -- 单页模式兜底
   if #rvs == 0 and self.pageTool.isSingle and not self:isCurrentPagePrePage() then
     local rv = self.pageTool:getPageView()
     if rv then
@@ -306,7 +308,5 @@ function PageToolModel:destroy()
     self.pageTool = nil
   end
 end
-
-return PageToolModel
 
 return PageToolModel

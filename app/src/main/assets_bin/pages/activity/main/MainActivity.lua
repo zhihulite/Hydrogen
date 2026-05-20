@@ -16,6 +16,11 @@ MainActivity:chainUp("onDestroy")
 
 local _transition_name = "shared_element"
 
+local appR = luajava.bindClass("com.zhihu.hydrogen.x.R")
+local TAG_LAST_TIME = appR.id.tag_last_time
+local TAG_LAST_NAME = appR.id.tag_last_name
+
+
 function MainActivity:ctor()
   self.leftContainer = nil
   self.rightContainer = nil
@@ -132,10 +137,44 @@ import "com.google.android.material.transition.MaterialContainerTransform"
 import "com.google.android.material.transition.MaterialArcMotion"
 import "androidx.transition.TransitionSet"
 
+-- 获取目标容器（根据时间戳和名称智能切换）
+function MainActivity:getTargetContainer(name)
+  if not self.isParallelWorld then
+    return self.leftContainer
+  end
+
+  -- 如果当前容器正在显示同名页面，则复用该容器
+  local leftName = self.leftContainer.getTag(TAG_LAST_NAME)
+  local rightName = self.rightContainer.getTag(TAG_LAST_NAME)
+
+  if name and rightName == name then
+    return self.rightContainer
+   elseif name and leftName == name then
+    return self.leftContainer
+  end
+
+  -- 平行世界模式：根据时间戳选择较旧的容器
+  local leftTime = tonumber(self.leftContainer.getTag(TAG_LAST_TIME)) or 0
+  local rightTime = tonumber(self.rightContainer.getTag(TAG_LAST_TIME)) or 0
+
+  if leftTime > rightTime then
+    return self.rightContainer -- 左侧更新，选右侧
+   else
+    return self.leftContainer -- 右侧更新或相等，选左侧
+  end
+end
+
+-- 更新容器时间戳
+function MainActivity:updateContainerTime(container, name)
+  container.setTag(TAG_LAST_TIME, os.time())
+  container.setTag(TAG_LAST_NAME, name)
+end
+
 function MainActivity:setupFragmentLoader()
   local selfRef = self
   local function fragmentLoader(data)
-    local targetContainer = selfRef.isParallelWorld and selfRef.rightContainer or selfRef.leftContainer
+    -- 智能选择目标容器
+    local targetContainer = selfRef:getTargetContainer(data.name)
     if not targetContainer then
       print("容器不存在")
       return false
@@ -182,7 +221,11 @@ function MainActivity:setupFragmentLoader()
     end
     transaction.commit()
 
-    if data.name == "right" then
+    -- 更新容器时间戳
+    selfRef:updateContainerTime(targetContainer, data.name)
+
+    -- 更新当前 Fragment 引用
+    if targetContainer == selfRef.rightContainer then
       selfRef.currentRightFragment = fragmentModule
      else
       selfRef.currentLeftFragment = fragmentModule

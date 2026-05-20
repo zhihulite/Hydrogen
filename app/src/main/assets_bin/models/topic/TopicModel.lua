@@ -2,7 +2,7 @@
 -- 话题详情 - PageToolModel（多Tab，第一页固定头部）
 
 local PageToolModel = require("models.base.PageToolModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local TopicModel = Extensions.Class(PageToolModel)
 TopicModel:chainUp("destroy")
@@ -205,10 +205,10 @@ end
 
 function TopicModel:createAdapter(dataList, key)
   local selfRef = self
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
-      return SimpleAdapter.inflate(Layouts.cards.topic)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.topic)
     end,
     onBind = function(views, item, position, holder)
       views.title.text = item.title

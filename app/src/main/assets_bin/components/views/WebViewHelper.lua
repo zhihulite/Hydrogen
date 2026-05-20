@@ -268,11 +268,9 @@ function M:setWebChromeClient(callbacks)
       _G.webViewfullscreenMode = false
       self.webView.setVisibility(View.VISIBLE)
       rootView.removeView(webVideoView)
-      Handler().postDelayed({
-        run = self:runIfAlive(function()
+      task(200, self:runIfAlive(function()
           self.webView.scrollTo(0, savedScrollY or 0)
-        end)
-      }, 200)
+        end))
     end,
     onJsAlert = function(view, url, message, result)
       MaterialAlertDialogBuilder(activity)

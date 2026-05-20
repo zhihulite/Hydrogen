@@ -2,7 +2,7 @@
 -- 评论列表 - PageToolModel（支持分页、URL 点击、表情包）
 
 local PageToolModel = require("models.base.PageToolModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 import "android.text.SpannableStringBuilder"
 import "android.text.style.URLSpan"
@@ -263,10 +263,10 @@ end
 function CommentModel:createAdapter(dataList)
   local selfRef = self
 
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
-      return SimpleAdapter.inflate(Layouts.cards.comment)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.comment)
     end,
     onBind = function(views, item, position, holder)
 
@@ -357,10 +357,10 @@ function CommentModel:setupChildRecycler(childRecycler, item)
   end
 
   local selfRef = self
-  local adapter = SimpleAdapter.new({
+  local adapter = SimpleRecyclerAdapter.new({
     items = item.childComments,
     onCreateView = function()
-      return SimpleAdapter.inflate(Layouts.cards.comment_children)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.comment_children)
     end,
     onBind = function(views, childItem, position, holder)
       views.author_name.text = childItem.title or ""

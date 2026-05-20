@@ -2,7 +2,7 @@
 -- 搜索结果 - PageToolModel
 
 local PageToolModel = require("models.base.PageToolModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local SearchResultModel = Extensions.Class(PageToolModel)
 SearchResultModel:chainUp("destroy")
@@ -75,10 +75,10 @@ end
 function SearchResultModel:createAdapter(dataList)
   local selfRef = self
 
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
-      return SimpleAdapter.inflate(Layouts.cards.search_result)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.search_result)
     end,
     onBind = function(views, item, position, holder)
       views.action_text.text = item.actionText or ""

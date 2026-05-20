@@ -6,7 +6,7 @@ import "androidx.recyclerview.widget.LinearLayoutManager"
 import "com.google.android.material.dialog.MaterialAlertDialogBuilder"
 
 local BaseFragment = require("pages.base.BaseFragment")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 local TabBar = require("components.views.TabBar")
 
 local HistoryFragment = Extensions.Class(BaseFragment)
@@ -115,10 +115,10 @@ function HistoryFragment:initListView()
   if not views.recycler_view then return end
 
   local selfRef = self
-  self.adapter = SimpleAdapter.new({
+  self.adapter = SimpleRecyclerAdapter.new({
     items = self.items,
     onCreateView = function()
-      return SimpleAdapter.inflate(Layouts.cards.history)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.history)
     end,
     onBind = function(views, item, position)
       views.type_text.text = item.typeName or "内容"

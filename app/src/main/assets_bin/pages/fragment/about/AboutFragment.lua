@@ -7,7 +7,7 @@ import "androidx.recyclerview.widget.LinearLayoutManager"
 import "com.google.android.material.dialog.MaterialAlertDialogBuilder"
 
 local BaseFragment = require("pages.base.BaseFragment")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local AboutFragment = Extensions.Class(BaseFragment)
 AboutFragment:chainUp("onDestroy")
@@ -139,7 +139,7 @@ function AboutFragment:initListView()
   local views = self.views
 
   local selfRef = self
-  self.adapter = SimpleAdapter.new({
+  self.adapter = SimpleRecyclerAdapter.new({
     items = self.items,
     getItemViewType = function(position, item)
       if item.type == "header" then return 0
@@ -149,10 +149,10 @@ function AboutFragment:initListView()
       end
     end,
     onCreateView = function(viewType)
-      if viewType == 0 then return SimpleAdapter.inflate(Layouts.pages.about.items.header)
-       elseif viewType == 1 then return SimpleAdapter.inflate(Layouts.pages.about.items.title)
-       elseif viewType == 2 then return SimpleAdapter.inflate(Layouts.pages.about.items.developer)
-       else return SimpleAdapter.inflate(Layouts.pages.about.items.item)
+      if viewType == 0 then return SimpleRecyclerAdapter.inflate(Layouts.pages.about.items.header)
+       elseif viewType == 1 then return SimpleRecyclerAdapter.inflate(Layouts.pages.about.items.title)
+       elseif viewType == 2 then return SimpleRecyclerAdapter.inflate(Layouts.pages.about.items.developer)
+       else return SimpleRecyclerAdapter.inflate(Layouts.pages.about.items.item)
       end
     end,
     onBind = function(views, item, position, holder)

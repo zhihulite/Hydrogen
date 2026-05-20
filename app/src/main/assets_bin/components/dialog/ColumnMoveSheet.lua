@@ -12,7 +12,7 @@ import "com.google.android.material.button.MaterialButton"
 import "com.google.android.material.bottomsheet.BottomSheetDialog"
 import "com.google.android.material.divider.MaterialDivider"
 
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 --- 显示专栏选择 BottomSheet（将内容移动到专栏）
 --- @param options table
@@ -149,10 +149,10 @@ function M.show(options)
   end
 
   -- 适配器
-  adapter = SimpleAdapter.new({
+  adapter = SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
-      return SimpleAdapter.inflate({
+      return SimpleRecyclerAdapter.inflate({
         LinearLayoutCompat,
         orientation = "vertical",
         layout_width = "match_parent",

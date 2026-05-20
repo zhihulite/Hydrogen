@@ -165,14 +165,14 @@ function SearchFragment:setupAdapter(dataType, containerView)
   local adapterKey = dataType == "hot" and "hotAdapter" or "suggestAdapter"
   local s = self
 
-  local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
-  local adapter = SimpleAdapter.new({
+  local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
+  local adapter = SimpleRecyclerAdapter.new({
     items = getItems(),
     getItemViewType = function(position, item)
       return 0
     end,
     onCreateView = function(viewType)
-      return SimpleAdapter.inflate(Layouts.cards.search_suggestion)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.search_suggestion)
     end,
     onBind = function(views, item, position, holder)
       views.text.text = tostring(item)

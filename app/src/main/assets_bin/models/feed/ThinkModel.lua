@@ -2,7 +2,7 @@
 -- 想法流 - PageToolModel
 
 local PageToolModel = require("models.base.PageToolModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local ThinkModel = Extensions.Class(PageToolModel)
 ThinkModel:chainUp("destroy")
@@ -44,10 +44,10 @@ end
 function ThinkModel:createAdapter(dataList)
   local selfRef = self
 
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
-      return SimpleAdapter.inflate(Layouts.cards.think)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.think)
     end,
     onBind = function(views, item, position, holder)
       views.title.text = item.title or ""

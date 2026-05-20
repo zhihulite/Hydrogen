@@ -392,4 +392,26 @@ function M.debounce(func,delay)
   end
 end
 
+--- 创建固定行为的 Java 代理对象
+--- 
+--- 修复 luajava.createProxy 的以下问题：
+--- 1. 每次创建代理对象的 equals/hashCode 行为不一致
+--- 2. 无法在集合（如 HashSet、HashMap）中正确去重
+--- 3. 代理对象之间无法正确比较相等性
+---
+--- @param interfaceName string 接口类名
+--- @param methods table 方法实现表
+--- @return userdata 具有稳定 equals/hashCode 的 Java 代理对象
+function M.createFixedProxy(interfaceName, methods)
+  local proxy = nil
+  local uniqueId = math.random(1, 99999999) .. "_" .. os.time()
+  local m = {}
+  for k, v in pairs(methods) do m[k] = v end
+  m.equals = function(other) return tostring(proxy) == tostring(other) end
+  m.hashCode = function() return tonumber(uniqueId:match("%d+")) or 12345 end
+  m.toString = function() return "FixedProxy@" .. uniqueId end
+  proxy = luajava.createProxy(interfaceName, m)
+  return proxy
+end
+
 return M

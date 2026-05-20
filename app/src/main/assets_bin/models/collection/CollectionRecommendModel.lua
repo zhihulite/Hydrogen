@@ -2,7 +2,7 @@
 -- 推荐收藏夹模型 - 使用 PageToolModel
 
 local PageToolModel = require("models.base.PageToolModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local CollectionRecommendModel = Extensions.Class(PageToolModel)
 CollectionRecommendModel:chainUp("destroy")
@@ -37,10 +37,10 @@ function CollectionRecommendModel:createAdapter(dataList)
   local selfRef = self
   local colors = AppTheme.getColors()
 
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
-      return SimpleAdapter.inflate(Layouts.cards.collection_recommend)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.collection_recommend)
     end,
     onBind = function(views, item, position)
       views.title.text = item.title or ""

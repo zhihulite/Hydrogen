@@ -25,7 +25,7 @@ page:start(page_params)
 
 -- 代理所有生命周期方法给 page
 local activityMethods = {
-  "onResume", "onResume", "onPause", "onDestroy",
+  "onResume", "onPause", "onDestroy",
   "onKeyDown", "onKeyUp", "onConfigurationChanged",
   "onActivityResult"
 }

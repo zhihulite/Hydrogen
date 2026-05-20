@@ -2,7 +2,7 @@
 -- 热榜 - PageModel（一次性加载，不支持分页）
 
 local PageModel = require("models.base.PageModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local HotModel = Extensions.Class(PageModel)
 HotModel:chainUp("destroy")
@@ -43,13 +43,13 @@ function HotModel:createAdapter()
   local closeImage = Extensions.Config.getBool(Constants.SharedDataKeys.HOT_CLOSE_IMAGE)
   local closeHeat = Extensions.Config.getBool(Constants.SharedDataKeys.HOT_CLOSE_HOTNESS)
 
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = self.items,
     getItemViewType = function(position, item)
       return 0
     end,
     onCreateView = function(viewType)
-      return SimpleAdapter.inflate(Layouts.cards.hot)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.hot)
     end,
     onBind = function(views, item, position, holder)
       views.rank.text = tostring(item.rank)

@@ -21,7 +21,7 @@ import "android.text.style.ReplacementSpan"
 import "android.text.style.CharacterStyle"
 import "androidx.core.widget.NestedScrollView"
 
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 local ImageUploader = require("services.api.ImageUploader")
 local MentionSpan = require("components.span.MentionSpan")
 local EmojiSpan = require("components.span.EmojiSpan")
@@ -403,10 +403,10 @@ function M.show(opts)
     end)
   end
 
-  local emojiAdapter = SimpleAdapter.new({
+  local emojiAdapter = SimpleRecyclerAdapter.new({
     items = emojiList,
     onCreateView = function()
-      return SimpleAdapter.inflate({
+      return SimpleRecyclerAdapter.inflate({
         LinearLayoutCompat,
         layout_width = "match_parent",
         layout_height = "48dp",

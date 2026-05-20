@@ -6,17 +6,10 @@ import "androidx.appcompat.widget.LinearLayoutCompat"
 import "android.widget.FrameLayout"
 import "com.google.android.material.textview.MaterialTextView"
 import "com.google.android.material.imageview.ShapeableImageView"
-import "com.google.android.material.shape.ShapeAppearanceModel"
-import "com.google.android.material.shape.CornerFamily"
 
 local colors = AppTheme.getColors()
 
-local appR = luajava.bindClass("com.zhihu.hydrogen.x.R")
-local welcomeDrawable = activity.getDrawable(appR.drawable.welcome)
-
-local circleShape = ShapeAppearanceModel.builder()
-.setAllCorners(CornerFamily.ROUNDED, 9999)
-.build()
+local iconDrawable = activity.getPackageManager().getApplicationIcon(activity.getPackageName())
 
 return {
   LinearLayoutCompat,
@@ -44,8 +37,7 @@ return {
           layout_gravity = "center",
           layout_width = "64dp",
           layout_height = "64dp",
-          shapeAppearanceModel = circleShape,
-          imageDrawable = welcomeDrawable,
+          imageDrawable = iconDrawable,
         },
         {
           MaterialTextView,
@@ -74,8 +66,7 @@ return {
           layout_gravity = "center",
           layout_width = "64dp",
           layout_height = "64dp",
-          shapeAppearanceModel = circleShape,
-          imageDrawable = welcomeDrawable,
+          imageDrawable = iconDrawable,
         },
         {
           MaterialTextView,

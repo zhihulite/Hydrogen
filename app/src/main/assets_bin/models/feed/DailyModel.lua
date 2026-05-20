@@ -2,7 +2,7 @@
 -- 日报 - PageModel（下拉刷新最新，上拉加载前一天）
 
 local PageModel = require("models.base.PageModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local DailyModel = Extensions.Class(PageModel)
 DailyModel:chainUp("destroy")
@@ -42,10 +42,10 @@ end
 
 function DailyModel:createAdapter()
   local selfRef = self
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = self.items,
     onCreateView = function()
-      return SimpleAdapter.inflate(Layouts.cards.daily)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.daily)
     end,
     onBind = function(views, item, position, holder)
       views.title.text = item.title or ""

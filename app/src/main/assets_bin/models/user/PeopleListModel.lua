@@ -2,7 +2,7 @@
 -- 用户列表 - PageToolModel（单页）
 
 local PageToolModel = require("models.base.PageToolModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 local UserModel = require("models.user.UserModel")
 
 local PeopleListModel = Extensions.Class(PageToolModel)
@@ -102,10 +102,10 @@ end
 function PeopleListModel:createAdapter(dataList)
   local selfRef = self
 
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
-      return SimpleAdapter.inflate(Layouts.cards.people_list)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.people_list)
     end,
     onBind = function(views, item, position, holder)
       views.title.text = item.title or ""

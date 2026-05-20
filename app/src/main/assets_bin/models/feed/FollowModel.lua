@@ -2,7 +2,7 @@
 -- 关注流/推荐流 - PageToolModel（多 Tab，支持分组展开）
 
 local PageToolModel = require("models.base.PageToolModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local FollowModel = Extensions.Class(PageToolModel)
 FollowModel:chainUp("destroy")
@@ -250,7 +250,7 @@ end
 function FollowModel:createAdapter(dataList)
   local selfRef = self
   local adapter
-  adapter = SimpleAdapter.new({
+  adapter = SimpleRecyclerAdapter.new({
     items = dataList,
     getItemViewType = function(position, item)
       if item.isGroup then return VIEW_GROUP end
@@ -258,9 +258,9 @@ function FollowModel:createAdapter(dataList)
     end,
     onCreateView = function(viewType)
       if viewType == VIEW_GROUP then
-        return SimpleAdapter.inflate(Layouts.cards.follow_group)
+        return SimpleRecyclerAdapter.inflate(Layouts.cards.follow_group)
        else
-        return SimpleAdapter.inflate(Layouts.cards.follow)
+        return SimpleRecyclerAdapter.inflate(Layouts.cards.follow)
       end
     end,
     onBind = function(views, item, position, holder)
@@ -387,10 +387,10 @@ function FollowModel:setupSubList(recyclerView, items)
   and Layouts.cards.follow_group_people_sub
   or Layouts.cards.follow_group_sub
 
-  local adapter = SimpleAdapter.new({
+  local adapter = SimpleRecyclerAdapter.new({
     items = items,
     onCreateView = function()
-      return SimpleAdapter.inflate(layoutFile)
+      return SimpleRecyclerAdapter.inflate(layoutFile)
     end,
     onBind = function(views, subItem, position, holder)
       if isPeopleType then

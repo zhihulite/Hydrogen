@@ -2,7 +2,7 @@
 -- 收藏夹Tab页（我的收藏/关注的收藏）- 使用 PageToolModel 多页模式
 
 local PageToolModel = require("models.base.PageToolModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local CollectionTabModel = Extensions.Class(PageToolModel)
 CollectionTabModel:chainUp("destroy")
@@ -72,10 +72,10 @@ end
 function CollectionTabModel:createAdapter(dataList)
   local selfRef = self
 
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
-      return SimpleAdapter.inflate(Layouts.cards.collection_tab)
+      return SimpleRecyclerAdapter.inflate(Layouts.cards.collection_tab)
     end,
     onBind = function(views, item, position, holder)
       if item.isDefault then

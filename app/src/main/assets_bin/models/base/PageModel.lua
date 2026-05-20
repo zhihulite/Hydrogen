@@ -22,7 +22,7 @@ function PageModel:ctor()
 end
 
 -- 子类必须实现：创建适配器
--- @return SimpleAdapter 实例
+-- @return SimpleRecyclerAdapter 实例
 function PageModel:createAdapter()
   error("子类必须实现 createAdapter()")
 end
@@ -148,7 +148,7 @@ function PageModel:load(params)
               self.needCheckFullPage = false
             end
           end
-        }, 100)
+        }, 50)
 
       end
     end

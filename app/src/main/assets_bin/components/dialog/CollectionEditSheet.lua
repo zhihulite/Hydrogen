@@ -13,11 +13,6 @@ import "android.view.View"
 
 local MaterialWidgets = Helpers.MaterialWidgets
 
-local function urlEncode(s)
-  local s = string.gsub(s, "([^%w%.%- ])", function(c) return string.format("%%%02X", string.byte(c)) end)
-  return string.gsub(s, " ", "+")
-end
-
 --- 显示收藏夹弹窗（自动判断创建/编辑）
 --- @param opts table
 --- @param opts.collectionId string|nil 收藏夹ID（有则为编辑，无则为创建）

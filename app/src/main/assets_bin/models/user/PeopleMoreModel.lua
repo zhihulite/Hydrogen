@@ -2,7 +2,7 @@
 -- 用户更多内容 - PageToolModel（支持分页）
 
 local PageToolModel = require("models.base.PageToolModel")
-local SimpleAdapter = require("components.adapter.SimpleRecyclerAdapter")
+local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local PeopleMoreModel = Extensions.Class(PageToolModel)
 PeopleMoreModel:chainUp("destroy")
@@ -159,7 +159,7 @@ end
 function PeopleMoreModel:createAdapter(dataList)
   local selfRef = self
 
-  return SimpleAdapter.new({
+  return SimpleRecyclerAdapter.new({
     items = dataList,
     getItemViewType = function(position, item)
       if selfRef.moreType:find("划线") then return 1 end
@@ -167,9 +167,9 @@ function PeopleMoreModel:createAdapter(dataList)
     end,
     onCreateView = function(viewType)
       if viewType == 1 then
-        return SimpleAdapter.inflate(Layouts.cards.underline)
+        return SimpleRecyclerAdapter.inflate(Layouts.cards.underline)
        else
-        return SimpleAdapter.inflate(Layouts.cards.people_more)
+        return SimpleRecyclerAdapter.inflate(Layouts.cards.people_more)
       end
     end,
     onBind = function(views, item, position, holder)

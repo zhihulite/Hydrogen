@@ -111,7 +111,7 @@ function table.size(t)
 end
 
 -- 请求头
-function buildHeaders()
+_G.buildHeaders = function()
   -- base 专用请求头（只带 cookie，不带 Authorization）
   local baseHeaders = {
     ["x-udid"] = _G.DEVICE_ID,
