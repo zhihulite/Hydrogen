@@ -3,7 +3,7 @@
   "component": {
     "group": "com.google.android.material",
     "module": "material",
-    "version": "1.14.0-alpha03",
+    "version": "1.14.0",
     "attributes": {
       "org.gradle.status": "release"
     }
@@ -80,6 +80,13 @@
           }
         },
         {
+          "group": "androidx.customview",
+          "module": "customview",
+          "version": {
+            "requires": "1.2.0"
+          }
+        },
+        {
           "group": "androidx.drawerlayout",
           "module": "drawerlayout",
           "version": {
@@ -152,13 +159,13 @@
       ],
       "files": [
         {
-          "name": "material-1.14.0-alpha03.aar",
-          "url": "material-1.14.0-alpha03.aar",
-          "size": 2543125,
-          "sha512": "a2515bbe4b6403bba41a6459807f9f4c9fce18ccce209030004300708c463c5ef74593733a24ba885f545f531762b054d7fe5222047b78410bdc8d9de4de8f96",
-          "sha256": "d0c2b6280c2102317c817b52cf523349c7ce8bbbc18d7c96527a4872ce2518eb",
-          "sha1": "9621c7d9805e9a0b798c325dd5b6e3450ff88156",
-          "md5": "e7451852ef492c536b2fd555c412aed6"
+          "name": "material-1.14.0.aar",
+          "url": "material-1.14.0.aar",
+          "size": 2746459,
+          "sha512": "a1d63544b99b8a11b9bc113e4c71308faeb83db6eeb13d0df65ee74d2bcb07a1aea1409bd1114f7efec12f55368c7c4c1f4a01598e9edee173ce2212765a05c2",
+          "sha256": "fb41a654872d15d4a686b6d57099291559ddcb354d365c3248acef81f142bcc3",
+          "sha1": "9e08e90b29f32907ee37e623975c6c4e8b1e6127",
+          "md5": "c11371423e1cb524b1ff92a00d33f47c"
         }
       ]
     },
@@ -245,6 +252,13 @@
           }
         },
         {
+          "group": "androidx.customview",
+          "module": "customview",
+          "version": {
+            "requires": "1.2.0"
+          }
+        },
+        {
           "group": "androidx.drawerlayout",
           "module": "drawerlayout",
           "version": {
@@ -317,13 +331,13 @@
       ],
       "files": [
         {
-          "name": "material-1.14.0-alpha03.aar",
-          "url": "material-1.14.0-alpha03.aar",
-          "size": 2543125,
-          "sha512": "a2515bbe4b6403bba41a6459807f9f4c9fce18ccce209030004300708c463c5ef74593733a24ba885f545f531762b054d7fe5222047b78410bdc8d9de4de8f96",
-          "sha256": "d0c2b6280c2102317c817b52cf523349c7ce8bbbc18d7c96527a4872ce2518eb",
-          "sha1": "9621c7d9805e9a0b798c325dd5b6e3450ff88156",
-          "md5": "e7451852ef492c536b2fd555c412aed6"
+          "name": "material-1.14.0.aar",
+          "url": "material-1.14.0.aar",
+          "size": 2746459,
+          "sha512": "a1d63544b99b8a11b9bc113e4c71308faeb83db6eeb13d0df65ee74d2bcb07a1aea1409bd1114f7efec12f55368c7c4c1f4a01598e9edee173ce2212765a05c2",
+          "sha256": "fb41a654872d15d4a686b6d57099291559ddcb354d365c3248acef81f142bcc3",
+          "sha1": "9e08e90b29f32907ee37e623975c6c4e8b1e6127",
+          "md5": "c11371423e1cb524b1ff92a00d33f47c"
         }
       ]
     }

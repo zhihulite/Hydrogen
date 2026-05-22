@@ -69,12 +69,12 @@ end
 
 function M:runIfAlive(callback)
   if not callback then
-    return function() end
+    error("WebViewHeleper:runIfAlive 必须为 function 类型")
   end
 
   return function(...)
     if self:isAlive() then
-      callback(...)
+      return callback(...)
     end
   end
 end
@@ -193,14 +193,14 @@ function M:setWebViewClient(callbacks)
 
   -- 默认回调必须执行，用户回调可选（用户返回值优先）
   for k, defaultFunc in pairs(defaultCallbacks) do
-    merged[k] = function(...)
-      local defaultResult = self:runIfAlive(defaultFunc)(...)
+    merged[k] = self:runIfAlive(function(...)
+      local defaultResult = defaultFunc(...)
       if callbacks[k] then
-        local userResult = self:runIfAlive(callbacks[k])(...)
+        local userResult = callbacks[k](...)
         return userResult or defaultResult
       end
       return defaultResult
-    end
+    end)
   end
 
   -- 用户独有的回调（默认回调中不存在的），直接安全包装
@@ -269,8 +269,8 @@ function M:setWebChromeClient(callbacks)
       self.webView.setVisibility(View.VISIBLE)
       rootView.removeView(webVideoView)
       task(200, self:runIfAlive(function()
-          self.webView.scrollTo(0, savedScrollY or 0)
-        end))
+        self.webView.scrollTo(0, savedScrollY or 0)
+      end))
     end,
     onJsAlert = function(view, url, message, result)
       MaterialAlertDialogBuilder(activity)

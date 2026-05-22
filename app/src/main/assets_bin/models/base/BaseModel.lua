@@ -30,7 +30,7 @@ function BaseModel:runIfAlive(callback)
   end
   return function(...)
     if self:isAlive() then
-      callback(...)
+      return callback(...)
     end
   end
 end

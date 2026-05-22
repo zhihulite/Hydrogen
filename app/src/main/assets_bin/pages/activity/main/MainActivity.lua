@@ -254,29 +254,25 @@ function MainActivity:setupSharedElementTransition(transaction, fragment, fragme
   -- 设置源视图名称
   ViewCompat.setTransitionName(sharedView, _transition_name)
 
-  -- 获取窗口圆角
-  local radii = self:getWindowCornerRadii()
-  local targetShape = self:buildTargetShape(radii)
-
-  -- 容器变换
-  local containerTransform = MaterialContainerTransform(activity, true)
-  .setStartView(sharedView)
-  .setEndShapeAppearanceModel(targetShape)
-  .setPathMotion(MaterialArcMotion())
-  .setScrimColor(0x99000000)
-
   -- 覆盖默认动画，设置完整转场
   fragmentModule:setOnViewCreatedCallback(function(container)
     ViewCompat.setTransitionName(container, _transition_name)
 
-    self:setupEnterTransition(fragment, container, containerTransform)
+    self:setupEnterTransition(fragment, container, sharedView)
     self:setupReturnTransition(fragment, container, sharedView)
     fragment.startPostponedEnterTransition()
   end)
 end
 
 -- 设置进入转场
-function MainActivity:setupEnterTransition(fragment, container, containerTransform)
+function MainActivity:setupEnterTransition(fragment, container, sharedView)
+  -- 容器变换
+  local containerTransform = MaterialContainerTransform(activity, true)
+  .setStartView(sharedView)
+  .setPathMotion(MaterialArcMotion())
+  .setScrimColor(0x99000000)
+
+
   local axisForward = MaterialSharedAxis(MaterialSharedAxis.Z, true)
   .addTarget(container)
 
@@ -304,40 +300,9 @@ function MainActivity:setupReturnTransition(fragment, container, sharedView)
   .setOrdering(TransitionSet.ORDERING_TOGETHER)
   .addTransition(containerBackward)
   .addTransition(axisBackward)
-
-  fragment.setExitTransition(axisBackward)
+  
+  fragment.setExitTransition(backward)
   fragment.setReturnTransition(backward)
-end
-
--- 获取窗口圆角
-function MainActivity:getWindowCornerRadii()
-  local radii = {0, 0, 0, 0}
-  pcall(function()
-    local insets = activity.getWindow().getDecorView().getRootWindowInsets()
-    if insets then
-      radii[1] = insets.getRoundedCorner(0).getRadius()
-      radii[2] = insets.getRoundedCorner(1).getRadius()
-      radii[3] = insets.getRoundedCorner(2).getRadius()
-      radii[4] = insets.getRoundedCorner(3).getRadius()
-    end
-  end)
-
-  if radii[1] == 0 then
-    local defaultVal = tonumber(dp2px(16, true))
-    for i = 1, 4 do radii[i] = defaultVal end
-  end
-  return radii
-end
-
--- 构建目标形状
-function MainActivity:buildTargetShape(radii)
-  local ShapeAppearanceModel = luajava.bindClass("com.google.android.material.shape.ShapeAppearanceModel")
-  return ShapeAppearanceModel.builder()
-  .setTopLeftCornerSize(radii[1])
-  .setTopRightCornerSize(radii[2])
-  .setBottomRightCornerSize(radii[3])
-  .setBottomLeftCornerSize(radii[4])
-  .build()
 end
 
 function MainActivity:initLayout()
@@ -361,23 +326,45 @@ end
 function MainActivity:updateParallelWorld()
   local parallelEnabled = Extensions.Config.getBool(Constants.SharedDataKeys.PREDICTIVE_BACK)
   local newParallel = isTablet() and parallelEnabled
-
   if newParallel == self.isParallelWorld then
     return
   end
 
   self.isParallelWorld = newParallel
-  if self.isParallelWorld then
-    self.rightContainer.setVisibility(View.VISIBLE)
-   else
-    self.rightContainer.setVisibility(View.GONE)
-    if self.currentRightFragment then
-      local transaction = activity.getSupportFragmentManager().beginTransaction()
-      transaction.remove(self.currentRightFragment:getFragment())
-      transaction.commit()
-      self.currentRightFragment = nil
+
+  -- 延迟执行，等布局完成
+  activity.getDecorView().postDelayed(function()
+    local screenWidth = activity.getDecorView().width
+    local decorView = activity.getWindow().getDecorView()
+
+    -- 获取 DecorView 的左右 padding
+    local paddingLeft = decorView.getPaddingLeft()
+    local paddingRight = decorView.getPaddingRight()
+
+    local leftLp = self.leftContainer.getLayoutParams()
+    local rightLp = self.rightContainer.getLayoutParams()
+
+    if self.isParallelWorld then
+      -- 并排模式：各占一半，减去 padding
+      local halfWidth = (screenWidth - paddingLeft - paddingRight) / 2
+      leftLp.width = halfWidth
+      rightLp.width = halfWidth
+      self.rightContainer.setVisibility(View.VISIBLE)
+     else
+      -- 普通模式：左边全屏，右边隐藏
+      leftLp.width = screenWidth - paddingLeft - paddingRight
+      self.rightContainer.setVisibility(View.GONE)
+      if self.currentRightFragment then
+        local transaction = activity.getSupportFragmentManager().beginTransaction()
+        transaction.remove(self.currentRightFragment:getFragment())
+        transaction.commit()
+        self.currentRightFragment = nil
+      end
     end
-  end
+
+    self.leftContainer.setLayoutParams(leftLp)
+    self.rightContainer.setLayoutParams(rightLp)
+  end, 50)
 end
 
 function MainActivity:onConfigurationChanged(newConfig)

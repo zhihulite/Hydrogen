@@ -129,7 +129,7 @@
         <activity
                 android:configChanges="mcc|mnc|locale|touchscreen|keyboard|navigation|screenLayout|fontScale|smallestScreenSize|keyboardHidden|orientation|screenSize|uiMode"
                 android:windowSoftInputMode="adjustResize|stateHidden"
-                android:exported="true"
+                android:exported="false"
                 android:name="com.hydrogen.Welcome"
                 android:theme="@style/Theme.Welcome" />
 

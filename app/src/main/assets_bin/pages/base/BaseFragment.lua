@@ -78,6 +78,9 @@ end
 --- @return LuaFragment Fragment 实例
 --- @note 此方法为 final 方法，子类不应重写
 function BaseFragment:getFragment(params)
+  if self.fragment then
+    return self.fragment
+  end
   self.initParams = params
   return self:createFragment(params)
 end
@@ -87,13 +90,6 @@ end
 --- @note 此方法为 final 方法，子类不应重写
 function BaseFragment:getContainer()
   return self.container
-end
-
---- 获取 Fragment 对象（final 方法，子类不应重写）
---- @return LuaFragment Fragment 对象
---- @note 此方法为 final 方法，子类不应重写
-function BaseFragment:getFragmentObject()
-  return self.fragment
 end
 
 -- 清理
@@ -150,8 +146,7 @@ BaseFragment:final(
 "createFragment",
 "setOnViewCreatedCallback",
 "getFragment",
-"getContainer",
-"getFragmentObject"
+"getContainer"
 )
 
 return BaseFragment

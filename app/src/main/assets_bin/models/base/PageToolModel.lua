@@ -180,24 +180,6 @@ end
 
 -- 公共方法（单页模式请勿传入key）---------------------------------------------
 
---- 检测是否存活
-function PageToolModel:isAlive()
-  return not self.isDestroyed
-end
-
---- 安全执行回调
-function PageToolModel:runIfAlive(callback)
-  if not callback then
-    return function() end
-  end
-
-  return function(...)
-    if self:isAlive() then
-      callback(...)
-    end
-  end
-end
-
 --- 刷新页面（单页模式请勿传入key）
 --- @param key string|nil
 function PageToolModel:refresh(key)

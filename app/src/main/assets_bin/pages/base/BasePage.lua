@@ -30,7 +30,7 @@ function BasePage:runIfAlive(callback)
   end
   return function(...)
     if self:isAlive() then
-      callback(...)
+      return callback(...)
     end
   end
 end
@@ -140,15 +140,7 @@ function BasePage:build()
   return self.root_view
 end
 
-function BasePage:findViewById(id)
-  return self.views[id]
-end
-
-function BasePage:setTitle(title)
-  self.views.title.setText(title)
-end
-
-BasePage:final("build", "setupEdgeToEdge", "findViewById", "setTitle", "isAlive", "runIfAlive")
+BasePage:final("build", "setupEdgeToEdge", "isAlive", "runIfAlive")
 BasePage:abstract("initLayout")
 
 return BasePage

@@ -7,12 +7,18 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
-import android.view.KeyEvent;
+import android.view.View;
+
+import androidx.activity.EdgeToEdge;
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.splashscreen.SplashScreen;
+
 import com.androlua.LuaApplication;
 import com.androlua.LuaUtil;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.zhihu.hydrogen.x.R;
 
 import java.io.File;
@@ -24,6 +30,11 @@ import net.lingala.zip4j.exception.ZipException;
 public class Welcome extends AppCompatActivity {
 
     private static final String TAG = "Welcome";
+    private static final String PREF_NAME = "appInfo";
+    private static final String KEY_LAST_UPDATE_TIME = "lastUpdateTime";
+    private static final String KEY_VERSION_NAME = "versionName";
+    private static final int MIN_DISPLAY_TIME = 500; // 最小显示 0.5 秒
+
     private String luaMdDir;
     private String localDir;
     private long lastTime;
@@ -31,109 +42,125 @@ public class Welcome extends AppCompatActivity {
     private SharedPreferences info;
     private String oldVersionName;
     private UpdateTask updateTask;
-    private boolean isActivityStarted = false; // 防止重复启动
+    private boolean isActivityStarted = false;
+    private OnBackPressedCallback backCallback;
+    private CircularProgressIndicator progressBar;
+    private long startTime;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        // 安装闪屏，兼容 Android 12+
+        EdgeToEdge.enable(this);
         SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
 
+        startTime = System.currentTimeMillis();
+        setupBackPressedCallback();
+        initAppInfo();
+
+        if (needUpdate()) {
+            startUpdate();
+        } else {
+            jumpToMain();
+        }
+    }
+
+    // 拦截返回键
+    private void setupBackPressedCallback() {
+        backCallback = new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                Log.d(TAG, "Back button intercepted");
+            }
+        };
+        getOnBackPressedDispatcher().addCallback(this, backCallback);
+    }
+
+    // 初始化应用信息
+    private void initAppInfo() {
         try {
-            PackageInfo packageInfo = getPackageManager().getPackageInfo(this.getPackageName(), 0);
+            PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
             lastTime = packageInfo.lastUpdateTime;
             versionName = packageInfo.versionName;
-            info = getSharedPreferences("appInfo", MODE_PRIVATE);
-            long oldLastTime = info.getLong("lastUpdateTime", 0);
-            oldVersionName = info.getString("versionName", "");
-
-            if (oldLastTime != lastTime) {
-                LuaApplication app = (LuaApplication) getApplication();
-                luaMdDir = app.getMdDir();
-                localDir = app.getLocalDir();
-
-                // 仅在需要更新时才设置布局
-                setContentView(R.layout.layout_welcome);
-                updateTask = new UpdateTask(this);
-                updateTask.execute();
-            } else {
-                // 无需更新，直接启动目标Activity
-                startActivity(false);
-            }
+            info = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+            oldVersionName = info.getString(KEY_VERSION_NAME, "");
         } catch (PackageManager.NameNotFoundException e) {
-            Log.e(TAG, "Package name not found", e);
+            Log.e(TAG, "Package not found", e);
             finish();
         } catch (Exception e) {
-            Log.e(TAG, "Error in onCreate", e);
+            Log.e(TAG, "Init failed", e);
             finish();
         }
+    }
+
+    // 判断是否需要更新
+    private boolean needUpdate() {
+        long oldLastTime = info.getLong(KEY_LAST_UPDATE_TIME, 0);
+        return oldLastTime != lastTime;
+    }
+
+    // 开始更新
+    private void startUpdate() {
+        LuaApplication app = (LuaApplication) getApplication();
+        luaMdDir = app.getMdDir();
+        localDir = app.getLocalDir();
+        setContentView(R.layout.layout_welcome);
+
+        progressBar = findViewById(R.id.circular_progress_indicator);
+        updateTask = new UpdateTask(this);
+        updateTask.execute("");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // 取消正在进行的异步任务，避免内存泄漏
+        if (backCallback != null) {
+            backCallback.remove();
+        }
         if (updateTask != null && !updateTask.isCancelled()) {
             updateTask.cancel(false);
         }
     }
 
-    // 同步的启动方法，防止重复调用
-    private synchronized void startActivity(Boolean isUpdate) {
-        if (isActivityStarted) {
-            Log.w(TAG, "Activity already started, ignoring duplicate call");
-            return;
-        }
+    // 跳转到主页面
+    private void jumpToMain() {
+        if (isActivityStarted) return;
         isActivityStarted = true;
 
-        Intent intent = null;
-        if (isUpdate) {
-            // 仅在更新时从原Intent中恢复目标
-            Intent mIntent = getIntent();
-            if (mIntent != null) {
-                Bundle mBundle = mIntent.getExtras();
-                if (mBundle != null) {
-                    intent = (Intent) mBundle.get("newIntent");
-                }
-            }
-            if (intent == null) {
-                intent = new Intent(Welcome.this, MainActivity.class);
-            }
-            intent.putExtra("isVersionChanged", true);
-            intent.putExtra("newVersionName", versionName);
-            intent.putExtra("oldVersionName", oldVersionName);
-        } else {
-            intent = new Intent(Welcome.this, MainActivity.class);
-        }
-
+        Intent intent = buildIntent();
         intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(intent);
         finish();
     }
 
-    // 拦截所有按键，防止在更新期间误操作退出
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        return true;
+    // 构建 Intent
+    private Intent buildIntent() {
+        Intent mIntent = getIntent();
+        if (mIntent != null) {
+            Bundle mBundle = mIntent.getExtras();
+            if (mBundle != null) {
+                Intent intent = (Intent) mBundle.get("newIntent");
+                if (intent != null) {
+                    intent.putExtra("isVersionChanged", true);
+                    intent.putExtra("newVersionName", versionName);
+                    intent.putExtra("oldVersionName", oldVersionName);
+                    return intent;
+                }
+            }
+        }
+        Intent intent = new Intent(Welcome.this, MainActivity.class);
+        intent.putExtra("isVersionChanged", true);
+        intent.putExtra("newVersionName", versionName);
+        intent.putExtra("oldVersionName", oldVersionName);
+        return intent;
     }
 
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    // 静态内部类 + 弱引用避免内存泄漏
+    // 异步更新任务
     @SuppressLint("StaticFieldLeak")
     private static class UpdateTask extends AsyncTask<String, String, String> {
         private final WeakReference<Welcome> activityRef;
 
         UpdateTask(Welcome activity) {
-            this.activityRef = new WeakReference<>(activity);
+            activityRef = new WeakReference<>(activity);
         }
 
         @Override
@@ -144,10 +171,10 @@ public class Welcome extends AppCompatActivity {
             }
 
             try {
-                activity.unApk("assets/", activity.localDir);
-                activity.setLibsReadOnly();
-                activity.unApk("lua/", activity.luaMdDir);
-                activity.saveAppInfo();
+                unzipAssets(activity);
+                setLibsReadOnly(activity);
+                unzipLua(activity);
+                saveAppInfo(activity);
             } catch (ZipException e) {
                 Log.e(TAG, "Unzip failed", e);
             } catch (Exception e) {
@@ -160,53 +187,53 @@ public class Welcome extends AppCompatActivity {
         protected void onPostExecute(String result) {
             Welcome activity = activityRef.get();
             if (activity != null && !activity.isFinishing() && !isCancelled()) {
-                activity.startActivity(true);
+                activity.jumpToMain();
             }
         }
     }
 
-    // 设置 libs 目录下文件为只读
-    private void setLibsReadOnly() {
-        File libsDirectory = new File(localDir, "libs");
-        if (!libsDirectory.exists() || !libsDirectory.isDirectory()) {
-            return;
-        }
-        File[] files = libsDirectory.listFiles();
-        if (files == null) {
-            return;
-        }
-        for (File file : files) {
-            if (file.isFile() && !file.setReadOnly()) {
-                Log.w(TAG, "Failed to set read-only: " + file.getAbsolutePath());
-            }
-        }
-    }
-
-    // 保存版本信息和更新时间
-    private void saveAppInfo() {
-        SharedPreferences.Editor edit = info.edit();
-        if (!versionName.equals(oldVersionName)) {
-            edit.putString("versionName", versionName);
-        }
-        edit.putLong("lastUpdateTime", lastTime);
-        edit.apply();
-    }
-
-    // 解压 APK 内指定目录到外部目录
-    private void unApk(String dir, String extDir) throws ZipException {
-        File destDir = new File(extDir);
-        String tempDir = getCacheDir().getPath();
-
-        // 清空目标目录
+    // 解压 assets 目录
+    private static void unzipAssets(Welcome activity) throws ZipException {
+        File destDir = new File(activity.localDir);
+        String tempDir = activity.getCacheDir().getPath();
         LuaUtil.rmDir(destDir);
+        ZipFile zipFile = new ZipFile(activity.getApplicationInfo().publicSourceDir);
+        zipFile.extractFile("assets/", tempDir);
+        new File(tempDir + "/assets/").renameTo(destDir);
+    }
 
-        // 解压到临时目录
-        //noinspection resource
-        ZipFile zipFile = new ZipFile(getApplicationInfo().publicSourceDir);
-        zipFile.extractFile(dir, tempDir);
+    // 设置 libs 只读
+    private static void setLibsReadOnly(Welcome activity) {
+        File libsDir = new File(activity.localDir, "libs");
+        if (!libsDir.isDirectory()) return;
 
-        // 移动到目标目录
-        //noinspection ResultOfMethodCallIgnored
-        new File(tempDir + "/" + dir).renameTo(destDir);
+        File[] files = libsDir.listFiles();
+        if (files == null) return;
+
+        for (File file : files) {
+            if (file.isFile()) {
+                file.setReadOnly();
+            }
+        }
+    }
+
+    // 解压 lua 目录
+    private static void unzipLua(Welcome activity) throws ZipException {
+        File luaDest = new File(activity.luaMdDir);
+        String tempDir = activity.getCacheDir().getPath();
+        LuaUtil.rmDir(luaDest);
+        ZipFile zipFile = new ZipFile(activity.getApplicationInfo().publicSourceDir);
+        zipFile.extractFile("lua/", tempDir);
+        new File(tempDir + "/lua/").renameTo(luaDest);
+    }
+
+    // 保存版本信息
+    private static void saveAppInfo(Welcome activity) {
+        SharedPreferences.Editor edit = activity.info.edit();
+        if (!activity.versionName.equals(activity.oldVersionName)) {
+            edit.putString(KEY_VERSION_NAME, activity.versionName);
+        }
+        edit.putLong(KEY_LAST_UPDATE_TIME, activity.lastTime);
+        edit.apply();
     }
 }

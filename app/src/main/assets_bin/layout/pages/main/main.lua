@@ -17,9 +17,11 @@ return {
   layout_width = "fill",
   {
     LinearLayoutCompat,
+    id = "mainRowLayout",
     layoutTransition = LayoutTransition().enableTransitionType(LayoutTransition.CHANGING),
     layout_width = "fill",
     layout_height = "fill",
+    orientation = "horizontal",
     {
       FrameLayout,
       id = "leftContainer",
@@ -52,8 +54,9 @@ return {
     {
       FrameLayout,
       id = "rightContainer",
-      layout_width = "fill",
+      layout_width = 0,
       layout_height = "fill",
+      visibility = 8,
       {
         LinearLayoutCompat,
         gravity = "center",

@@ -114,30 +114,41 @@ local floatingToolbar = {
       }
     },
     {
-      LinearLayoutCompat,
-      id = "comment_btn",
-      layout_width = "wrap_content",
-      layout_height = "fill",
-      gravity = "center",
-      orientation = "horizontal",
-      paddingLeft = "12dp",
-      paddingRight = "12dp",
+      MaterialCardView;
+      layout_width="wrap",
+      layout_height="56dp",
+      layout_weight="1";
+      radius="28dp";
+
+      elevation="0";
+      alpha=1,
+      id="comment_card";
       {
-        AppCompatImageView,
-        layout_width = "24dp",
-        layout_height = "24dp",
-        ImageBitmap = Helpers.Static.materialIcon("twotone_message"),
-        colorFilter = colors.primary,
+        LinearLayoutCompat,
+        id = "comment_btn",
+        layout_width = "wrap_content",
+        layout_height = "fill",
+        gravity = "center",
+        orientation = "horizontal",
+        paddingLeft = "12dp",
+        paddingRight = "12dp",
+        {
+          AppCompatImageView,
+          layout_width = "24dp",
+          layout_height = "24dp",
+          ImageBitmap = Helpers.Static.materialIcon("twotone_message"),
+          colorFilter = colors.primary,
+        },
+        {
+          MaterialTextView,
+          id = "comment_count",
+          layout_marginLeft = "4dp",
+          text = "0",
+          textSize = AppTextStyle.caption.size,
+          textColor = AppTextStyle.caption.color,
+          typeface = AppTextStyle.caption.font,
+        }
       },
-      {
-        MaterialTextView,
-        id = "comment_count",
-        layout_marginLeft = "4dp",
-        text = "0",
-        textSize = AppTextStyle.caption.size,
-        textColor = AppTextStyle.caption.color,
-        typeface = AppTextStyle.caption.font,
-      }
     },
   }
 }

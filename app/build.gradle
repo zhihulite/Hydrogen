@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.zhihu.hydrogen.x"
-        minSdk = 21
+        minSdk = 24
         //noinspection OldTargetApi
         targetSdk = 33
         versionCode 1
@@ -90,6 +90,7 @@ dependencies {
     implementation libs.zxing.embedded
     implementation libs.zxing.core
 
+    // https://github.com/ZL114514/material-components-android
     implementation libs.material
     implementation fileTree("libs")
 }

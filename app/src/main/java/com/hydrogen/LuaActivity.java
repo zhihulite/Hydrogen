@@ -1,239 +1,276 @@
 package com.hydrogen;
 
-import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.TypedArray;
+import android.content.res.Configuration;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.core.splashscreen.SplashScreen;
 
-import android.content.Context;
-import android.content.res.Configuration;
-
 import java.io.File;
 import java.lang.ref.WeakReference;
 
 public class LuaActivity extends com.androlua.LuaActivity {
+
+    private static final String TAG = "LuaActivity";
+    private static final String PREF_NAME = "appInfo";
+    private static final String KEY_LAST_UPDATE_TIME = "lastUpdateTime";
+    private static final String KEY_CHECK_UPDATE = "checkUpdate";
+    private static final String KEY_UPDATING = "updating";
+    private static final float DEFAULT_FONT_SIZE = 20.0f;
+
     public boolean updating = false;
-  private boolean checkUpdate = false;
-  private final String TAG = "LuaActivity";
+    private boolean checkUpdate = false;
+    private String luaPath = null;
+    public String luaDir = null;
+    private WeakReference<Context> originalContextRef = null;
 
-  private String luaPath = null;
-  public String luaDir = null;
-  private WeakReference<Context> mOriginalContextRef = null;
-
-  @SuppressWarnings("unused")
-  public Context getOriginalContext() {
-    return mOriginalContextRef != null ? mOriginalContextRef.get() : null;
-  }
-
-  @Override
-  protected void attachBaseContext(Context base) {
-    // 保存原始 base 的弱引用，便于需要时使用
-    mOriginalContextRef = new WeakReference<>(base);
-
-    // 读取自定义字体缩放比例，默认 20.0 对应 1.0f 缩放
-    Object fontSizeObj = this.getSharedData("font_size");
-    String fontSizeStr = (fontSizeObj instanceof String) ? (String) fontSizeObj : "20.0";
-
-    try {
-      float fontScale = Float.parseFloat(fontSizeStr) / 20.0f;
-      Configuration config = new Configuration(base.getResources().getConfiguration());
-      config.fontScale = fontScale;
-      Context updatedContext = base.createConfigurationContext(config);
-      super.attachBaseContext(updatedContext);
-    } catch (NumberFormatException e) {
-      super.attachBaseContext(base);
+    // 获取原始 Context
+    @SuppressWarnings("unused")
+    public Context getOriginalContext() {
+        return originalContextRef != null ? originalContextRef.get() : null;
     }
-  }
 
-  @Override
-  public void onCreate(Bundle savedInstanceState) {
-    SplashScreen.installSplashScreen(this);
-    super.onCreate(savedInstanceState);
+    @Override
+    protected void attachBaseContext(Context base) {
+        originalContextRef = new WeakReference<>(base);
+        super.attachBaseContext(applyFontScale(base));
+    }
 
-    if (savedInstanceState == null) {
-      // 首次创建，读取更新检查开关
-      if (!checkUpdate) {
-        checkUpdate = getIntent().getBooleanExtra("checkUpdate", false);
-      }
-      if (checkUpdate) {
-          long lastTime;
-          try {
-          PackageInfo packageInfo = getPackageManager().getPackageInfo(this.getPackageName(), 0);
-          lastTime = packageInfo.lastUpdateTime;
+    // 应用字体缩放比例
+    private Context applyFontScale(Context base) {
+        Object fontSizeObj = getSharedData("font_size");
+        String fontSizeStr = (fontSizeObj instanceof String) ? (String) fontSizeObj : String.valueOf(DEFAULT_FONT_SIZE);
+
+        try {
+            float fontScale = Float.parseFloat(fontSizeStr) / DEFAULT_FONT_SIZE;
+            Configuration config = new Configuration(base.getResources().getConfiguration());
+            config.fontScale = fontScale;
+            return base.createConfigurationContext(config);
+        } catch (NumberFormatException e) {
+            Log.w(TAG, "Invalid font size format: " + fontSizeStr, e);
+            return base;
+        }
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        SplashScreen.installSplashScreen(this);
+        super.onCreate(savedInstanceState);
+
+        if (savedInstanceState == null) {
+            handleFirstCreate();
+        } else {
+            restoreState(savedInstanceState);
+        }
+    }
+
+    // 处理首次创建，检查是否需要更新
+    private void handleFirstCreate() {
+        if (!checkUpdate) {
+            checkUpdate = getIntent().getBooleanExtra(KEY_CHECK_UPDATE, false);
+        }
+
+        if (checkUpdate) {
+            performUpdateCheck();
+        }
+    }
+
+    // 执行更新检查，比较应用版本判断是否需要更新
+    private void performUpdateCheck() {
+        long lastTime = getAppLastUpdateTime();
+        if (lastTime == -1) {
+            Log.e(TAG, "Failed to get package info, skipping update check");
+            return;
+        }
+
+        SharedPreferences info = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
+        long oldLastTime = info.getLong(KEY_LAST_UPDATE_TIME, 0);
+        updating = (oldLastTime != lastTime);
+
+        if (updating) {
+            setDebug(false);
+            navigateToWelcome();
+        }
+    }
+
+    // 获取应用的最后更新时间
+    private long getAppLastUpdateTime() {
+        try {
+            PackageInfo packageInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
+            return packageInfo.lastUpdateTime;
         } catch (PackageManager.NameNotFoundException e) {
-          Log.e(TAG, "Package name not found", e);
-          lastTime = -1;
+            Log.e(TAG, "Package name not found", e);
+            return -1;
         }
-        SharedPreferences info = getSharedPreferences("appInfo", MODE_PRIVATE);
-          long oldLastTime = info.getLong("lastUpdateTime", 0);
-        updating = oldLastTime != lastTime;
-        if (updating) {
-          setDebug(false);
+    }
+
+    // 跳转到欢迎页面进行更新
+    private void navigateToWelcome() {
+        Intent intent = new Intent(this, Welcome.class);
+        intent.putExtra("newIntent", getIntent());
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        startActivity(intent);
+        finish();
+    }
+
+    // 恢复保存的状态
+    private void restoreState(Bundle savedInstanceState) {
+        checkUpdate = savedInstanceState.getBoolean(KEY_CHECK_UPDATE, false);
+        updating = savedInstanceState.getBoolean(KEY_UPDATING, false);
+        onRestoreInstanceState(savedInstanceState);
+    }
+
+    @Override
+    protected void onNewIntent(@NonNull Intent intent) {
+        runFunc("onNewIntent", intent);
+        super.onNewIntent(intent);
+    }
+
+    // 设置是否检查更新
+    public void setCheckUpdate(boolean state) {
+        checkUpdate = state;
+    }
+
+    // 获取 Lua 脚本路径，首次调用时初始化
+    // 优先取 Intent 传入的 luaPath，没有则用默认路径 getLocalDir() + "/main.lua"
+    // 然后从父目录开始向上查找同时包含 main.lua 和 init.lua 的目录作为 luaDir，找不到就用父目录
+    // 返回路径不受 setLuaDir 影响
+    @Override
+    public String getLuaPath() {
+        if (updating) return "/";
+
+        if (luaPath == null) {
+            // 优先取 Intent 传入的路径，没有则用默认路径
+            String intentPath = getIntent().getStringExtra("luaPath");
+            luaPath = intentPath != null ? intentPath : getLocalDir() + "/main.lua";
+
+            // 记录原始父目录
+            String parentDir = new File(luaPath).getParent();
+            luaDir = parentDir;
+
+            // 向上找包含 main.lua 和 init.lua 的目录
+            while (luaDir != null) {
+                if (new File(luaDir, "main.lua").exists() && new File(luaDir, "init.lua").exists()) {
+                    break;
+                }
+                luaDir = new File(luaDir).getParent();
+            }
+            // 找不到就用原始父目录
+            if (luaDir == null) luaDir = parentDir;
+
+            setLuaDir(luaDir);
         }
 
-        if (updating) {
-          Intent intent = new Intent(this, Welcome.class);
-          intent.putExtra("newIntent", getIntent());
-          intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
-          startActivity(intent);
-          finish();
+        return luaPath;
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(KEY_CHECK_UPDATE, checkUpdate);
+        outState.putBoolean(KEY_UPDATING, updating);
+        Log.i(TAG, "save " + outState);
+        runFunc("onSaveInstanceState", outState);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        originalContextRef = null;
+    }
+
+    @Override
+    public void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        try {
+            super.onRestoreInstanceState(savedInstanceState);
+            Log.i(TAG, "restore " + savedInstanceState);
+        } catch (Exception e) {
+            sendError("onRestoreInstanceState", e);
         }
-      }
-
-    } else {
-      checkUpdate = savedInstanceState.getBoolean("checkUpdate", false);
-      updating = savedInstanceState.getBoolean("updating", false);
-      onRestoreInstanceState(savedInstanceState);
+        runFunc("onRestoreInstanceState", savedInstanceState);
     }
-  }
 
-  @Override
-  protected void onNewIntent(@org.jspecify.annotations.NonNull Intent intent) {
-    runFunc("onNewIntent", intent);
-    super.onNewIntent(intent);
-  }
+    // 构建跳转 Intent
+    public Intent buildNewActivityIntent(int req, String path, Object[] arg, boolean newDocument, int documentId) {
+        Intent intent = new Intent(this, LuaActivity.class);
 
-  public void setCheckUpdate(boolean state) {
-    checkUpdate = state;
-  }
+        String resolvedPath = resolveLuaPath(path);
+        intent.putExtra("luaPath", resolvedPath);
+        intent.setData(Uri.parse("file://" + resolvedPath + "?documentId=" + documentId));
+        intent.putExtra("name", resolvedPath);
 
-  @Override
-  public String getLuaPath() {
-    if (updating) {
-      return "/"; // 更新期间阻止加载
+        if (arg != null) {
+            intent.putExtra("arg", arg);
+        }
+        if (newDocument) {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        }
+        return intent;
     }
-    if (luaPath == null) {
-      luaPath = getIntent().getStringExtra("luaPath");
+
+    // 解析 Lua 文件路径，处理相对路径、目录自动补全 main.lua、后缀自动补全 .lua
+    private String resolveLuaPath(String path) {
+        if (path == null || path.isEmpty()) {
+            return "/";
+        }
+
+        // 相对路径转绝对路径
+        if (path.charAt(0) != '/') {
+            path = getLuaDir() + "/" + path;
+        }
+
+        File file = new File(path);
+        // 如果是目录且包含 main.lua，自动补全
+        if (file.isDirectory() && new File(path + "/main.lua").exists()) {
+            path += "/main.lua";
+        }
+        // 如果不是目录且没有 .lua 后缀，自动补全
+        else if (!file.isDirectory() && !path.endsWith(".lua")) {
+            path += ".lua";
+        }
+
+        return path;
     }
-    applyLuaDir(luaPath);
-    return luaPath;
-  }
 
-  // 查找 main.lua 与 init.lua 共存的目录作为 luaDir
-  public void applyLuaDir(String luaPath) {
-    luaDir = new File(luaPath).getParent();
-    String parent = luaDir;
-    while (parent != null) {
-      File parentDir = new File(parent);
-      if (new File(parentDir, "main.lua").exists() && new File(parentDir, "init.lua").exists()) {
-        luaDir = parent;
-        break;
-      }
-      parent = parentDir.getParent();
+    @SuppressWarnings("unused")
+    public void newActivity(String path, boolean newDocument, int documentId) {
+        newActivity(1, path, null, newDocument, documentId);
     }
-    // 防止未找到时 luaDir 为 null，提供一个安全的默认值
-    if (luaDir == null) {
-      luaDir = "/";
+
+    @SuppressWarnings("unused")
+    public void newActivity(String path, Object[] arg, boolean newDocument, int documentId) {
+        newActivity(1, path, arg, newDocument, documentId);
     }
-    setLuaDir(luaDir);
-  }
 
-  @Override
-  public void onSaveInstanceState(@NonNull Bundle outState) {
-    super.onSaveInstanceState(outState);
-    // 保存关键状态以便重建时恢复
-    outState.putBoolean("checkUpdate", checkUpdate);
-    outState.putBoolean("updating", updating);
-    Log.i(TAG, "save " + outState);
-    runFunc("onSaveInstanceState", outState);
-  }
-
-  @Override
-  protected void onDestroy() {
-    super.onDestroy();
-    mOriginalContextRef = null;
-  }
-
-  @Override
-  public void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
-    try {
-      super.onRestoreInstanceState(savedInstanceState);
-      Log.i(TAG, "restore " + savedInstanceState);
-    } catch (Exception e) {
-      sendError("onRestoreInstanceState", e);
+    @Override
+    public void newActivity(int req, String path, Object[] arg, boolean newDocument) {
+        newActivity(req, path, arg, newDocument, 0);
     }
-    runFunc("onRestoreInstanceState", savedInstanceState);
-  }
 
-  // 构造跳转 Intent，处理相对路径、目录自动补全 main.lua 等逻辑
-  public Intent buildNewActivityIntent(
-          int req, String path, Object[] arg, boolean newDocument, int documentId) {
-    Intent intent = new Intent(this, LuaActivity.class);
-    if (path.charAt(0) != '/') {
-      path = getLuaDir() + "/" + path;
+    // 启动新 Activity
+    public void newActivity(int req, String path, Object[] arg, boolean newDocument, int documentId) {
+        Intent intent = buildNewActivityIntent(req, path, arg, newDocument, documentId);
+        if (newDocument) {
+            startActivity(intent);
+        } else {
+            startActivityForResult(intent, req);
+        }
     }
-    File file = new File(path);
-    if (file.isDirectory() && new File(path + "/main.lua").exists()) {
-      path += "/main.lua";
-    } else if (!file.isDirectory() && !path.endsWith(".lua")) {
-      path += ".lua";
+
+    @Override
+    public void newActivity(int req, String path, int in, int out, Object[] arg, boolean newDocument) {
+        newActivity(req, path, in, out, arg, newDocument, 0);
     }
-    intent.putExtra("luaPath", path);
-    intent.setData(Uri.parse("file://" + path + "?documentId=" + documentId));
-    intent.putExtra("name", path);
-    if (arg != null) {
-      intent.putExtra("arg", arg);
+
+    // 启动新 Activity 并指定转场动画
+    public void newActivity(int req, String path, int in, int out, Object[] arg, boolean newDocument, int documentId) {
+        newActivity(req, path, arg, newDocument, documentId);
+        overridePendingTransition(in, out);
     }
-    if (newDocument) {
-      intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
-    }
-    return intent;
-  }
-
-  @SuppressWarnings("unused")
-  public void newActivity(String path, boolean newDocument, int documentId) {
-    newActivity(1, path, null, newDocument, documentId);
-  }
-
-  @SuppressWarnings("unused")
-  public void newActivity(String path, Object[] arg, boolean newDocument, int documentId) {
-    newActivity(1, path, arg, newDocument, documentId);
-  }
-
-  @Override
-  public void newActivity(int req, String path, Object[] arg, boolean newDocument) {
-    newActivity(req, path, arg, newDocument, 0);
-  }
-
-  public void newActivity(int req, String path, Object[] arg, boolean newDocument, int documentId) {
-    Intent intent = buildNewActivityIntent(req, path, arg, newDocument, documentId);
-    if (newDocument) {
-      startActivity(intent);
-    } else {
-      startActivityForResult(intent, req);
-    }
-  }
-
-  @Override
-  public void newActivity(
-          int req, String path, int in, int out, Object[] arg, boolean newDocument) {
-    newActivity(req, path, in, out, arg, newDocument, 0);
-  }
-
-  public void newActivity(
-          int req, String path, int in, int out, Object[] arg, boolean newDocument, int documentId) {
-    newActivity(req, path, arg, newDocument, documentId);
-    overridePendingTransition(in, out);
-  }
-
-  @Override
-  public void setTaskDescription(ActivityManager.TaskDescription taskDescription) {
-    TypedArray array =
-            getTheme().obtainStyledAttributes(new int[]{android.R.attr.colorPrimary});
-    int color = array.getColor(0, 0xFF000000); // 默认黑色不透明
-    // 确保颜色不透明度为 FF，与原有逻辑保持一致
-    taskDescription = new ActivityManager.TaskDescription(
-            taskDescription.getLabel(),
-            taskDescription.getIcon(),
-            color | 0xFF000000);
-    array.recycle();
-    super.setTaskDescription(taskDescription);
-  }
 }

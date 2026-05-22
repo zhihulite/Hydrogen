@@ -201,12 +201,12 @@ end
 -- 安全执行回调
 function M:runIfAlive(callback)
   if not callback then
-    return function() end
+    error("PageTool:runIfAlive 必须为 function 类型")
   end
 
   return function(...)
     if self:isAlive() then
-      callback(...)
+      return callback(...)
     end
   end
 end
