@@ -31,9 +31,9 @@ return {
       {
         MaterialTextView,
         id = "content",
-        textSize  = AppTextStyle.body.size,
-        textColor = AppTextStyle.body.color,
-        typeface  = AppTextStyle.body.font,
+        textSize  = AppTextStyle.bodyMedium.size,
+        textColor = AppTextStyle.bodyMedium.color,
+        typeface  = AppTextStyle.bodyMedium.font,
         maxLines  = 5,
         ellipsize = "end",
       },
@@ -46,9 +46,9 @@ return {
       {
         MaterialTextView,
         id = "source_title",
-        textSize  = AppTextStyle.caption.size,
-        textColor = AppTextStyle.caption.color,
-        typeface  = AppTextStyle.caption.font,
+        textSize  = AppTextStyle.bodySmall.size,
+        textColor = AppTextStyle.bodySmall.color,
+        typeface  = AppTextStyle.bodySmall.font,
         layout_marginTop = "8dp",
         maxLines  = 1,
         ellipsize = "end",
@@ -56,9 +56,9 @@ return {
       {
         MaterialTextView,
         id = "bottom_text",
-        textSize  = AppTextStyle.caption.size,
-        textColor = AppTextStyle.caption.color,
-        typeface  = AppTextStyle.caption.font,
+        textSize  = AppTextStyle.bodySmall.size,
+        textColor = AppTextStyle.bodySmall.color,
+        typeface  = AppTextStyle.bodySmall.font,
         layout_marginTop = "4dp",
       }
     }

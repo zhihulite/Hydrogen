@@ -7,9 +7,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
-import android.view.View;
 
 import androidx.activity.EdgeToEdge;
 import androidx.activity.OnBackPressedCallback;
@@ -18,7 +16,6 @@ import androidx.core.splashscreen.SplashScreen;
 
 import com.androlua.LuaApplication;
 import com.androlua.LuaUtil;
-import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.zhihu.hydrogen.x.R;
 
 import java.io.File;
@@ -33,7 +30,6 @@ public class Welcome extends AppCompatActivity {
     private static final String PREF_NAME = "appInfo";
     private static final String KEY_LAST_UPDATE_TIME = "lastUpdateTime";
     private static final String KEY_VERSION_NAME = "versionName";
-    private static final int MIN_DISPLAY_TIME = 500; // 最小显示 0.5 秒
 
     private String luaMdDir;
     private String localDir;
@@ -44,8 +40,6 @@ public class Welcome extends AppCompatActivity {
     private UpdateTask updateTask;
     private boolean isActivityStarted = false;
     private OnBackPressedCallback backCallback;
-    private CircularProgressIndicator progressBar;
-    private long startTime;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -53,7 +47,6 @@ public class Welcome extends AppCompatActivity {
         SplashScreen.installSplashScreen(this);
         super.onCreate(savedInstanceState);
 
-        startTime = System.currentTimeMillis();
         setupBackPressedCallback();
         initAppInfo();
 
@@ -105,7 +98,6 @@ public class Welcome extends AppCompatActivity {
         localDir = app.getLocalDir();
         setContentView(R.layout.layout_welcome);
 
-        progressBar = findViewById(R.id.circular_progress_indicator);
         updateTask = new UpdateTask(this);
         updateTask.execute("");
     }

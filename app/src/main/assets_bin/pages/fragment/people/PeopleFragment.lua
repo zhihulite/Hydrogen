@@ -113,27 +113,26 @@ function PeopleFragment:setupActionButtons(data)
 end
 
 function PeopleFragment:loadTabsAndInitPager()
-  local selfRef = self
   self.peopleModel:loadTabs(function()
-    local viewPager = selfRef.views.view_pager
-    local tabLayout = selfRef.views.tab_layout
+    local viewPager = self.views.view_pager
+    local tabLayout = self.views.tab_layout
     if not viewPager or not tabLayout then return end
 
-    selfRef.peopleModel:setupTabs(viewPager, tabLayout)
-    selfRef.peopleModel:ensureLoaded()
+    self.peopleModel:setupTabs(viewPager, tabLayout)
+    self.peopleModel:ensureLoaded()
 
     -- 给所有 RecyclerView 加上导航栏底部间距
-    for _, rv in ipairs(selfRef.peopleModel:getAllRecyclerViews()) do
+    for _, rv in ipairs(self.peopleModel:getAllRecyclerViews()) do
       rv.setPadding(
         rv.getPaddingLeft(),
         rv.getPaddingTop(),
         rv.getPaddingRight(),
-        rv.getPaddingBottom() + (selfRef.navBarHeight or 0)
+        rv.getPaddingBottom() + (self.navBarHeight or 0)
       )
       rv.setClipToPadding(false)
     end
 
-    selfRef:addSortBarToAnswerTab()
+    self:addSortBarToAnswerTab()
   end)
 end
 
@@ -230,7 +229,7 @@ function PeopleFragment:onMessageClick()
     Router.go("login")
     return
   end
-  Router.go("browser", { url = "https://www.zhihu.com/messages/" .. self.userId, title = "私信" })
+  Router.go("browser", { url = "https://www.zhihu.com/messages/" .. self.userId })
 end
 
 function PeopleFragment:onFansClick()
@@ -272,7 +271,7 @@ function PeopleFragment:showSearchContentDialog()
 end
 
 function PeopleFragment:reportUser()
-  Router.go("browser", { url = "https://www.zhihu.com/report?id=" .. self.userId .. "&type=member&source=android", title = "举报" })
+  Router.go("browser", { url = "https://www.zhihu.com/report?id=" .. self.userId .. "&type=member&source=android" })
 end
 
 function PeopleFragment:blockUser(menuItem)

@@ -61,9 +61,9 @@ return {
             id = "title",
             layout_width = "wrap_content",
             layout_height = "wrap_content",
-            textSize = AppTextStyle.title.size,
-            textColor = AppTextStyle.title.color,
-            typeface = AppTextStyle.title.font,
+            textSize = AppTextStyle.titleSmall.size,
+            textColor = AppTextStyle.titleSmall.color,
+            typeface = AppTextStyle.titleSmall.font,
           },
         }
       },
@@ -73,9 +73,9 @@ return {
         layout_width = "match_parent",
         layout_height = "wrap_content",
         layout_marginTop = "8dp",
-        textSize = AppTextStyle.body.size,
-        textColor = AppTextStyle.body.color,
-        typeface = AppTextStyle.body.font,
+        textSize = AppTextStyle.bodyMedium.size,
+        textColor = AppTextStyle.bodyMedium.color,
+        typeface = AppTextStyle.bodyMedium.font,
         maxLines = 3,
         ellipsize = "end",
       },
@@ -103,9 +103,9 @@ return {
             id = "like_count",
             layout_marginLeft = "4dp",
             text = "0",
-            textSize = AppTextStyle.caption.size,
-            textColor = AppTextStyle.caption.color,
-            typeface = AppTextStyle.caption.font,
+            textSize = AppTextStyle.bodySmall.size,
+            textColor = AppTextStyle.bodySmall.color,
+            typeface = AppTextStyle.bodySmall.font,
           }
         },
         {
@@ -127,9 +127,9 @@ return {
             id = "comment_count",
             layout_marginLeft = "4dp",
             text = "0",
-            textSize = AppTextStyle.caption.size,
-            textColor = AppTextStyle.caption.color,
-            typeface = AppTextStyle.caption.font,
+            textSize = AppTextStyle.bodySmall.size,
+            textColor = AppTextStyle.bodySmall.color,
+            typeface = AppTextStyle.bodySmall.font,
           }
         }
       }

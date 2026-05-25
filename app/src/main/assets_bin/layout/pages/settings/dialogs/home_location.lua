@@ -19,7 +19,7 @@ return {
     hint = "输入城市名",
     layout_width = "match_parent",
     layout_margin = "16dp",
-    textSize  = AppTextStyle.body.size,
+    textSize  = AppTextStyle.bodyMedium.size,
   },
   {
     NestedScrollView,
@@ -30,9 +30,9 @@ return {
       id = "city_list",
       layout_margin = "16dp",
       textIsSelectable = true,
-      textSize  = AppTextStyle.caption.size,
-      textColor = AppTextStyle.caption.color,
-      typeface  = AppTextStyle.caption.font,
+      textSize  = AppTextStyle.bodySmall.size,
+      textColor = AppTextStyle.bodySmall.color,
+      typeface  = AppTextStyle.bodySmall.font,
     }
   }
 }

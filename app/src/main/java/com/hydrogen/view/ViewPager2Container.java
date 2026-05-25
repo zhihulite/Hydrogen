@@ -11,6 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.viewpager2.widget.ViewPager2;
 
+@SuppressWarnings("unused")
 public class ViewPager2Container extends RelativeLayout {
 
     private ViewPager2 mViewPager2;

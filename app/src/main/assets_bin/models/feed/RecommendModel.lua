@@ -1,9 +1,11 @@
 -- models/feed/RecommendModel.lua
--- 推荐流 - PageToolModel
+-- 推荐流 - PageToolModel（支持长按弹出不感兴趣菜单）
 
 local PageToolModel = require("models.base.PageToolModel")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 local Storage = require("services.cache.storage")
+
+import "androidx.appcompat.widget.PopupMenu"
 
 local RecommendModel = Extensions.Class(PageToolModel)
 RecommendModel:chainUp("destroy")
@@ -83,13 +85,13 @@ end
 
 function RecommendModel:loadSections(callback)
   local url = "https://api.zhihu.com/feed-root/sections/query/v2"
-  NetWork.get(url, Headers.defaultHead, function(success, content)
+  self:fetch(url, nil, function(success, data)
     if not success then
       if callback then callback(nil) end
       return
     end
-    local data = json.decode(content)
-    if not data or not data.selected_sections then
+
+    if not data.selected_sections then
       if callback then callback(nil) end
       return
     end
@@ -135,6 +137,72 @@ function RecommendModel:reportRead(readData, isRead)
   local postData = string.format('targets=%s',
   NetWork.urlEncode('[[' .. state .. ',' .. encoded .. ']]'))
   NetWork.post("https://api.zhihu.com/lastread/touch/v2", postData, function() end)
+end
+
+-- 显示不感兴趣菜单
+-- @param item 当前条目数据
+-- @param anchor 锚点View（菜单将显示在其旁边）
+function RecommendModel:showDislikeMenu(item, anchor)
+  local url = string.format(
+  "https://api.zhihu.com/negative-feedback/panel?scene_code=RECOMMEND&content_type=%s&content_token=%s",
+  item.type, item.id
+  )
+
+  self:fetch(url, {}, function(success, data)
+    if not success or not data then
+      tip("获取选项失败")
+      return
+    end
+
+    local menuItems = {}
+    for _, v in ipairs(data.data.items or {}) do
+      local raw_button = v.raw_button
+      local method = string.lower(raw_button.action.method)
+      local panel_text = raw_button.text.panel_text
+      table.insert(menuItems, {
+        title = panel_text,
+        action = function()
+          if raw_button.action.backend_url then
+            -- 发送反馈请求
+            self:post(raw_button.action.backend_url, "", nil , function(success, data)
+              if success then
+                tip(raw_button.text.toast_text or "操作成功")
+                -- 刷新当前列表，移除该条目
+                self:notifyListeners("itemDisliked", item)
+              end
+            end)
+           elseif raw_button.action.intent_url then
+            Router.go("browser", { url = "https://www.zhihu.com/report?id=" .. raw_button.action.intent_url .. "&source=android" })
+          end
+        end
+      })
+    end
+
+    if #menuItems == 0 then
+      tip("没有可用的选项")
+      return
+    end
+
+    -- 创建并显示 PopupMenu
+    local popup = PopupMenu(activity, anchor)
+    local menu = popup.getMenu()
+
+    for i, menuItem in ipairs(menuItems) do
+      menu.add(0, i, 0, menuItem.title)
+    end
+
+    popup.setOnMenuItemClickListener({
+      onMenuItemClick = function(menuItem)
+        local callback = menuItems[menuItem.getItemId()]
+        if callback and callback.action then
+          callback.action()
+        end
+        return true
+      end
+    })
+
+    popup.show()
+  end)
 end
 
 function RecommendModel:parseItem(rawItem)
@@ -189,8 +257,6 @@ function RecommendModel:parseItem(rawItem)
 end
 
 function RecommendModel:createAdapter(dataList)
-  local selfRef = self
-
   return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
@@ -201,15 +267,28 @@ function RecommendModel:createAdapter(dataList)
       views.preview.text = item.preview or ""
       views.like_count.text = tostring(item.voteupCount)
       views.comment_count.text = tostring(item.commentCount)
+
+      -- 长按卡片显示不感兴趣菜单
+      views.card.onLongClick = function()
+        self:showDislikeMenu(item, views.card)
+        return true
+      end
+
       views.card.onClick = function()
         if item.readInfo and not item.readInfo.isRead then
           item.readInfo.isRead = true
-          selfRef:reportRead(item.readInfo.data, true)
+          self:reportRead(item.readInfo.data, true)
         end
         Helpers.ZhihuParser.go(item.type, { id = item.id }, { sharedElement = views.card })
       end
     end,
   })
+end
+
+-- 添加监听 itemDisliked 的方法，在外部移除条目
+function RecommendModel:onItemDisliked(item)
+  -- 这个方法由外部调用或监听触发，用于从列表中移除被点踩的条目
+  self:notifyListeners("itemDisliked", item)
 end
 
 return RecommendModel

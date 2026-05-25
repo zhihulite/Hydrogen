@@ -5,6 +5,7 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import com.androlua.LuaGcable;
 
+@SuppressWarnings("unused")
 public class LuaWebView extends WebView implements LuaGcable {
 
     private boolean isGced = false;
@@ -22,21 +23,16 @@ public class LuaWebView extends WebView implements LuaGcable {
         addJavascriptInterface(new JsObject(bridge), "HydrogenBridge");
     }
 
-    private static class JsObject {
-        private final Bridge mBridge;
-
-        public JsObject(Bridge bridge) {
-            mBridge = bridge;
-        }
+    private record JsObject(Bridge mBridge) {
 
         @JavascriptInterface
-        public String execute(String action, String data) {
-            if (mBridge != null) {
-                return mBridge.execute(action, data);
+            public String execute(String action, String data) {
+                if (mBridge != null) {
+                    return mBridge.execute(action, data);
+                }
+                return "";
             }
-            return "";
         }
-    }
 
     @Override
     public void gc() {

@@ -5,6 +5,7 @@ import android.util.AttributeSet;
 import android.util.Log;
 import androidx.recyclerview.widget.RecyclerView;
 
+@SuppressWarnings("unused")
 public class LinearLayoutManager extends androidx.recyclerview.widget.LinearLayoutManager {
 
     private static final String TAG = "SafeLayoutManager";

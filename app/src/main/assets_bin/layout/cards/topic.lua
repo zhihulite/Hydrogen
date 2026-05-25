@@ -28,16 +28,16 @@ return {
       {
         MaterialTextView,
         id = "title",
-        textSize  = AppTextStyle.title.size,
-        textColor = AppTextStyle.title.color,
-        typeface  = AppTextStyle.title.font,
+        textSize  = AppTextStyle.titleSmall.size,
+        textColor = AppTextStyle.titleSmall.color,
+        typeface  = AppTextStyle.titleSmall.font,
       },
       {
         MaterialTextView,
         id = "preview",
-        textSize  = AppTextStyle.body.size,
-        textColor = AppTextStyle.body.color,
-        typeface  = AppTextStyle.body.font,
+        textSize  = AppTextStyle.bodyMedium.size,
+        textColor = AppTextStyle.bodyMedium.color,
+        typeface  = AppTextStyle.bodyMedium.font,
         layout_marginTop = "4dp",
         maxLines  = 3,
         ellipsize = "end",
@@ -45,9 +45,9 @@ return {
       {
         MaterialTextView,
         id = "bottom_text",
-        textSize  = AppTextStyle.caption.size,
-        textColor = AppTextStyle.caption.color,
-        typeface  = AppTextStyle.caption.font,
+        textSize  = AppTextStyle.bodySmall.size,
+        textColor = AppTextStyle.bodySmall.color,
+        typeface  = AppTextStyle.bodySmall.font,
         layout_marginTop = "4dp",
       },
       {
@@ -70,9 +70,9 @@ return {
             id = "voteup_count",
             layout_marginLeft = "4dp",
             text = "0",
-            textSize  = AppTextStyle.caption.size,
-            textColor = AppTextStyle.caption.color,
-            typeface  = AppTextStyle.caption.font,
+            textSize  = AppTextStyle.bodySmall.size,
+            textColor = AppTextStyle.bodySmall.color,
+            typeface  = AppTextStyle.bodySmall.font,
           }
         },
         {
@@ -91,9 +91,9 @@ return {
             id = "comment_count",
             layout_marginLeft = "4dp",
             text = "0",
-            textSize  = AppTextStyle.caption.size,
-            textColor = AppTextStyle.caption.color,
-            typeface  = AppTextStyle.caption.font,
+            textSize  = AppTextStyle.bodySmall.size,
+            textColor = AppTextStyle.bodySmall.color,
+            typeface  = AppTextStyle.bodySmall.font,
           }
         }
       }

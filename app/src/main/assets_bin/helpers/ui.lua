@@ -61,7 +61,7 @@ function M.tip(msg, long)
       layout_margin = "16dp",
       layout_marginBottom = "64dp",
       CardElevation = "0dp",
-      CardBackgroundColor = colors.surface,
+      cardBackgroundColor = colors.surface,
       StrokeWidth = 0,
       radius = "8dp",
       {

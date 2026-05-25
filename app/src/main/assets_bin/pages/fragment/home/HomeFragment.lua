@@ -288,13 +288,12 @@ function HomeFragment:initHomePage(views)
       return false
     end
   })
-  bottomNav.setLabelVisibilityMode(1)
 
-  viewPager.addOnPageChangeListener({
+  viewPager.addOnPageChangeListener(luajava.createProxy("androidx.viewpager.widget.ViewPager$OnPageChangeListener", {
     onPageSelected = function(position)
       self:onHomePageSelected(position, displayTabs)
     end
-  })
+  }))
 
   local startIndex = 0
   for i, tab in ipairs(displayTabs) do

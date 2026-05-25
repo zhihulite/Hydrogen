@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!--增加启动图-->
     <style name="Theme.Welcome" parent="Theme.Default" />
 
     <!--splash-->

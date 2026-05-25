@@ -18,46 +18,45 @@ end
 --- @return LuaFragment Fragment 实例
 --- @note 此方法为 final 方法，子类不应重写
 function BaseFragment:createFragment(params)
-  local selfRef = self
   local creator = luajava.createProxy("com.hydrogen.LuaFragment$Creator", {
     onCreate = function(savedState)
-      selfRef:onCreate(params)
+      self:onCreate(params)
     end,
 
     onCreateView = function(inflater, container, savedState)
-      if not selfRef.fragmentView then
-        selfRef.fragmentView = selfRef:build()
-        selfRef.container = selfRef.fragmentView
+      if not self.fragmentView then
+        self.fragmentView = self:build()
+        self.container = self.fragmentView
       end
       -- 修复点击穿透
-      selfRef.fragmentView.setClickable(true)
+      self.fragmentView.setClickable(true)
       -- 鼠标点击适配
-      selfRef.fragmentView.setOnGenericMotionListener(luajava.createProxy("android.view.View$OnGenericMotionListener",{
+      self.fragmentView.setOnGenericMotionListener(luajava.createProxy("android.view.View$OnGenericMotionListener",{
         onGenericMotion = function()
           return false
         end
       }))
-      return selfRef.fragmentView
+      return self.fragmentView
     end,
 
     onViewCreated = function(view, savedState)
-      selfRef:onViewCreated(view, savedState)
-      if selfRef.onViewCreatedCallback then
-        selfRef.onViewCreatedCallback(selfRef.container)
-        selfRef.onViewCreatedCallback = nil
+      self:onViewCreated(view, savedState)
+      if self.onViewCreatedCallback then
+        self.onViewCreatedCallback(self.container)
+        self.onViewCreatedCallback = nil
       end
     end,
 
     onResume = function()
-      selfRef:onResume()
+      self:onResume()
     end,
 
     onPause = function()
-      selfRef:onPause()
+      self:onPause()
     end,
 
     onDestroy = function()
-      selfRef:onDestroy()
+      self:onDestroy()
     end,
   })
 

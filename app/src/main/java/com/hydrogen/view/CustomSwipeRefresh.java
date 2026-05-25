@@ -14,6 +14,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Field;
 import java.util.Objects;
 
+@SuppressWarnings("unused")
 public class CustomSwipeRefresh extends SwipeRefreshLayout {
 
     private static final String TAG = "CustomSwipeRefresh";

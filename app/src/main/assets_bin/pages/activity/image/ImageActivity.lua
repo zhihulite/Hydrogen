@@ -85,15 +85,15 @@ function ImageActivity:setupViewPager()
 
   viewPager.setAdapter(self.adapter)
   viewPager.setOffscreenPageLimit(1)
-  viewPager.setCurrentItem(self.currentIndex, false)
-
-  viewPager.registerOnPageChangeCallback(ViewPager2.OnPageChangeCallback{
-    onPageSelected = function(position)
+  viewPager.registerOnPageChangeCallback(luajava.override(ViewPager2.OnPageChangeCallback, {
+    onPageSelected = function(super, position)
       self.currentIndex = position
       self:updatePageInfo()
       self:loadImage(position)
     end
-  })
+  }))
+
+  viewPager.setCurrentItem(self.currentIndex, false)
 end
 
 function ImageActivity:loadImage(index)

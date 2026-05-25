@@ -2,6 +2,7 @@
 -- 用于 ListView 的通用适配器，提供类似于 SimpleRecyclerAdapter 的接口
 
 import "com.google.android.material.textview.MaterialTextView"
+import "android.widget.BaseAdapter"
 
 local SimpleBaseAdapter = {}
 

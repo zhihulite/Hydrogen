@@ -21,12 +21,12 @@ return {
     {
       MaterialTextView,
       text = "开启自定义字体",
-      textSize  = AppTextStyle.title.size,
-      textColor = AppTextStyle.title.color,
+      textSize  = AppTextStyle.titleSmall.size,
+      textColor = AppTextStyle.titleSmall.color,
       layout_width = "0dp",
       layout_weight = 1,
       layout_marginLeft = "16dp",
-      typeface  = AppTextStyle.title.font,
+      typeface  = AppTextStyle.titleSmall.font,
     },
     {
       MaterialSwitch,
@@ -37,9 +37,9 @@ return {
   {
     MaterialTextView,
     text = "开启后会将字体文件缓存到软件文件夹，关闭后会自动删除缓存到软件内的字体文件。",
-    textSize  = AppTextStyle.caption.size,
-    textColor = AppTextStyle.caption.color,
-    typeface  = AppTextStyle.caption.font,
+    textSize  = AppTextStyle.bodySmall.size,
+    textColor = AppTextStyle.bodySmall.color,
+    typeface  = AppTextStyle.bodySmall.font,
     layout_marginLeft = "16dp",
     layout_marginRight = "16dp",
     layout_marginTop = "4dp",

@@ -21,7 +21,7 @@ return {
     layout_marginRight = "16dp",
     layout_marginTop = "2dp",
     layout_marginBottom = "2dp",
-    CardBackgroundColor = colors.surface,
+    cardBackgroundColor = colors.surface,
     {
       LinearLayoutCompat,
       orientation = "horizontal",
@@ -45,9 +45,9 @@ return {
         layout_width = "0dp",
         layout_weight = 1,
         layout_marginLeft = "16dp",
-        textSize  = AppTextStyle.title.size,
-        textColor = AppTextStyle.title.color,
-        typeface  = AppTextStyle.title.font,
+        textSize  = AppTextStyle.titleSmall.size,
+        textColor = AppTextStyle.titleSmall.color,
+        typeface  = AppTextStyle.titleSmall.font,
       },
       {
         MaterialRadioButton,

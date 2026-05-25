@@ -26,17 +26,17 @@ return {
     MaterialTextView,
     id = "name",
     text = AppInfo.getName(),
-    textSize  = AppTextStyle.title.size,
-    textColor = AppTextStyle.title.color,
-    typeface  = AppTextStyle.title.font,
+    textSize  = AppTextStyle.titleSmall.size,
+    textColor = AppTextStyle.titleSmall.color,
+    typeface  = AppTextStyle.titleSmall.font,
   },
   {
     MaterialTextView,
     id = "message",
     text = "让每次点击都有意义",
-    textSize  = AppTextStyle.caption.size,
-    textColor = AppTextStyle.caption.color,
-    typeface  = AppTextStyle.caption.font,
+    textSize  = AppTextStyle.bodySmall.size,
+    textColor = AppTextStyle.bodySmall.color,
+    typeface  = AppTextStyle.bodySmall.font,
     layout_marginTop = "8dp",
   }
 }

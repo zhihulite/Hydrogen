@@ -33,8 +33,7 @@ function CollectionRecommendModel:createAdapter(dataList)
   import "com.google.android.material.textview.MaterialTextView"
   import "com.google.android.material.card.MaterialCardView"
   import "android.view.View"
-
-  local selfRef = self
+  
   local colors = AppTheme.getColors()
 
   return SimpleRecyclerAdapter.new({

@@ -62,16 +62,16 @@ function M.show(options)
         layout_width = "0dp",
         layout_weight = 1,
         text = "选择专栏",
-        textSize = AppTextStyle.title.size,
-        textColor = AppTextStyle.title.color,
-        typeface = AppTextStyle.title.font,
+        textSize = AppTextStyle.titleSmall.size,
+        textColor = AppTextStyle.titleSmall.color,
+        typeface = AppTextStyle.titleSmall.font,
       },
       {
         Helpers.MaterialWidgets.Button_Text,
         id = "new_btn",
         text = "新建专栏",
         textColor = colors.primary,
-        textSize = AppTextStyle.caption.size,
+        textSize = AppTextStyle.bodySmall.size,
       },
       {
         Helpers.MaterialWidgets.Button_Text,
@@ -93,9 +93,9 @@ function M.show(options)
       MaterialTextView,
       id = "tip",
       text = "待选中专栏",
-      textSize = AppTextStyle.caption.size,
-      textColor = AppTextStyle.caption.color,
-      typeface = AppTextStyle.caption.font,
+      textSize = AppTextStyle.bodySmall.size,
+      textColor = AppTextStyle.bodySmall.color,
+      typeface = AppTextStyle.bodySmall.font,
       gravity = Gravity.CENTER,
       padding = "12dp",
     },
@@ -141,10 +141,7 @@ function M.show(options)
 
   -- 新建专栏
   dialogViews.new_btn.onClick = function()
-    Router.go("browser", {
-      url = "https://www.zhihu.com/column/request",
-      title = "新建专栏"
-    })
+    Router.go("browser", { url = "https://www.zhihu.com/column/request" })
     tip("请自行在浏览器中创建专栏")
   end
 
@@ -161,9 +158,9 @@ function M.show(options)
           MaterialTextView,
           id = "title",
           layout_width = "match_parent",
-          textSize = AppTextStyle.body.size,
-          textColor = AppTextStyle.body.color,
-          typeface = AppTextStyle.body.font,
+          textSize = AppTextStyle.bodyMedium.size,
+          textColor = AppTextStyle.bodyMedium.color,
+          typeface = AppTextStyle.bodyMedium.font,
           ellipsize = "end",
           maxLines = 1,
         },
@@ -187,8 +184,8 @@ function M.show(options)
   local function loadColumns()
     local url = nextUrl or "https://api.zhihu.com/members/" .. Extensions.Config.get(Constants.SharedDataKeys.USER_ID) .. "/owned-columns?type=" .. contentType .. "&id=" .. contentId
 
-    NetWork.get(url, headers, function(success, content)
-      if not success then
+    NetWork.get(url, headers, function(code, content)
+      if code ~= 200 then
         tip("专栏列表加载失败")
         if options.onError then options.onError("专栏列表加载失败") end
         return
@@ -229,8 +226,8 @@ function M.show(options)
     local postUrl = "https://api.zhihu.com/" .. contentType .. "s/" .. contentId .. "/republish"
     local postData = json.encode({ action = "create", column = selectedColumnId })
 
-    NetWork.post(postUrl, postData, headers, function(success, _)
-      if success then
+    NetWork.post(postUrl, postData, headers, function(code, _)
+      if code == 200 then
         tip("已移动到专栏：" .. selectedColumnTitle)
         if options.onSuccess then options.onSuccess(selectedColumnId, selectedColumnTitle) end
        else

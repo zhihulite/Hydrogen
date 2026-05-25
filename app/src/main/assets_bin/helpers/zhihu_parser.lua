@@ -110,10 +110,6 @@ end
 --- 统一跳转函数
 ---@param type_ string 类型（必填）
 ---@param params table 业务参数
----   params.id: string|number ID
----   params.questionId: string|number 问题ID（answer类型可选）
----   params.url: string URL（browser类型必填）
----   params.title: string 标题（可选）
 ---@param options table|nil 选项
 ---   options.sharedElement: view 共享元素视图（可选）
 function M.go(type_, params, options)
@@ -140,7 +136,7 @@ function M.go(type_, params, options)
     -- 跳转到 browser
     type_ = "content"
     if type_ == "zvideo" then contentType = "video" end
-    routeParams = { id = idStr, type = contentType, title = params.title or "" }
+    routeParams = { id = idStr, type = contentType }
    elseif type_ == "topic" then
     routeParams = { id = idStr }
    elseif type_ == "people" then
@@ -150,7 +146,7 @@ function M.go(type_, params, options)
     type_ = "browser"
     routeParams = { url = "https://www.zhihu.com/column/" .. idStr, type = "column" }
    elseif type_ == "browser" then
-    routeParams = { url = params.url, title = params.title or "" }
+    routeParams = { url = params.url }
    elseif type_ == "login" then
     Router.go("login")
     return
@@ -199,7 +195,7 @@ function M.goUrl(url, options)
     if options.skipOnNil == true then
       return
      else
-      Router.go("browser", { url = url, title = options.title or "" })
+      Router.go("browser", { url = url })
     end
   end
 end

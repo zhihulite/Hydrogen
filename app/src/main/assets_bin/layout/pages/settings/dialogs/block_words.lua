@@ -14,8 +14,8 @@ return {
     hint = "输入屏蔽词，用空格分隔",
     layout_width = "fill",
     maxLines = 5,
-    textColor = AppTextStyle.body.color,
-    typeface = AppTextStyle.body.font,
-    textSize = AppTextStyle.body.size
+    textColor = AppTextStyle.bodyMedium.color,
+    typeface = AppTextStyle.bodyMedium.font,
+    textSize = AppTextStyle.bodyMedium.size
   }
 }

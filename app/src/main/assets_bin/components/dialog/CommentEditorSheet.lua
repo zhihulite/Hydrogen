@@ -22,7 +22,7 @@ import "android.text.style.CharacterStyle"
 import "androidx.core.widget.NestedScrollView"
 
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
-local ImageUploader = require("services.api.ImageUploader")
+local ImageUploader = require("services.api.image_uploader")
 local MentionSpan = require("components.span.MentionSpan")
 local EmojiSpan = require("components.span.EmojiSpan")
 local LinkSpan = require("components.span.LinkSpan")
@@ -138,9 +138,9 @@ function M.show(opts)
         hint = placeholder,
         maxLines = 10,
         padding = "16dp",
-        textSize = AppTextStyle.body.size,
-        textColor = AppTextStyle.body.color,
-        typeface = AppTextStyle.body.font,
+        textSize = AppTextStyle.bodyMedium.size,
+        textColor = AppTextStyle.bodyMedium.color,
+        typeface = AppTextStyle.bodyMedium.font,
         gravity = Gravity.TOP,
         inputType = 0x00020001,
         background = null,

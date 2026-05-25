@@ -37,7 +37,7 @@ function M.show(opts)
       layout_height = "wrap_content",
       hint = "搜索用户",
       layout_margin = "12dp",
-      textSize = AppTextStyle.body.size,
+      textSize = AppTextStyle.bodyMedium.size,
     },
     {
       RecyclerView,

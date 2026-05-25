@@ -41,7 +41,6 @@ function DailyModel:parseResponse(response, params)
 end
 
 function DailyModel:createAdapter()
-  local selfRef = self
   return SimpleRecyclerAdapter.new({
     items = self.items,
     onCreateView = function()
@@ -53,7 +52,7 @@ function DailyModel:createAdapter()
         Helpers.Image.load(views.image, item.imageUrl)
       end
       views.card.onClick = function()
-        Router.go("browser", { url = item.url, title = item.title }, { sharedElement = views.card })
+        Router.go("browser", { url = item.url }, { sharedElement = views.card })
       end
     end,
   })

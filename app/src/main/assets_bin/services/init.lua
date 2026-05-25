@@ -4,9 +4,7 @@
 local M = {}
 
 M.api = {
-  client = require("services.api.client"),
-  endpoints = require("services.api.endpoints"),
-  zhihu = require("services.api.zhihu"),
+  network = require("services.api.network"),
   zse96 = require("services.api.zse96"),
 }
 

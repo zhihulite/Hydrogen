@@ -4,12 +4,9 @@ import android.graphics.Bitmap;
 import android.net.http.SslError;
 import android.os.Message;
 import android.view.KeyEvent;
-import android.webkit.HttpAuthHandler;
-import android.webkit.SslErrorHandler;
-import android.webkit.WebResourceResponse;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import android.webkit.*;
 
+@SuppressWarnings("unused")
 public class LuaWebViewClientCreator extends WebViewClient {
 
     private final Creator creator;

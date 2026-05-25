@@ -171,10 +171,9 @@ function MainActivity:updateContainerTime(container, name)
 end
 
 function MainActivity:setupFragmentLoader()
-  local selfRef = self
   local function fragmentLoader(data)
     -- 智能选择目标容器
-    local targetContainer = selfRef:getTargetContainer(data.name)
+    local targetContainer = self:getTargetContainer(data.name)
     if not targetContainer then
       print("容器不存在")
       return false
@@ -209,12 +208,13 @@ function MainActivity:setupFragmentLoader()
 
     -- 如果没有开启使用简单动画，并且有共享元素，添加容器变换动画
     if Extensions.Config.getBool(Constants.SharedDataKeys.USE_SIMPLE_ANIMATION) == false and sharedView then
-      selfRef:setupSharedElementTransition(transaction, fragment, fragmentModule, sharedView)
+      self:setupSharedElementTransition(transaction, fragment, fragmentModule, sharedView)
      else
       -- 设置默认动画（进入和返回）
-      selfRef:setupDefaultTransition(fragment, fragmentModule)
+      self:setupDefaultTransition(fragment, fragmentModule)
     end
 
+    -- 可能需要 replace 才生效
     transaction.add(targetContainer.getId(), fragment, data.name)
     if not data.noBackStack then
       transaction.addToBackStack(data.name)
@@ -222,13 +222,13 @@ function MainActivity:setupFragmentLoader()
     transaction.commit()
 
     -- 更新容器时间戳
-    selfRef:updateContainerTime(targetContainer, data.name)
+    self:updateContainerTime(targetContainer, data.name)
 
     -- 更新当前 Fragment 引用
-    if targetContainer == selfRef.rightContainer then
-      selfRef.currentRightFragment = fragmentModule
+    if targetContainer == self.rightContainer then
+      self.currentRightFragment = fragmentModule
      else
-      selfRef.currentLeftFragment = fragmentModule
+      self.currentLeftFragment = fragmentModule
     end
 
     return true
@@ -249,14 +249,27 @@ function MainActivity:setupDefaultTransition(fragment, fragmentModule)
   end)
 end
 
+-- 简单不易重复的ID生成器
+local function generate_id()
+  -- 使用时间戳(精确到毫秒) + 随机数
+  local timestamp = os.time() * 1000 + math.random(0, 999)
+  local random = math.random(100, 999)
+  return timestamp * 1000 + random
+end
+
 -- 设置共享元素转场（容器变换 + Z轴）
 function MainActivity:setupSharedElementTransition(transaction, fragment, fragmentModule, sharedView)
-  -- 设置源视图名称
-  ViewCompat.setTransitionName(sharedView, _transition_name)
 
   -- 覆盖默认动画，设置完整转场
   fragmentModule:setOnViewCreatedCallback(function(container)
-    ViewCompat.setTransitionName(container, _transition_name)
+    -- 设置源视图名称
+    -- 可能需要 replace 才生效
+    local sharedViewName = _transition_name..generate_id()
+    ViewCompat.setTransitionName(sharedView, sharedViewName)
+    transaction.addSharedElement(sharedView, sharedViewName);
+    local sharedViewName = _transition_name..generate_id()
+    ViewCompat.setTransitionName(container, sharedViewName)
+    transaction.addSharedElement(container, sharedViewName);
 
     self:setupEnterTransition(fragment, container, sharedView)
     self:setupReturnTransition(fragment, container, sharedView)
@@ -282,6 +295,8 @@ function MainActivity:setupEnterTransition(fragment, container, sharedView)
   .addTransition(axisForward)
 
   fragment.setEnterTransition(forward)
+  -- 可能需要 replace 才生效
+  fragment.setSharedElementEnterTransition(forward)
 end
 
 -- 设置返回转场
@@ -301,8 +316,9 @@ function MainActivity:setupReturnTransition(fragment, container, sharedView)
   .addTransition(containerBackward)
   .addTransition(axisBackward)
   
-  fragment.setExitTransition(backward)
   fragment.setReturnTransition(backward)
+  -- 可能需要 replace 才生效
+  fragment.setSharedElementReturnTransition(backward)
 end
 
 function MainActivity:initLayout()

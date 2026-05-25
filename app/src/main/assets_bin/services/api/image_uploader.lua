@@ -1,4 +1,4 @@
--- services/api/ImageUploader.lua
+-- services/api/image_uploader.lua
 -- 知乎图片上传服务（完整阿里云 OSS 签名版本）
 
 local M = {}
@@ -36,7 +36,7 @@ local function ossSign(accessKey, stringToSign)
 end
 
 local function ossPutObject(uploadUrl, objectKey, imageBytes, contentType, token, callback)
-  -- 方法1：使用 SimpleDateFormat 指定格式
+  -- 使用 SimpleDateFormat 指定格式
   local SimpleDateFormat = luajava.bindClass("java.text.SimpleDateFormat")
   local TimeZone = luajava.bindClass("java.util.TimeZone")
   local Locale = luajava.bindClass("java.util.Locale")
@@ -73,8 +73,7 @@ local function ossPutObject(uploadUrl, objectKey, imageBytes, contentType, token
     ["x-oss-security-token"] = token.access_token,
     ["x-oss-user-agent"] = ossUserAgent,
   }
-    
-  local str = NetWork.bytesToLuaString(imageBytes)
+
   local url = uploadUrl .. "/" .. objectKey
   NetWork.put(url, imageBytes, headers, function(code, _)
     callback(code == 200)
@@ -178,8 +177,8 @@ function M.upload(imageBytes, callback)
 
     local uploadUrl = "https://zhihu-pics-upload.zhimg.com"
 
-    ossPutObject(uploadUrl, uploadFile.object_key, imageBytes, "image/jpeg", uploadToken, function(code)
-      if code == 200 then
+    ossPutObject(uploadUrl, uploadFile.object_key, imageBytes, "image/jpeg", uploadToken, function(success)
+      if success then
         -- OSS 上传成功后，通知知乎服务器
         local imageId = uploadFile.image_id
         local statusUrl = "https://api.zhihu.com/images/" .. imageId .. "/uploading_status"

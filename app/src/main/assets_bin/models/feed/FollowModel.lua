@@ -248,7 +248,6 @@ end
 
 -- createAdapter
 function FollowModel:createAdapter(dataList)
-  local selfRef = self
   local adapter
   adapter = SimpleRecyclerAdapter.new({
     items = dataList,
@@ -264,7 +263,7 @@ function FollowModel:createAdapter(dataList)
       end
     end,
     onBind = function(views, item, position, holder)
-      selfRef:bindItem(views, item, position, adapter)
+      self:bindItem(views, item, position, adapter)
       views.card.onClick = function()
         if item.isGroup then return end
         if item.id and item.type then

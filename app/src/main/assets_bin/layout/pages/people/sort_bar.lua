@@ -30,9 +30,9 @@ return {
     MaterialTextView,
     id = "sort_label",
     text = "排序：",
-    textSize  = AppTextStyle.caption.size,
-    textColor = AppTextStyle.caption.color,
-    typeface  = AppTextStyle.caption.font,
+    textSize  = AppTextStyle.bodySmall.size,
+    textColor = AppTextStyle.bodySmall.color,
+    typeface  = AppTextStyle.bodySmall.font,
   },
   {
     MaterialCardView,
@@ -53,9 +53,9 @@ return {
         MaterialTextView,
         id = "sort_name",
         text = "默认",
-        textSize  = AppTextStyle.caption.size,
-        textColor = AppTextStyle.caption.color,
-        typeface  = AppTextStyle.caption.font,
+        textSize  = AppTextStyle.bodySmall.size,
+        textColor = AppTextStyle.bodySmall.color,
+        typeface  = AppTextStyle.bodySmall.font,
         gravity = "center",
       },
       {
@@ -64,7 +64,7 @@ return {
         layout_height = "18dp",
         layout_marginLeft = "2dp",
         ImageBitmap = Helpers.Static.materialIcon("twotone_arrow_drop_down"),
-        colorFilter = AppTextStyle.caption.color,
+        colorFilter = AppTextStyle.bodySmall.color,
       },
     }
   }

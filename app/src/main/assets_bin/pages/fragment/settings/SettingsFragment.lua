@@ -159,8 +159,6 @@ function SettingsFragment:initListView()
   local views = self.views
   if not views.recycler_view then return end
 
-  local selfRef = self
-
   self.adapter = SimpleRecyclerAdapter.new({
     items = self.items,
     getItemViewType = function(position, item)
@@ -229,7 +227,7 @@ function SettingsFragment:initListView()
             if fromUser then
               local saveValue = item.step and tonumber(string.format("%.1f", value)) or math.floor(value + 0.5)
               views.value.text = formatValue(saveValue)
-              selfRef:onSliderChanged(item.key, saveValue)
+              self:onSliderChanged(item.key, saveValue)
             end
           end
         })
@@ -238,11 +236,11 @@ function SettingsFragment:initListView()
       if card then
         card.onClick = function()
           if item.type == "item" then
-            selfRef:onItemClick(item.key)
+            self:onItemClick(item.key)
            elseif item.type == "switch" then
             local newState = not views.switch_btn.isChecked()
             views.switch_btn.setChecked(newState)
-            selfRef:onSwitchChanged(item.key, newState)
+            self:onSwitchChanged(item.key, newState)
           end
         end
       end
@@ -653,8 +651,8 @@ end
 
 function SettingsFragment:showHomeLocationDialog()
   local headers = Headers["defaultHead"] or {}
-  NetWork.get("https://api.zhihu.com/feed-root/sections/cityList", headers, function(success, content)
-    if not success then
+  NetWork.get("https://api.zhihu.com/feed-root/sections/cityList", headers, function(code, content)
+    if code ~= 200 then
       tip("获取城市列表失败")
       return
     end

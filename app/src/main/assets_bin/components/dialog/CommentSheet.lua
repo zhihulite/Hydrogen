@@ -17,24 +17,23 @@ local CommentEditorSheet = require("components/dialog/CommentEditorSheet")
 function M:initListView()
   local model = self.model
   local views = self.sheetViews
-  local selfRef = self
 
   model:setupSingle(views.recycler_view, views.swipe_refresh)
   model:ensureLoaded()
 
   model:addListener("commentClick", function(item, position)
-    selfRef:onCommentClick(item)
+    self:onCommentClick(item)
   end)
 
   model:addListener("commentLongClick", function(item, position, anchorView)
-    selfRef:showCommentMenu(item, anchorView)
+    self:showCommentMenu(item, anchorView)
   end)
 
   model:addListener("showMoreComments", function(parentId, nextOffset)
     M.show({
       contentId = parentId,
       contentType = "comment",
-      parentContentType = selfRef.model.parentContentType or selfRef.contentType
+      parentContentType = self.model.parentContentType or self.contentType
     })
   end)
 
@@ -46,15 +45,14 @@ end
 
 function M:setupEvents()
   local views = self.sheetViews
-  local selfRef = self
 
-  views.toolbar.setNavigationOnClickListener({ onClick = function() selfRef.bottomSheet.dismiss() end })
-  views.chip_score.onClick = function() selfRef:changeSortOrder("score") end
-  views.chip_ts.onClick = function() selfRef:changeSortOrder("ts") end
+  views.toolbar.setNavigationOnClickListener({ onClick = function() self.bottomSheet.dismiss() end })
+  views.chip_score.onClick = function() self:changeSortOrder("score") end
+  views.chip_ts.onClick = function() self:changeSortOrder("ts") end
 
   -- 点击卡片打开评论编辑器
   views.bottom_card.onClick = function()
-    selfRef:openCommentEditor()
+    self:openCommentEditor()
   end
 end
 
@@ -136,7 +134,7 @@ function M:showCommentMenu(item, anchorView)
     { title = "分享", onClick = function() Helpers.UI.shareText(item.content and item.content.toString() or "") end },
     { title = "复制", onClick = function() Helpers.UI.copyText(item.content and item.content.toString() or "") tip("复制成功") end },
     { title = item.isDisliked and "取消踩" or "踩评论", onClick = function() self:handleDislike(item) end },
-    { title = "举报", onClick = function() Router.go("browser", { url = "https://www.zhihu.com/report?id=" .. item.id .. "&type=comment&source=android", title = "举报" }) end },
+    { title = "举报", onClick = function() Router.go("browser", { url = "https://www.zhihu.com/report?id=" .. item.id .. "&type=comment&source=android" }) end },
     { title = "屏蔽用户", onClick = function() self:handleBlockUser(item.authorId) end },
     { title = "查看主页", onClick = function() Router.go("people", { id = item.authorId, data = item.author }) end },
   }

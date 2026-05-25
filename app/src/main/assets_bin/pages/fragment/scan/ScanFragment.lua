@@ -52,23 +52,22 @@ function ScanFragment:startScan()
   formats.add(BarcodeFormat.QR_CODE)
   self.barcodeView.getBarcodeView().setDecoderFactory(DefaultDecoderFactory(formats))
 
-  local selfRef = self
   self.barcodeView.decodeSingle(BarcodeCallback({
     barcodeResult = function(result)
-      if selfRef.hasHandledResult or result == nil then return end
+      if self.hasHandledResult or result == nil then return end
 
       local text = tostring(result.getText() or "")
       if text == "" then
         tip("未识别到内容，请重试")
-        selfRef:startScan()
+        self:startScan()
         return
       end
 
-      selfRef.hasHandledResult = true
-      selfRef.barcodeView.pause()
+      self.hasHandledResult = true
+      self.barcodeView.pause()
 
       if text:find("^https?://") then
-        selfRef:handleUrl(text)
+        self:handleUrl(text)
        else
         Helpers.BottomDialog.confirm("扫码结果：\n" .. text,
         function() Helpers.UI.copyText(text) Router.back() end,

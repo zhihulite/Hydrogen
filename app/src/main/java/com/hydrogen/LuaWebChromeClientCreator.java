@@ -13,6 +13,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebStorage;
 import android.webkit.WebView;
 
+@SuppressWarnings("unused")
 public class LuaWebChromeClientCreator extends WebChromeClient {
 
     private final Creator creator;

@@ -60,9 +60,9 @@ return {
       MaterialTextView,
       id = "comment_count",
       text = "",
-      textSize = AppTextStyle.caption.size,
-      textColor = AppTextStyle.caption.color,
-      typeface = AppTextStyle.caption.font,
+      textSize = AppTextStyle.bodySmall.size,
+      textColor = AppTextStyle.bodySmall.color,
+      typeface = AppTextStyle.bodySmall.font,
     },
   },
   {
@@ -101,9 +101,9 @@ return {
       {
         MaterialTextView,
         text = "写评论...",
-        textSize = AppTextStyle.body.size,
+        textSize = AppTextStyle.bodyMedium.size,
         textColor = colors.onSurfaceVariant,
-        typeface = AppTextStyle.body.font,
+        typeface = AppTextStyle.bodyMedium.font,
         layout_weight = 1,
       },
       {

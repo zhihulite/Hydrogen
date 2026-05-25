@@ -16,8 +16,8 @@ import "com.google.android.material.textview.MaterialTextView"
 import "com.google.android.material.dialog.MaterialAlertDialogBuilder"
 import "java.io.File"
 import "java.io.FileInputStream"
-import "com.hydrogen.LuaWebViewClientCreator"
-import "com.hydrogen.LuaWebChromeClientCreator"
+import "com.hydrogen.LuaWebViewNetWorkCreator"
+import "com.hydrogen.LuaWebChromeNetWorkCreator"
 
 local M = {}
 local LuaWebView = luajava.bindClass("com.hydrogen.view.LuaWebView")
@@ -170,19 +170,18 @@ function M:setQQUA()
   return self
 end
 
-function M:setWebViewClient(callbacks)
+function M:setWebViewNetWork(callbacks)
   if not self:isAlive() then return self end
   callbacks = callbacks or {}
 
-  local self_ref = self
   local defaultCallbacks = {
     onPageStarted = function(view, url, favicon)
       if mergedModulesJS and mergedModulesJS ~= "" then
-        self_ref:evaluateJavascript(LuaWebViewBridge.getMergedModulesJS())
+        self:evaluateJavascript(LuaWebViewBridge.getMergedModulesJS())
       end
     end,
     shouldInterceptRequest = function(view, url)
-      return self_ref:onInterceptRequest(view, url)
+      return self:onInterceptRequest(view, url)
     end,
     onReceivedSslError = function(view, handler, error)
       handler.proceed()
@@ -210,8 +209,8 @@ function M:setWebViewClient(callbacks)
     end
   end
 
-  self.webView.setWebViewClient(LuaWebViewClientCreator(luajava.createProxy(
-  "com.hydrogen.LuaWebViewClientCreator$Creator", merged)))
+  self.webView.setWebViewNetWork(LuaWebViewNetWorkCreator(luajava.createProxy(
+  "com.hydrogen.LuaWebViewNetWorkCreator$Creator", merged)))
   return self
 end
 
@@ -234,7 +233,7 @@ function M:onInterceptRequest(view, url)
   return nil
 end
 
-function M:setWebChromeClient(callbacks)
+function M:setWebChromeNetWork(callbacks)
   if not self:isAlive() then return self end
   callbacks = callbacks or {}
 
@@ -248,7 +247,7 @@ function M:setWebChromeClient(callbacks)
 
   for k in pairs(callbacks) do
     if protectedCallbacks[k] then
-      error("禁止覆盖 WebChromeClient 的默认回调: " .. k)
+      error("禁止覆盖 WebChromeNetWork 的默认回调: " .. k)
     end
   end
 
@@ -322,8 +321,8 @@ function M:setWebChromeClient(callbacks)
     end
   end
 
-  self.webView.setWebChromeClient(LuaWebChromeClientCreator(luajava.createProxy(
-  "com.hydrogen.LuaWebChromeClientCreator$Creator", merged)))
+  self.webView.setWebChromeNetWork(LuaWebChromeNetWorkCreator(luajava.createProxy(
+  "com.hydrogen.LuaWebChromeNetWorkCreator$Creator", merged)))
   return self
 end
 

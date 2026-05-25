@@ -60,11 +60,7 @@ function AnswerFragment:setupToolbar()
           Helpers.UI.shareText("https://www.zhihu.com/answer/" .. (self.currentAnswerId or self.answerId))
       end },
       { id = "report", title = "举报", click = function()
-          Router.go("browser", {
-            url = "https://www.zhihu.com/report?id=" .. (self.currentAnswerId or self.answerId) .. "&type=answer&source=android",
-            title = "举报",
-            ua = "zhihu"
-          })
+          Router.go("browser", { url = "https://www.zhihu.com/report?id=" .. (self.currentAnswerId or self.answerId) .. "&type=answer&source=android" })
       end },
       { id = "saveAsPic", title = "以图片形式保存", click = function()
           if self.currentPageIds and self.currentPageIds.webview then
@@ -386,7 +382,7 @@ function AnswerFragment:setupWebView(webview, answerId, pageIds)
     self:onBridgeMessage(action, data)
   end)
 
-  helper:setWebViewClient({
+  helper:setWebViewNetWork({
     shouldOverrideUrlLoading = function(view, url)
       if url ~= ("https://www.zhihu.com/appview/answer/" .. answerId) then
         Router.go("browser", { url = url })
@@ -400,7 +396,7 @@ function AnswerFragment:setupWebView(webview, answerId, pageIds)
       pageIds.webview.setVisibility(View.VISIBLE)
     end
   })
-  helper:setWebChromeClient({
+  helper:setWebChromeNetWork({
     onProgressChanged = function(view, newProgress)
       if newProgress < 100 then
         pageIds.progress.setProgress(newProgress)
@@ -445,9 +441,9 @@ function AnswerFragment:setupViewPager2()
   self.pagerAdapter = LuaPager2Adapter()
   viewPager.setAdapter(self.pagerAdapter)
 
-  viewPager.registerOnPageChangeCallback(ViewPager2.OnPageChangeCallback{
-    onPageSelected = function(pos) self:onPageSelected(pos) end
-  })
+  viewPager.registerOnPageChangeCallback(luajava.override(ViewPager2.OnPageChangeCallback, {
+    onPageSelected = function(super, pos) self:onPageSelected(pos) end
+  }))
 
   self:addPage(self.answerId)
 end

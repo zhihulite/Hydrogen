@@ -25,7 +25,7 @@ local licenses = {
   { name = "Glide", license = "Apache 2.0", message = "图片加载库", url = "https://github.com/bumptech/glide" },
   { name = "Zip4j", license = "Apache 2.0", message = "Zip 压缩解压库", url = "https://github.com/srikanth-lingala/zip4j" },
   { name = "PhotoView", license = "Apache 2.0", message = "图片缩放库", url = "https://github.com/Baseflow/PhotoView" },
-  { name = "WebViewUp", license = "Apache 2.0", message = "WebView 内核更新库", url = "https://github.com/xyoye/WebViewUp" },
+  { name = "WebViewUpgrade", license = "Apache 2.0", message = "WebView 内核更新库", url = "https://github.com/JonaNorman/WebViewUpgrade" },
   { name = "ZXing Embedded", license = "Apache 2.0", message = "二维码扫描库", url = "https://github.com/journeyapps/zxing-android-embedded" },
   { name = "ZXing Core", license = "Apache 2.0", message = "二维码核心库", url = "https://github.com/zxing/zxing" },
   { name = "AndroLua_pro", license = "MIT", message = "AndroLua+ 脚本框架 (基础运行时)", url = "https://github.com/nirenr/AndroLua_pro" },
@@ -71,8 +71,6 @@ end
 function OpenSourceFragment:initListView()
   local views = self.views
   if not views.recycler_view then return end
-  local selfRef = self
-
   self.adapter = SimpleRecyclerAdapter.new({
     items = self.items,
     onCreateView = function()

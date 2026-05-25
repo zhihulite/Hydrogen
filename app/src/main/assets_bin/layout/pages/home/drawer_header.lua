@@ -69,9 +69,9 @@ return {
         id = "name",
         layout_marginTop = "12dp",
         text = "未登录",
-        textSize = AppTextStyle.title.size,
-        textColor = AppTextStyle.title.color,
-        typeface = AppTextStyle.title.font,
+        textSize = AppTextStyle.titleSmall.size,
+        textColor = AppTextStyle.titleSmall.color,
+        typeface = AppTextStyle.titleSmall.font,
       },
       {
         -- 个性签名
@@ -79,9 +79,9 @@ return {
         id = "signature",
         layout_marginTop = "4dp",
         text = "点击登录",
-        textSize = AppTextStyle.caption.size,
-        textColor = AppTextStyle.caption.color,
-        typeface = AppTextStyle.caption.font,
+        textSize = AppTextStyle.bodySmall.size,
+        textColor = AppTextStyle.bodySmall.color,
+        typeface = AppTextStyle.bodySmall.font,
       }
     }
   }

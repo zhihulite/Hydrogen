@@ -68,16 +68,15 @@ function HistoryFragment:initViews()
 end
 
 function HistoryFragment:initTabs()
-  local selfRef = self
   self.tabs = TabBar.create(
   self.views.tab_layout,
   tabNames,
   function(index, name)
     local tabID = tabConfig[index].id
-    if selfRef.currentTab == tabID then return end
-    selfRef.currentTab = tabID
-    selfRef:loadData()
-    TabBar.select(selfRef.tabs, index)
+    if self.currentTab == tabID then return end
+    self.currentTab = tabID
+    self:loadData()
+    TabBar.select(self.tabs, index)
   end
   )
 end
@@ -113,8 +112,7 @@ end
 function HistoryFragment:initListView()
   local views = self.views
   if not views.recycler_view then return end
-
-  local selfRef = self
+  
   self.adapter = SimpleRecyclerAdapter.new({
     items = self.items,
     onCreateView = function()
@@ -127,10 +125,10 @@ function HistoryFragment:initListView()
       views.preview.setVisibility(hasPreview and View.VISIBLE or View.GONE)
       views.preview.text = item.preview or ""
       views.card.onClick = function()
-        selfRef:onItemClick(item, position)
+        self:onItemClick(item, position)
       end
       views.card.onLongClick = function()
-        selfRef:showDeleteConfirm(item)
+        self:showDeleteConfirm(item)
         return true
       end
     end,

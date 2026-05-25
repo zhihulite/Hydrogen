@@ -12,8 +12,8 @@ return {
     MaterialTextView,
     id = "header",
     layout_margin = "16dp",
-    textSize = AppTextStyle.label.size,
-    textColor = AppTextStyle.label.color,
-    typeface = AppTextStyle.label.font
+    textSize = AppTextStyle.labelSmall.size,
+    textColor = AppTextStyle.labelSmall.color,
+    typeface = AppTextStyle.labelSmall.font
   }
 }

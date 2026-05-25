@@ -4,16 +4,16 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
-import android.util.Log;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("unused")
 public class HistoryManager {
 
     private static HistoryManager instance;
@@ -29,8 +29,6 @@ public class HistoryManager {
     private final List<HistoryItem> historyList = new ArrayList<>();
     private final Map<String, HistoryItem> historyMap = new HashMap<>();
 
-    // 上下文相关
-    private Context context;
     private SharedPreferences sharedPreferences;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable saveRunnable = this::saveToPreferences;
@@ -49,8 +47,9 @@ public class HistoryManager {
         if (!historyList.isEmpty()) {
             return;
         }
-        this.context = ctx.getApplicationContext();
-        sharedPreferences = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        // 上下文相关
+        Context applicationContext = ctx.getApplicationContext();
+        sharedPreferences = applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         loadFromPreferences();
     }
 
@@ -218,7 +217,7 @@ public class HistoryManager {
         }
         
         @Override
-        public String toString() {
+        public @NonNull String toString() {
             return type + ": " + title + " [" + preview + "] (" + id + ")";
         }
     }

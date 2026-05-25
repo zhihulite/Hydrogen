@@ -116,7 +116,7 @@ function ContentFragment:initWebView()
     self:onBridgeMessage(action, data)
   end)
 
-  self.webViewHelper:setWebViewClient({
+  self.webViewHelper:setWebViewNetWork({
     shouldOverrideUrlLoading = function(view, url)
       -- 评论
       local commentType, id = url:match("comment/list/([^/]+)/(%d+)$")
@@ -148,7 +148,7 @@ function ContentFragment:initWebView()
     end,
   })
 
-  self.webViewHelper:setWebChromeClient({
+  self.webViewHelper:setWebChromeNetWork({
     onProgressChanged = function(view, progress)
       views.progress_bar.setVisibility(progress < 100 and View.VISIBLE or View.GONE)
       views.progress_bar.setProgress(progress)

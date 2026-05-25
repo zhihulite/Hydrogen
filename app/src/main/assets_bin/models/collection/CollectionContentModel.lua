@@ -64,8 +64,6 @@ function CollectionContentModel:parseItem(rawItem)
 end
 
 function CollectionContentModel:createAdapter(dataList)
-  local selfRef = self
-
   return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
@@ -80,7 +78,7 @@ function CollectionContentModel:createAdapter(dataList)
         Helpers.ZhihuParser.go(item.type, { id = item.id }, { sharedElement = views.card })
       end
       views.card.onLongClick = function()
-        selfRef:showItemMenu(item, views.card)
+        self:showItemMenu(item, views.card)
         return true
       end
     end,

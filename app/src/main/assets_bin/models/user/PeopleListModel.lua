@@ -100,8 +100,6 @@ function PeopleListModel:parseItem(rawItem)
 end
 
 function PeopleListModel:createAdapter(dataList)
-  local selfRef = self
-
   return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
@@ -114,7 +112,7 @@ function PeopleListModel:createAdapter(dataList)
 
       views.action_btn.text = item.actionText or ""
       views.action_btn.onClick = function()
-        selfRef:onActionClick(item, views.action_btn)
+        self:onActionClick(item, views.action_btn)
       end
 
       views.card.onClick = function()

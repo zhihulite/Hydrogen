@@ -205,6 +205,44 @@ function CommentModel:formatContent(content)
   return spannable, img_url, img_width, img_height
 end
 
+-- 格式化时间戳为友好显示
+-- @param t 时间戳（秒或毫秒）
+-- @return 友好时间字符串（刚刚/X分钟前/X小时前/MM-dd/yyyy-MM-dd）
+local function formatTimestamp(t)
+  if not t then
+    return nil
+  end
+
+  -- 自动识别毫秒（13位）并转换为秒
+  if tostring(t):match("%d{13}") then
+    t = t / 1000
+  end
+
+  local now = os.time() -- 当前时间（秒）
+  local diff = now - t -- 时间差（秒）
+
+  -- 1小时内：显示分钟数
+  if diff < 3600 then
+    local minutes = math.floor(diff / 60 + 0.5) -- 四舍五入
+    if minutes <= 0 then
+      return "刚刚"
+    end
+    return minutes .. " 分钟前"
+
+    -- 24小时内：显示小时数
+   elseif diff < 86400 then
+    local hours = math.floor(diff / 3600 + 0.5)
+    return hours .. " 小时前"
+
+    -- 今年内：显示月-日
+   elseif tonumber(os.date("%Y", now)) == tonumber(os.date("%Y", t)) then
+    return os.date("%m-%d", t)
+
+    -- 跨年：显示年-月-日
+   else
+    return os.date("%Y-%m-%d", t)
+  end
+end
 
 function CommentModel:parseItem(rawItem)
   local author = rawItem.author or {}
@@ -235,6 +273,13 @@ function CommentModel:parseItem(rawItem)
     end
   end
 
+  local commentTime = formatTimestamp(rawItem.created_time)
+  local commentBottom =  commentTime
+  local comment_tag = rawItem.comment_tag and rawItem.comment_tag[1]
+  if comment_tag and comment_tag.type == "ip_info" then
+    commentBottom = comment_tag.text .. " · ".. commentTime
+  end
+
   return {
     id = tostring(rawItem.id),
     type = "comment",
@@ -248,7 +293,7 @@ function CommentModel:parseItem(rawItem)
     hasImage = img_url ~= nil,
     avatarUrl = author.avatar_url,
     likeCount = rawItem.like_count or 0,
-    time = "",
+    commentBottom = commentBottom,
     childCount = rawItem.child_comment_count or 0,
     childNextOffset = rawItem.child_comment_next_offset,
     childComments = childComments,
@@ -261,8 +306,6 @@ function CommentModel:parseItem(rawItem)
 end
 
 function CommentModel:createAdapter(dataList)
-  local selfRef = self
-
   return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
@@ -271,7 +314,7 @@ function CommentModel:createAdapter(dataList)
     onBind = function(views, item, position, holder)
 
       views.author_name.text = item.title or ""
-      views.comment_time.text = item.time or ""
+      views.comment_bottom.text = item.commentBottom or ""
       views.comment_content.text = item.content or ""
       views.like_count.text = tostring(item.likeCount)
       Helpers.Image.load(views.avatar, item.avatarUrl)
@@ -303,39 +346,39 @@ function CommentModel:createAdapter(dataList)
         views.comment_count.text = "0"
       end
 
-      selfRef:setupChildRecycler(views.child_recycler, item)
+      self:setupChildRecycler(views.child_recycler, item)
 
       if item.childCount > #(item.childComments or {}) then
         views.more_replies.text = string.format("查看全部%d条回复", item.childCount)
         views.more_replies.setVisibility(View.VISIBLE)
         views.more_replies.onClick = function()
-          if selfRef.contentType == "comment" then
+          if self.contentType == "comment" then
             tip("当前已在当前回复中")
             return
           end
-          selfRef:notifyListeners("showMoreComments", item.id, item.childNextOffset)
+          self:notifyListeners("showMoreComments", item.id, item.childNextOffset)
         end
        else
         views.more_replies.setVisibility(View.GONE)
       end
 
-      selfRef:updateLikeIcon(views.like_icon, item.isLiked)
+      self:updateLikeIcon(views.like_icon, item.isLiked)
       views.like_layout.onClick = function()
-        selfRef:likeComment(item.id, not item.isLiked, function(success)
+        self:likeComment(item.id, not item.isLiked, function(success)
           if success then
             item.isLiked = not item.isLiked
             item.likeCount = item.likeCount + (item.isLiked and 1 or -1)
             views.like_count.text = tostring(item.likeCount)
-            selfRef:updateLikeIcon(views.like_icon, item.isLiked)
+            self:updateLikeIcon(views.like_icon, item.isLiked)
           end
         end)
       end
 
       views.card.onClick = function()
-        selfRef:notifyListeners("commentClick", item, position)
+        self:notifyListeners("commentClick", item, position)
       end
       views.card.onLongClick = function()
-        selfRef:notifyListeners("commentLongClick", item, position, views.card)
+        self:notifyListeners("commentLongClick", item, position, views.card)
         return true
       end
     end
@@ -356,7 +399,6 @@ function CommentModel:setupChildRecycler(childRecycler, item)
     )
   end
 
-  local selfRef = self
   local adapter = SimpleRecyclerAdapter.new({
     items = item.childComments,
     onCreateView = function()
@@ -365,6 +407,7 @@ function CommentModel:setupChildRecycler(childRecycler, item)
     onBind = function(views, childItem, position, holder)
       views.author_name.text = childItem.title or ""
       views.comment_content.text = childItem.content or ""
+      views.comment_bottom.text = childItem.commentBottom or ""
 
       if childItem.hasUrl then
         views.comment_content.setMovementMethod(linkMovementMethodInstance)
@@ -374,14 +417,14 @@ function CommentModel:setupChildRecycler(childRecycler, item)
       Helpers.Image.load(views.avatar, childItem.avatarUrl)
 
       -- 子评论点赞
-      selfRef:updateLikeIcon(views.like_icon, childItem.isLiked)
+      self:updateLikeIcon(views.like_icon, childItem.isLiked)
       views.like_layout.onClick = function()
-        selfRef:likeComment(childItem.id, not childItem.isLiked, function(success)
+        self:likeComment(childItem.id, not childItem.isLiked, function(success)
           if success then
             childItem.isLiked = not childItem.isLiked
             childItem.likeCount = childItem.likeCount + (childItem.isLiked and 1 or -1)
             views.like_count.text = tostring(childItem.likeCount)
-            selfRef:updateLikeIcon(views.like_icon, childItem.isLiked)
+            self:updateLikeIcon(views.like_icon, childItem.isLiked)
           end
         end)
       end
@@ -401,10 +444,10 @@ function CommentModel:setupChildRecycler(childRecycler, item)
       end
 
       views.card.onClick = function()
-        selfRef:notifyListeners("commentClick", childItem, position)
+        self:notifyListeners("commentClick", childItem, position)
       end
       views.card.onLongClick = function()
-        selfRef:notifyListeners("commentLongClick", childItem, position, views.card)
+        self:notifyListeners("commentLongClick", childItem, position, views.card)
         return true
       end
 

@@ -43,9 +43,9 @@ return {
       id = "author_name",
       layout_width = "wrap_content",
       layout_height = "wrap_content",
-      textSize = AppTextStyle.title.size,
-      textColor = AppTextStyle.title.color,
-      typeface = AppTextStyle.title.font,
+      textSize = AppTextStyle.titleSmall.size,
+      textColor = AppTextStyle.titleSmall.color,
+      typeface = AppTextStyle.titleSmall.font,
       maxLines = 1,
       ellipsize = "end",
     },
@@ -55,9 +55,9 @@ return {
       layout_width = "match_parent",
       layout_height = "wrap_content",
       layout_marginTop = "2dp",
-      textSize = AppTextStyle.body.size,
-      textColor = AppTextStyle.body.color,
-      typeface = AppTextStyle.body.font,
+      textSize = AppTextStyle.bodyMedium.size,
+      textColor = AppTextStyle.bodyMedium.color,
+      typeface = AppTextStyle.bodyMedium.font,
     },
     {
       -- 子评论图片
@@ -78,12 +78,12 @@ return {
       gravity = "center_vertical",
       {
         MaterialTextView,
-        id = "comment_time",
+        id = "comment_bottom",
         layout_width = "wrap_content",
         layout_height = "wrap_content",
-        textSize = AppTextStyle.caption.size,
-        textColor = AppTextStyle.caption.color,
-        typeface = AppTextStyle.caption.font,
+        textSize = AppTextStyle.bodySmall.size,
+        textColor = AppTextStyle.bodySmall.color,
+        typeface = AppTextStyle.bodySmall.font,
       },
       {
         View,
@@ -110,9 +110,9 @@ return {
           id = "like_count",
           layout_marginLeft = "2dp",
           text = "0",
-          textSize = AppTextStyle.caption.size,
-          textColor = AppTextStyle.caption.color,
-          typeface = AppTextStyle.caption.font,
+          textSize = AppTextStyle.bodySmall.size,
+          textColor = AppTextStyle.bodySmall.color,
+          typeface = AppTextStyle.bodySmall.font,
         }
       }
     }

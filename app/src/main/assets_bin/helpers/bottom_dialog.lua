@@ -56,9 +56,9 @@ local function buildListItems(container, items, onItemClick, onItemLongClick, au
           layout_width = "0dp",
           layout_weight = 1,
           text = item.title or item,
-          textSize = AppTextStyle.body.size,
-          textColor = AppTextStyle.body.color,
-          typeface = AppTextStyle.body.font,
+          textSize = AppTextStyle.bodyMedium.size,
+          textColor = AppTextStyle.bodyMedium.color,
+          typeface = AppTextStyle.bodyMedium.font,
         },
       },
     }
@@ -117,9 +117,9 @@ function M.show(opts)
       layout_marginRight = "24dp",
       layout_marginBottom = "16dp",
       text = opts.content or "",
-      textSize = AppTextStyle.body.size,
-      typeface = AppTextStyle.body.font,
-      textColor = AppTextStyle.body.color,
+      textSize = AppTextStyle.bodyMedium.size,
+      typeface = AppTextStyle.bodyMedium.font,
+      textColor = AppTextStyle.bodyMedium.color,
     }
   end
 
@@ -129,9 +129,9 @@ function M.show(opts)
       MaterialTextView, layout_width = "match_parent", layout_height = "wrap_content",
       layout_marginLeft = "24dp", layout_marginRight = "24dp",
       layout_marginTop = "8dp", layout_marginBottom = "12dp",
-      text = opts.title, textSize = AppTextStyle.title.size,
+      text = opts.title, textSize = AppTextStyle.titleSmall.size,
       textColor = colors.primary,
-      typeface = AppTextStyle.title.font,
+      typeface = AppTextStyle.titleSmall.font,
     } or nil,
     { LinearLayoutCompat, orientation = "vertical", layout_width = "match_parent", layout_height = "wrap_content", contentView },
     opts.listItems and {

@@ -2,8 +2,8 @@
 -- 本地网页保存与浏览页面（专门用于 answer）
 
 import "android.webkit.WebView"
-import "android.webkit.WebViewClient"
-import "android.webkit.WebChromeClient"
+import "android.webkit.WebViewNetWork"
+import "android.webkit.WebChromeNetWork"
 import "android.view.View"
 
 local BaseFragment = require("pages.base.BaseFragment")
@@ -144,7 +144,7 @@ function LocalContentFragment:initWebView()
     if self.webView then self.webView.reload() end
   end)
 
-  self.webViewHelper:setWebViewClient({
+  self.webViewHelper:setWebViewNetWork({
     shouldOverrideUrlLoading = function(view, url)
       view.loadUrl(url)
       return true
@@ -159,7 +159,7 @@ function LocalContentFragment:initWebView()
     end
   })
 
-  self.webViewHelper:setWebChromeClient({
+  self.webViewHelper:setWebChromeNetWork({
     onReceivedTitle = function(view, title)
       if not self.pageTitle and self.views.toolbar then
         self.views.toolbar.setTitle(title)

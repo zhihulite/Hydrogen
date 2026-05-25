@@ -69,16 +69,16 @@ return {
     {
       MaterialTextView,
       text = "暂无历史记录",
-      textSize  = AppTextStyle.title.size,
-      textColor = AppTextStyle.title.color,
-      typeface  = AppTextStyle.title.font,
+      textSize  = AppTextStyle.titleSmall.size,
+      textColor = AppTextStyle.titleSmall.color,
+      typeface  = AppTextStyle.titleSmall.font,
     },
     {
       MaterialTextView,
       text = "浏览过的内容会显示在这里",
-      textSize  = AppTextStyle.caption.size,
-      textColor = AppTextStyle.caption.color,
-      typeface  = AppTextStyle.caption.font,
+      textSize  = AppTextStyle.bodySmall.size,
+      textColor = AppTextStyle.bodySmall.color,
+      typeface  = AppTextStyle.bodySmall.font,
       layout_marginTop = "8dp",
     }
   }

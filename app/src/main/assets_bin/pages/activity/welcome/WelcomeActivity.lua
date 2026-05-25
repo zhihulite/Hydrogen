@@ -166,28 +166,28 @@ function WelcomeActivity:createStartPage()
     {
       MaterialTextView,
       text = "欢迎使用 Hydrogen",
-      textSize = AppTextStyle.headline.size,
-      textColor = AppTextStyle.headline.color,
+      textSize = AppTextStyle.headlineSmall.size,
+      textColor = AppTextStyle.headlineSmall.color,
       gravity = "center",
       layout_marginBottom = "12dp",
-      typeface = AppTextStyle.headline.font,
+      typeface = AppTextStyle.headlineSmall.font,
     },
     {
       MaterialTextView,
       text = "一个基于androlua+开发的知乎第三方app",
-      textSize = AppTextStyle.body.size,
-      textColor = AppTextStyle.body.color,
+      textSize = AppTextStyle.bodyMedium.size,
+      textColor = AppTextStyle.bodyMedium.color,
       gravity = "center",
       layout_marginBottom = "48dp",
-      typeface = AppTextStyle.body.font,
+      typeface = AppTextStyle.bodyMedium.font,
     },
     {
       MaterialTextView,
       text = "接下来，让我们完成一些基础设置",
-      textSize = AppTextStyle.body.size,
-      textColor = AppTextStyle.body.color,
+      textSize = AppTextStyle.bodyMedium.size,
+      textColor = AppTextStyle.bodyMedium.color,
       gravity = "center",
-      typeface = AppTextStyle.body.font,
+      typeface = AppTextStyle.bodyMedium.font,
     }
   })
 
@@ -217,9 +217,9 @@ function WelcomeActivity:createAgreementPage(agreement, index)
         id = "content",
         padding = "20dp",
         text = spanned,
-        textSize = AppTextStyle.body.size,
-        textColor = AppTextStyle.body.color,
-        typeface = AppTextStyle.body.font,
+        textSize = AppTextStyle.bodyMedium.size,
+        textColor = AppTextStyle.bodyMedium.color,
+        typeface = AppTextStyle.bodyMedium.font,
         movementMethod = LinkMovementMethod.getInstance(),
       }
     },
@@ -237,9 +237,9 @@ function WelcomeActivity:createAgreementPage(agreement, index)
         layout_width = 0,
         layout_weight = 1,
         layout_marginEnd = "8dp",
-        textSize = AppTextStyle.body.size,
-        textColor = AppTextStyle.body.color,
-        typeface = AppTextStyle.body.font,
+        textSize = AppTextStyle.bodyMedium.size,
+        textColor = AppTextStyle.bodyMedium.color,
+        typeface = AppTextStyle.bodyMedium.font,
       }
     }
   }, views)
@@ -266,9 +266,9 @@ function WelcomeActivity:createPermissionPage()
     {
       MaterialTextView,
       text = "以下权限仅在实际使用时申请，无需提前授权。",
-      textSize = AppTextStyle.body.size,
-      textColor = AppTextStyle.body.color,
-      typeface = AppTextStyle.body.font,
+      textSize = AppTextStyle.bodyMedium.size,
+      textColor = AppTextStyle.bodyMedium.color,
+      typeface = AppTextStyle.bodyMedium.font,
       gravity = "center",
       layout_marginBottom = "24dp",
     },
@@ -313,16 +313,16 @@ function WelcomeActivity:createPermissionPage()
             {
               MaterialTextView,
               text = perm.title,
-              textSize = AppTextStyle.title.size,
-              textColor = AppTextStyle.title.color,
-              typeface = AppTextStyle.title.font,
+              textSize = AppTextStyle.titleSmall.size,
+              textColor = AppTextStyle.titleSmall.color,
+              typeface = AppTextStyle.titleSmall.font,
             },
             {
               MaterialTextView,
               text = perm.summary,
-              textSize = AppTextStyle.caption.size,
-              textColor = AppTextStyle.caption.color,
-              typeface = AppTextStyle.caption.font,
+              textSize = AppTextStyle.bodySmall.size,
+              textColor = AppTextStyle.bodySmall.color,
+              typeface = AppTextStyle.bodySmall.font,
               layout_marginTop = "4dp",
             }
           }
@@ -355,19 +355,19 @@ function WelcomeActivity:createCompletePage()
     {
       MaterialTextView,
       text = "准备就绪",
-      textSize = AppTextStyle.headline.size,
-      textColor = AppTextStyle.headline.color,
+      textSize = AppTextStyle.headlineSmall.size,
+      textColor = AppTextStyle.headlineSmall.color,
       gravity = "center",
       layout_marginBottom = "12dp",
-      typeface = AppTextStyle.headline.font,
+      typeface = AppTextStyle.headlineSmall.font,
     },
     {
       MaterialTextView,
       text = "一切准备就绪，开始探索精彩内容吧",
-      textSize = AppTextStyle.body.size,
-      textColor = AppTextStyle.body.color,
+      textSize = AppTextStyle.bodyMedium.size,
+      textColor = AppTextStyle.bodyMedium.color,
       gravity = "center",
-      typeface = AppTextStyle.body.font,
+      typeface = AppTextStyle.bodyMedium.font,
     }
   })
 

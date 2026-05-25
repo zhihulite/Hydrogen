@@ -99,25 +99,24 @@ end
 --- @param swipeRefresh SwipeRefreshLayout|nil
 --- @return PageTool
 function PageToolModel:setupSingle(recyclerView, swipeRefresh)
-  local selfRef = self
   self.pageTool = PageTool.new({
     contentView = recyclerView,
     swipeRefresh = swipeRefresh,
     needLogin = self.needLogin,
     allowLoadPrev = self.allowLoadPrev,
-    baseUrlGetter = function() return selfRef:getInitialUrl() end,
-    headersGetter = function(key) return selfRef:getRequestHeaders(key) end,
+    baseUrlGetter = function() return self:getInitialUrl() end,
+    headersGetter = function(key) return self:getRequestHeaders(key) end,
     urlProcessor = self.urlProcessor,
     adapterCreator = function(dataList, key)
-      return selfRef:createAdapter(dataList, key)
+      return self:createAdapter(dataList, key)
     end,
     itemParser = function(rawItem, dataList)
-      local result = selfRef:parseItem(rawItem, "single")
+      local result = self:parseItem(rawItem, "single")
       processParseResult(result, dataList)
     end,
     onLoad = function(data, dataList, key, isFirst)
       if isFirst then
-        selfRef:onFirstLoad(data, dataList, key)
+        self:onFirstLoad(data, dataList, key)
       end
     end,
   })
@@ -138,13 +137,12 @@ function PageToolModel:setupTabs(viewPager, tabLayout, defaultTab)
     error("多页模式必须实现 getTabConfigs() 返回非空列表")
   end
 
-  local selfRef = self
   local itemParsers = {}
 
   for _, tab in ipairs(tabConfigs) do
     local key = tab.key
     itemParsers[key] = function(rawItem, dataList)
-      local result = selfRef:parseItem(rawItem, key)
+      local result = self:parseItem(rawItem, key)
       processParseResult(result, dataList)
     end
   end
@@ -156,23 +154,23 @@ function PageToolModel:setupTabs(viewPager, tabLayout, defaultTab)
     prePageCreator = self.prePageCreator,
     tabClickThrottle = self.tabClickThrottle,
     needLogin = self.needLogin,
-    baseUrlsGetter = function() return selfRef:getInitialUrls() end,
-    headersGetter = function(key) return selfRef:getRequestHeaders(key) end,
+    baseUrlsGetter = function() return self:getInitialUrls() end,
+    headersGetter = function(key) return self:getRequestHeaders(key) end,
     urlProcessor = self.urlProcessor,
     adapterCreator = function(dataList, key)
-      return selfRef:createAdapter(dataList, key)
+      return self:createAdapter(dataList, key)
     end,
     itemParsers = itemParsers,
     onLoad = function(data, dataList, key, isFirst)
       if isFirst then
-        selfRef:onFirstLoad(data, dataList, key)
+        self:onFirstLoad(data, dataList, key)
       end
     end,
   })
 
   self.pageTool:addPages({ tabConfigs = tabConfigs, defaultTab = defaultTab })
   self.pageTool:setOnTabListener(function(tool, key)
-    selfRef:onTabSelected(key)
+    self:onTabSelected(key)
   end)
 
   return self.pageTool

@@ -395,7 +395,6 @@ function PeopleModel:parseItem(rawItem)
 end
 
 function PeopleModel:createAdapter(dataList)
-  local selfRef = self
   return SimpleRecyclerAdapter.new({
     items = dataList,
     getItemViewType = function(position, item)
@@ -427,7 +426,7 @@ function PeopleModel:createAdapter(dataList)
 
       views.card.onClick = function()
         if item.type == "more" then
-          Router.go("people_more", { id = selfRef.userId, title = item.title }, { sharedElement = views.card })
+          Router.go("people_more", { id = self.userId, title = item.title }, { sharedElement = views.card })
          else
           Helpers.ZhihuParser.go(item.type, { id = item.id }, { sharedElement = views.card })
         end

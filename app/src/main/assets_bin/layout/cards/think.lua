@@ -38,9 +38,9 @@ return {
         id = "title",
         layout_width = "match_parent",
         layout_height = "wrap_content",
-        textSize  = AppTextStyle.body.size,
-        textColor = AppTextStyle.body.color,
-        typeface  = AppTextStyle.body.font,
+        textSize  = AppTextStyle.bodyMedium.size,
+        textColor = AppTextStyle.bodyMedium.color,
+        typeface  = AppTextStyle.bodyMedium.font,
         maxLines  = 10,
         ellipsize = "end",
       },
@@ -81,9 +81,9 @@ return {
             layout_height = "wrap_content",
             layout_marginLeft = "4dp",
             text = "0",
-            textSize  = AppTextStyle.caption.size,
-            textColor = AppTextStyle.caption.color,
-            typeface  = AppTextStyle.caption.font,
+            textSize  = AppTextStyle.bodySmall.size,
+            textColor = AppTextStyle.bodySmall.color,
+            typeface  = AppTextStyle.bodySmall.font,
           }
         },
         {
@@ -106,9 +106,9 @@ return {
             layout_height = "wrap_content",
             layout_marginLeft = "4dp",
             text = "0",
-            textSize  = AppTextStyle.caption.size,
-            textColor = AppTextStyle.caption.color,
-            typeface  = AppTextStyle.caption.font,
+            textSize  = AppTextStyle.bodySmall.size,
+            textColor = AppTextStyle.bodySmall.color,
+            typeface  = AppTextStyle.bodySmall.font,
           }
         }
       }

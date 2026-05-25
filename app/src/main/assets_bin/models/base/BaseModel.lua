@@ -53,22 +53,16 @@ end
 --- @param params table 请求参数
 --- @return table headers
 function BaseModel:getHeaders(params)
-  local headers = Headers[self.requestHeadKey] or {}
-
   if not params then
-    return headers
+    return nil
   end
 
-  if params.json == true then
-    local jsonHeaders = {}
-    for k, v in pairs(headers) do
-      jsonHeaders[k] = v
-    end
-    jsonHeaders["content-type"] = "application/json; charset=UTF-8"
-    return jsonHeaders
+  if params.headers then
+    return params.headers
   end
 
-  return headers
+  local requestHeadKey = params.requestHeadKey
+  return Headers[requestHeadKey] or nil
 end
 
 --- 解析响应数据（子类可重写）
@@ -185,8 +179,6 @@ function BaseModel:post(url, postData, params, callback)
   self:notifyListeners("loading", true)
 
   local headers = self:getHeaders(params)
-  headers = headers or {}
-
   if self.urlProcessor then
     url, headers = self.urlProcessor(url, headers)
   end
@@ -233,8 +225,6 @@ function BaseModel:put(url, putData, params, callback)
   self:notifyListeners("loading", true)
 
   local headers = self:getHeaders(params)
-  headers = headers or {}
-
   if self.urlProcessor then
     url, headers = self.urlProcessor(url, headers)
   end

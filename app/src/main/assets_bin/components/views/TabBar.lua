@@ -10,9 +10,9 @@ local DEFAULT_CONFIG = {
   tabHeight = "32dp", -- Tab 高度
   tabMargin = "8dp", -- 左右外边距
   tabRadius = "16dp", -- 圆角半径
-  textSize = AppTextStyle.label.size, -- 统一使用全局 label 尺寸 (11sp 对应像素值)
+  textSize = AppTextStyle.labelSmall.size, -- 统一使用全局 label 尺寸 (11sp 对应像素值)
   paddingHorizontal = "16dp", -- 左右内边距
-  typeface = AppTextStyle.label.font, -- 统一使用全局 label 字重 (Medium)
+  typeface = AppTextStyle.labelSmall.font, -- 统一使用全局 label 字重 (Medium)
 }
 
 local TabBar = {}
@@ -113,13 +113,13 @@ function TabBar.select(tabs, index, colorsConfig)
   local normalTextColor = cfg.normalTextColor or colors.onSurface
 
   for _, tab in ipairs(tabs) do
-    tab.card.setCardBackgroundColor(normalColor)
+    tab.card.setcardBackgroundColor(normalColor)
     tab.label.setTextColor(normalTextColor)
   end
 
   local selected = tabs[index]
   if selected then
-    selected.card.setCardBackgroundColor(selectedColor)
+    selected.card.setcardBackgroundColor(selectedColor)
     selected.label.setTextColor(selectedTextColor)
   end
 end

@@ -70,8 +70,6 @@ function CollectionTabModel:parseItem(rawItem)
 end
 
 function CollectionTabModel:createAdapter(dataList)
-  local selfRef = self
-
   return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()
@@ -103,7 +101,7 @@ function CollectionTabModel:createAdapter(dataList)
 
       views.card.onClick = function()
         if item.type == "empty" then
-          selfRef:showRecommendDialog()
+          self:showRecommendDialog()
           return
         end
         Router.go("collection", { id = item.id }, { sharedElement = views.card })

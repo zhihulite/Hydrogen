@@ -1,8 +1,5 @@
 -- pages/fragment/question/QuestionFragment.lua
 
-import "androidx.core.widget.NestedScrollView"
-import "com.hydrogen.view.LuaWebView"
-
 local BaseFragment = require("pages.base.BaseFragment")
 local QuestionModel = require("models.content.QuestionModel")
 local RecyclerViewHelper = require("components.views.RecyclerViewHelper")
@@ -20,6 +17,7 @@ function QuestionFragment:ctor()
   self.headerView = nil
   self.headerViews = nil
   self.helper = nil
+  self.followMenuItem = nil
 end
 
 function QuestionFragment:onCreate(params)
@@ -44,18 +42,24 @@ function QuestionFragment:initViews()
     bottom = { self.views.recycler_view },
   })
 
-  Helpers.UI.setupToolbar(views.toolbar, {
+  -- 设置 toolbar，并捕获关注菜单项
+  local menuIdMap = Helpers.UI.setupToolbar(views.toolbar, {
     title = self.title,
     menu = {
       { id = "share", title = "分享", click = function() self:shareQuestion() end },
       { id = "copy", title = "复制链接", click = function() self:copyQuestionLink() end },
-      { id = "follow", title = "关注问题", click = function(item) self:toggleFollow(); self:updateFollowMenu(item) end },
+      { id = "follow", title = "关注问题", click = function() self:toggleFollow() end },
       { id = "sort_time", title = "时间排序", click = function() self:changeSortOrder("updated") end },
       { id = "sort_default", title = "默认排序", click = function() self:changeSortOrder("default") end },
       { id = "log", title = "问题日志", click = function() self:showQuestionLog() end },
       { id = "report", title = "举报", click = function() self:reportQuestion() end },
     }
   })
+
+  -- 存储关注菜单项
+  if menuIdMap and menuIdMap.follow then
+    self.followMenuItem = menuIdMap.follow
+  end
 
   Helpers.UI.setupSwipeRefresh(views.swipe_refresh, function() self:refresh() end)
 
@@ -131,8 +135,8 @@ function QuestionFragment:showExcerptDetail()
   local scrollView = loadlayout(Layouts.pages.question.excerpt_dialog, views)
 
   local webHelper = WebViewHelper.new(views.webview)
-  webHelper:initSettings():initNoImageMode():setWebViewClient():setWebChromeClient()
-  :setWebViewClient{
+  webHelper:initSettings():initNoImageMode():setWebViewNetWork():setWebChromeNetWork()
+  :setWebViewNetWork{
     shouldOverrideUrlLoading = function(view, url)
       Helpers.ZhihuParser.goUrl(url)
       return true
@@ -160,7 +164,6 @@ function QuestionFragment:showExcerptDetail()
   })
 end
 
-
 function QuestionFragment:updateQuestionCard(data)
   if not self.headerViews then return end
 
@@ -186,8 +189,6 @@ function QuestionFragment:updateQuestionCard(data)
     self.headerViews.author_avatar.setVisibility(View.GONE)
   end
 
-
-
   self.headerViews.question_title.text = data.title or ""
   self.headerViews.answer_count.text = string.format("%d个回答", data.answerCount or 0)
   self.headerViews.follower_count.text = string.format("%d人关注", data.followerCount or 0)
@@ -202,6 +203,16 @@ function QuestionFragment:updateQuestionCard(data)
   end
 
   self.views.toolbar.setTitle(data.title or self.questionTitle or "问题详情")
+
+  -- 更新关注菜单项文本
+  self:updateFollowMenuItem()
+end
+
+-- 更新关注菜单项文本
+function QuestionFragment:updateFollowMenuItem()
+  if not self.followMenuItem or not self.questionData then return end
+  local newTitle = self.questionData.isFollowing and "取消关注" or "关注问题"
+  self.followMenuItem.setTitle(newTitle)
 end
 
 function QuestionFragment:loadQuestionDetail()
@@ -219,11 +230,7 @@ function QuestionFragment:refresh()
   self.views.swipe_refresh.setRefreshing(false)
 end
 
-function QuestionFragment:updateFollowMenu(item)
-  if not item then return end
-  item.setTitle(self.questionData and self.questionData.isFollowing and "取消关注" or "关注问题")
-end
-
+-- 修改 toggleFollow，不需要参数
 function QuestionFragment:toggleFollow()
   if not Extensions.Config.has(Constants.SharedDataKeys.USER_ID) then
     tip("请登录后使用")
@@ -233,7 +240,8 @@ function QuestionFragment:toggleFollow()
 
   self.model:follow(function(success)
     if success then
-      tip(self.questionData.isFollowing and "已取消关注" or "已关注")
+      tip(self.questionData.isFollowing and "已关注" or "已取消关注")
+      self:updateFollowMenuItem()
      else
       tip("操作失败")
     end
@@ -261,17 +269,11 @@ function QuestionFragment:showQuestionLog()
   end
 
   local logUrl = "https://www.zhihu.com/question/" .. self.questionId .. "/log"
-  Router.go("browser", {
-    url = logUrl,
-    title = "问题日志"
-  })
+  Router.go("browser", { url = logUrl })
 end
 
 function QuestionFragment:reportQuestion()
-  Router.go("browser", {
-    url = "https://www.zhihu.com/report?id=" .. self.questionId .. "&type=question&source=android",
-    title = "举报",
-  })
+  Router.go("browser", { url = "https://www.zhihu.com/report?id=" .. self.questionId .. "&type=question&source=android" })
 end
 
 return QuestionFragment

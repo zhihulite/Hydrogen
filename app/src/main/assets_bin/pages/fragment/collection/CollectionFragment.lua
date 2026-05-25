@@ -192,8 +192,8 @@ end
 function CollectionsFragment:deleteCollection()
   Helpers.BottomDialog.confirm("确定删除该收藏夹吗？此操作不可撤销！", function()
     local url = "https://api.zhihu.com/collections/" .. self.collectionId
-    NetWork.delete(url, Headers.defaultHead, function(success)
-      if success then
+    NetWork.delete(url, Headers.defaultHead, function(code)
+      if code == 200 then
         tip("已删除")
         Router.back()
        else

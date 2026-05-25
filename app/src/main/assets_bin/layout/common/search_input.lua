@@ -13,8 +13,8 @@ return {
     id = "edit",
     hint = "输入搜索关键词",
     layout_width = "match_parent",
-    textSize  = AppTextStyle.body.size,
-    textColor = AppTextStyle.body.color,
-    typeface  = AppTextStyle.body.font,
+    textSize  = AppTextStyle.bodyMedium.size,
+    textColor = AppTextStyle.bodyMedium.color,
+    typeface  = AppTextStyle.bodyMedium.font,
   }
 }

@@ -157,12 +157,10 @@ function PeopleMoreModel:parseDefaultItem(target)
 end
 
 function PeopleMoreModel:createAdapter(dataList)
-  local selfRef = self
-
   return SimpleRecyclerAdapter.new({
     items = dataList,
     getItemViewType = function(position, item)
-      if selfRef.moreType:find("划线") then return 1 end
+      if self.moreType:find("划线") then return 1 end
       return 0
     end,
     onCreateView = function(viewType)
@@ -173,7 +171,7 @@ function PeopleMoreModel:createAdapter(dataList)
       end
     end,
     onBind = function(views, item, position, holder)
-      if selfRef.moreType:find("划线") then
+      if self.moreType:find("划线") then
         views.content.text = item.title or ""
         views.source_title.text = item.preview or ""
         views.bottom_text.text = item.bottomText or ""

@@ -1,7 +1,6 @@
 -- pages/fragment/search/SearchFragment.lua
 
 import "android.widget.GridView"
-import "android.widget.BaseAdapter"
 import "android.widget.ListView"
 import "androidx.appcompat.widget.SearchView"
 import "com.google.android.material.chip.ChipGroup"
@@ -149,10 +148,7 @@ end
 
 function SearchFragment:performSearch(query)
   SearchHistoryService.add(query)
-  Router.go("browser", {
-    url = self.searchUrlTemplate .. NetWork.urlEncode(query),
-    title = query
-  })
+  Router.go("browser", { url = self.searchUrlTemplate .. NetWork.urlEncode(query) })
 end
 
 function SearchFragment:setupAdapter(dataType, containerView)

@@ -58,7 +58,6 @@ function FeedbackFragment:initListView()
   local divider = MaterialDividerItemDecoration(activity, LinearLayoutManager.VERTICAL)
   views.recycler_view.addItemDecoration(divider)
 
-  local selfRef = self
   self.adapter = SimpleRecyclerAdapter.new({
     items = self.items,
     getItemViewType = function(position, item)
@@ -82,7 +81,7 @@ function FeedbackFragment:initListView()
        elseif item.type == "button" then
         views.button.text = item.title or ""
         views.button.onClick = function()
-          selfRef:openGithubIssues()
+          self:openGithubIssues()
         end
       end
     end

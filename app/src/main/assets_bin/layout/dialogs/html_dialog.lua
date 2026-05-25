@@ -22,9 +22,9 @@ return {
       layout_height = "fill",
       padding = "24dp",
       textIsSelectable = true,
-      textSize  = AppTextStyle.body.size,
-      textColor = AppTextStyle.body.color,
-      typeface  = AppTextStyle.body.font,
+      textSize  = AppTextStyle.bodyMedium.size,
+      textColor = AppTextStyle.bodyMedium.color,
+      typeface  = AppTextStyle.bodyMedium.font,
       movementMethod = LinkMovementMethod.getInstance(),
     }
   }

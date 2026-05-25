@@ -73,8 +73,6 @@ function SearchResultModel:parseItem(rawItem)
 end
 
 function SearchResultModel:createAdapter(dataList)
-  local selfRef = self
-
   return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()

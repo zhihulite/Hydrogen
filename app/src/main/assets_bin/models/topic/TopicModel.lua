@@ -204,7 +204,6 @@ function TopicModel:parseItem(rawItem, key)
 end
 
 function TopicModel:createAdapter(dataList, key)
-  local selfRef = self
   return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()

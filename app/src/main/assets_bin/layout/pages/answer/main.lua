@@ -54,9 +54,9 @@ local floatingToolbar = {
         id = "vote_count",
         layout_marginLeft = "4dp",
         text = "0",
-        textSize = AppTextStyle.caption.size,
+        textSize = AppTextStyle.bodySmall.size,
         textColor = colors.onSurfaceVariant,
-        typeface = AppTextStyle.caption.font,
+        typeface = AppTextStyle.bodySmall.font,
       }
     },
     {
@@ -81,9 +81,9 @@ local floatingToolbar = {
         id = "thank_count",
         layout_marginLeft = "4dp",
         text = "0",
-        textSize = AppTextStyle.caption.size,
-        textColor = AppTextStyle.caption.color,
-        typeface = AppTextStyle.caption.font,
+        textSize = AppTextStyle.bodySmall.size,
+        textColor = AppTextStyle.bodySmall.color,
+        typeface = AppTextStyle.bodySmall.font,
       }
     },
     {
@@ -108,21 +108,19 @@ local floatingToolbar = {
         id = "collect_count",
         layout_marginLeft = "4dp",
         text = "0",
-        textSize = AppTextStyle.caption.size,
-        textColor = AppTextStyle.caption.color,
-        typeface = AppTextStyle.caption.font,
+        textSize = AppTextStyle.bodySmall.size,
+        textColor = AppTextStyle.bodySmall.color,
+        typeface = AppTextStyle.bodySmall.font,
       }
     },
     {
       MaterialCardView;
-      layout_width="wrap",
-      layout_height="56dp",
-      layout_weight="1";
-      radius="28dp";
-
-      elevation="0";
-      alpha=1,
       id="comment_card";
+      layout_width="wrap",
+      layout_height="match",
+      radius="28dp";
+      elevation=0;
+      cardBackgroundColor = colors.SurfaceContainer,
       {
         LinearLayoutCompat,
         id = "comment_btn",
@@ -144,9 +142,9 @@ local floatingToolbar = {
           id = "comment_count",
           layout_marginLeft = "4dp",
           text = "0",
-          textSize = AppTextStyle.caption.size,
-          textColor = AppTextStyle.caption.color,
-          typeface = AppTextStyle.caption.font,
+          textSize = AppTextStyle.bodySmall.size,
+          textColor = AppTextStyle.bodySmall.color,
+          typeface = AppTextStyle.bodySmall.font,
         }
       },
     },

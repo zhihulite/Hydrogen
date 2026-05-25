@@ -13,8 +13,8 @@ return {
     MaterialTextView,
     id = "title",
     layout_marginLeft = "20dp",
-    textSize  = AppTextStyle.label.size,
-    textColor = AppTextStyle.label.color,
-    typeface  = AppTextStyle.label.font
+    textSize  = AppTextStyle.labelSmall.size,
+    textColor = AppTextStyle.labelSmall.color,
+    typeface  = AppTextStyle.labelSmall.font
   }
 }

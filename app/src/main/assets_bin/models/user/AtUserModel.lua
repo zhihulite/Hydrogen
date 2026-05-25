@@ -45,7 +45,6 @@ import "com.google.android.material.textview.MaterialTextView"
 import "com.google.android.material.imageview.ShapeableImageView"
 -- 创建适配器（自带布局和点击事件）
 function AtUserModel:createAdapter(dataList, key)
-  local selfRef = self
   local colors = AppTheme.getColors()
 
   return SimpleRecyclerAdapter.new({
@@ -76,15 +75,15 @@ function AtUserModel:createAdapter(dataList, key)
           {
             MaterialTextView,
             id = "name",
-            textSize = AppTextStyle.body.size,
-            textColor = AppTextStyle.body.color,
-            typeface = AppTextStyle.body.font,
+            textSize = AppTextStyle.bodyMedium.size,
+            textColor = AppTextStyle.bodyMedium.color,
+            typeface = AppTextStyle.bodyMedium.font,
           },
           {
             MaterialTextView,
             id = "headline",
-            textSize = AppTextStyle.caption.size,
-            textColor = AppTextStyle.caption.color,
+            textSize = AppTextStyle.bodySmall.size,
+            textColor = AppTextStyle.bodySmall.color,
             visibility = View.GONE,
           },
         },
@@ -101,11 +100,11 @@ function AtUserModel:createAdapter(dataList, key)
       Helpers.Image.load(v.avatar, item.avatarUrl)
 
       holder.itemView.onClick = function()
-        if selfRef.onUserSelected then
-          selfRef.onUserSelected(item.id, item.name)
+        if self.onUserSelected then
+          self.onUserSelected(item.id, item.name)
         end
-        if selfRef.bottomSheet then
-          selfRef.bottomSheet.dismiss()
+        if self.bottomSheet then
+          self.bottomSheet.dismiss()
         end
       end
     end,

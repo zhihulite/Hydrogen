@@ -20,7 +20,7 @@ return {
     textColor = colors.background,
     backgroundColor = colors.primary,
     cornerRadius = "24dp",
-    textSize = AppTextStyle.label.size,
-    typeface = AppTextStyle.label.font,
+    textSize = AppTextStyle.labelSmall.size,
+    typeface = AppTextStyle.labelSmall.font,
   }
 }

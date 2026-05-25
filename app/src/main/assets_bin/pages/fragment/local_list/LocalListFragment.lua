@@ -111,7 +111,6 @@ end
 
 function LocalListFragment:initListView()
   local views = self.views
-  local selfRef = self
   self.adapter = SimpleRecyclerAdapter.new({
     items = self.items,
     onCreateView = function() return SimpleRecyclerAdapter.inflate(Layouts.cards.local_list) end,
@@ -119,8 +118,8 @@ function LocalListFragment:initListView()
       views.title.text = item.title or ""
       views.count.text = string.format("%d个内容", #item.authors)
       views.time.text = os.date("%Y-%m-%d %H:%M", math.floor(item.timestamp / 1000))
-      views.card.onClick = function() selfRef:showAuthorsDialog(item) end
-      views.card.onLongClick = function() selfRef:confirmDeleteTitle(item) return true end
+      views.card.onClick = function() self:showAuthorsDialog(item) end
+      views.card.onLongClick = function() self:confirmDeleteTitle(item) return true end
     end,
   })
   views.recycler_view.setLayoutManager(LinearLayoutManager(activity))
@@ -132,7 +131,6 @@ function LocalListFragment:showAuthorsDialog(titleItem)
   if not authors or #authors == 0 then tip("该标题下暂无有效内容") return end
   local options = {}
   for _, a in ipairs(authors) do table.insert(options, { title = a.name, path = a.path }) end
-  local selfRef = self
   -- 直接保存对话框对象，用于后续更新
   local dialog
   dialog = BottomDialog.select(options,
@@ -150,20 +148,20 @@ function LocalListFragment:showAuthorsDialog(titleItem)
       end
       if #titleItem.authors == 0 then
         dialog.dismiss()
-        for i, item in ipairs(selfRef.items) do
-          if item.path == titleItem.path then table.remove(selfRef.items, i); break end
+        for i, item in ipairs(self.items) do
+          if item.path == titleItem.path then table.remove(self.items, i); break end
         end
-        selfRef.adapter.notifyDataSetChanged()
-        selfRef:updateEmptyState()
+        self.adapter.notifyDataSetChanged()
+        self:updateEmptyState()
        else
         -- 更新对话框内容
         local newOptions = {}
         for _, a in ipairs(titleItem.authors) do table.insert(newOptions, { title = a.name, path = a.path }) end
         dialog.updateItems(newOptions)
         -- 更新外层列表的计数
-        for i, item in ipairs(selfRef.items) do
+        for i, item in ipairs(self.items) do
           if item.path == titleItem.path then
-            selfRef.adapter.notifyItemChanged(i - 1)
+            self.adapter.notifyItemChanged(i - 1)
             break
           end
         end

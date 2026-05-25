@@ -221,7 +221,7 @@ function AnswerModel:like(answerId, isCurrentlyLiked, callback)
   local typeStr = isUp and "up" or "neutral"
   local url = "https://api.zhihu.com/answers/" .. tostring(answerId) .. "/voters"
 
-  self:post(url, '{"type":"' .. typeStr .. '"}', { json = true } , function(success)
+  self:post(url, '{"type":"' .. typeStr .. '"}', { requestHeadKey = "post" } , function(success)
     if callback then callback(success, isUp) end
   end)
 end
@@ -240,12 +240,12 @@ function AnswerModel:thank(answerId, isCurrentlyThanked, callback)
   if isThank then
     local data = '{"content_type":"answers","content_id":"' .. tostring(answerId) ..
     '","action_type":"emojis","action_value":"red_heart"}'
-    self:post(url, data, { json = true } , function(success)
+    self:post(url, data, { requestHeadKey = "post" } , function(success)
       if callback then callback(success, isThank) end
     end)
    else
     local deleteUrl = url .. "?content_type=answers&content_id=" .. tostring(answerId).. "&action_type=emojis&action_value="
-    self:delete(deleteUrl, { json = true } , function(success)
+    self:delete(deleteUrl, { requestHeadKey = "post" } , function(success)
       if callback then callback(success, isThank) end
     end)
   end

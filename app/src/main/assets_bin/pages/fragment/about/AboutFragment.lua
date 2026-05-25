@@ -138,7 +138,6 @@ end
 function AboutFragment:initListView()
   local views = self.views
 
-  local selfRef = self
   self.adapter = SimpleRecyclerAdapter.new({
     items = self.items,
     getItemViewType = function(position, item)
@@ -187,7 +186,7 @@ function AboutFragment:initListView()
 
       if views.card then
         views.card.onClick = function()
-          selfRef:onItemClick(item)
+          self:onItemClick(item)
         end
       end
     end

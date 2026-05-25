@@ -2,15 +2,18 @@
 
 > ⚠️ **项目维护延缓**  
 >
-> 由于相关原因，Hydrogen 项目维护已延缓。  
+> 由于[相关原因](https://github.com/zhihulite/Hydrogen/issues/159)，Hydrogen 项目维护已延缓。  
 >
 > 推荐使用同类优秀项目：[Zhihu++](https://github.com/zly2006/zhihu-plus-plus)
 
 **注意**：请勿在 Gitee 反馈问题或提交 PR，请前往 GitHub 提交。Gitee 仓库仅用于代码同步。
 
+**重要**：发布更新前，必须修改 `core/app_info.lua` 中的 `version` 变量，否则应用无法检测到新版本。
+
 [![License](https://img.shields.io/github/license/zhihulite/Hydrogen)](LICENSE)
 [![Gitee 仓库](https://img.shields.io/badge/Gitee-仓库-C71D23?logo=gitee)](https://gitee.com/huajicloud/Hydrogen)
 [![Github 仓库](https://img.shields.io/badge/Github-仓库-0969DA?logo=github)](https://github.com/zhihulite/Hydrogen)
+
 ## 目录
 
 - [项目介绍](#项目介绍)
@@ -224,7 +227,7 @@ end
 | **task 延迟任务** | 使用 `runIfAlive` 包装 | `task(1000, self:runIfAlive(function() ... end))` |
 | **PageTool** | PageTool 已自动处理，无需额外包装 | `pageTool:setupLoadFunction()` 内部已包装 |
 | **PageToolModel** | PageToolModel 已自动处理，无需额外包装 | `PageToolModel:refresh(key)` 内部已包装 |
-| **Model 回调** | BaseModel 已自动处理，无需额外包装 | `model:load(params, callback)` 内部已包装 |
+| **Model 回调或网络回调** | BaseModel 已自动处理，无需额外包装 | `model:load(params, callback)` 内部已包装 |
 | **addListener** | BaseModel 已自动处理，销毁时清除监听器 | `model:addListener("event", handler)` |
 
 #### 销毁链

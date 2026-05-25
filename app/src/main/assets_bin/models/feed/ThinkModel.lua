@@ -42,8 +42,6 @@ function ThinkModel:parseItem(rawItem)
 end
 
 function ThinkModel:createAdapter(dataList)
-  local selfRef = self
-
   return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()

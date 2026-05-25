@@ -33,7 +33,7 @@ _G.Helpers.BottomDialog = helpers.bottom_dialog
 _G.json = require("json")
 _G.Constants = require("core.constants")
 _G.AppTheme = require("core.app_theme")
-_G.NetWork = services.api.client
+_G.NetWork = services.api.network
 -- 初始化
 _G.AppTheme.init()
 _G.AppInfo = require("core.app_info")
@@ -185,41 +185,124 @@ end
 local colors = AppTheme.getColors()
 -- 参考 https://github.com/material-components/material-components-android/blob/master/docs/theming/Typography.md
 _G.AppTextStyle = {
-  -- 大标题 (Headline) - 对应 textAppearanceHeadlineSmall (Regular 24sp)
-  headline = {
+  -- ========== Display 超大展示文字 ==========
+  -- 用于：空状态页、欢迎页、大数字展示（如倒计时、计数器）
+  -- 对应 MD3: textAppearanceDisplayLarge
+  displayLarge = {
+    size = sp2px(57),
+    lineHeight = sp2px(64),
+    font = Fonts.regular,
+    color = colors.onSurface
+  },
+  -- 对应 MD3: textAppearanceDisplayMedium
+  displayMedium = {
+    size = sp2px(45),
+    lineHeight = sp2px(52),
+    font = Fonts.regular,
+    color = colors.onSurface
+  },
+  -- 对应 MD3: textAppearanceDisplaySmall
+  displaySmall = {
+    size = sp2px(36),
+    lineHeight = sp2px(44),
+    font = Fonts.regular,
+    color = colors.onSurface
+  },
+
+  -- ========== Headline 页面级大标题 ==========
+  -- 用于：详情页标题、文章标题、主要区块标题
+  -- 对应 MD3: textAppearanceHeadlineLarge
+  headlineLarge = {
+    size = sp2px(32),
+    lineHeight = sp2px(40),
+    font = Fonts.regular,
+    color = colors.onSurface
+  },
+  -- 对应 MD3: textAppearanceHeadlineMedium
+  headlineMedium = {
+    size = sp2px(28),
+    lineHeight = sp2px(36),
+    font = Fonts.regular,
+    color = colors.onSurface
+  },
+  -- 对应 MD3: textAppearanceHeadlineSmall
+  headlineSmall = {
     size = sp2px(24),
     lineHeight = sp2px(32),
     font = Fonts.regular,
     color = colors.onSurface
   },
-  -- 标题 (Title) - 列表主文字。对应 textAppearanceTitleSmall (Medium 14sp)
-  -- 注意：这是 MD 官方列表项的标准字号和字重
-  title = {
+
+  -- ========== Title 中等重要性标题 ==========
+  -- 用于：卡片标题、对话框标题、列表项主文字、次级页面标题
+  -- 对应 MD3: textAppearanceTitleLarge
+  titleLarge = {
+    size = sp2px(22),
+    lineHeight = sp2px(28),
+    font = Fonts.regular,
+    color = colors.onSurface
+  },
+  -- 对应 MD3: textAppearanceTitleMedium
+  titleMedium = {
+    size = sp2px(16),
+    lineHeight = sp2px(24),
+    font = Fonts.medium,
+    color = colors.onSurface
+  },
+  -- 对应 MD3: textAppearanceTitleSmall
+  titleSmall = {
     size = sp2px(14),
     lineHeight = sp2px(20),
     font = Fonts.medium,
     color = colors.onSurface
   },
-  -- 正文 (Body) - 列表预览/详情。对应 textAppearanceBodyMedium (Regular 14sp)
-  body = {
+
+  -- ========== Body 正文/描述文字 ==========
+  -- 用于：长文本正文、卡片描述、列表项副文字
+  -- 对应 MD3: textAppearanceBodyLarge
+  bodyLarge = {
+    size = sp2px(16),
+    lineHeight = sp2px(24),
+    font = Fonts.regular,
+    color = colors.onSurface
+  },
+  -- 对应 MD3: textAppearanceBodyMedium
+  bodyMedium = {
     size = sp2px(14),
     lineHeight = sp2px(20),
     font = Fonts.regular,
     color = colors.onSurfaceVariant
   },
-  -- 标签 (Label) - 设置页分段标题。对应 textAppearanceLabelSmall (Medium 11sp)
-  label = {
-    size = sp2px(11),
-    lineHeight = sp2px(16),
-    font = Fonts.medium,
-    color = colors.primary
-  },
-  -- 说明文字 (Caption) - 辅助信息。对应 textAppearanceBodySmall (Regular 12sp)
-  caption = {
+  -- 对应 MD3: textAppearanceBodySmall
+  bodySmall = {
     size = sp2px(12),
     lineHeight = sp2px(16),
     font = Fonts.regular,
     color = colors.onSurfaceVariant
+  },
+
+  -- ========== Label 标签/辅助文字 ==========
+  -- 用于：按钮文字、Tab标签、设置页分段标题、表单字段标签、提示文字
+  -- 对应 MD3: textAppearanceLabelLarge
+  labelLarge = {
+    size = sp2px(14),
+    lineHeight = sp2px(20),
+    font = Fonts.medium,
+    color = colors.primary
+  },
+  -- 对应 MD3: textAppearanceLabelMedium
+  labelMedium = {
+    size = sp2px(12),
+    lineHeight = sp2px(16),
+    font = Fonts.medium,
+    color = colors.onSurfaceVariant
+  },
+  -- 对应 MD3: textAppearanceLabelSmall
+  labelSmall = {
+    size = sp2px(11),
+    lineHeight = sp2px(16),
+    font = Fonts.medium,
+    color = colors.primary
   }
 }
 

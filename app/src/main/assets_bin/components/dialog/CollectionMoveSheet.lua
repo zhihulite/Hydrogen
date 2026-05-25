@@ -36,8 +36,8 @@ end
 function M:autoToggleDefault(opts)
   local url = "https://www.zhihu.com/api/v4/collections/contents/" .. opts.contentType .. "/" .. opts.contentId
 
-  NetWork.get(url, Headers.defaultHead, function(success, content)
-    if not success then
+  NetWork.get(url, Headers.defaultHead, function(code, content)
+    if code ~= 200 then
       if opts.onError then
         opts.onError("获取收藏夹列表失败")
       end
@@ -62,8 +62,8 @@ function M:autoToggleDefault(opts)
     local putUrl = "https://api.zhihu.com/collections/contents/" .. opts.contentType .. "/" .. opts.contentId
     local putData = action .. "_collections=" .. defaultColl.id
 
-    NetWork.put(putUrl, putData, Headers.defaultHead, function(success)
-      if success then
+    NetWork.put(putUrl, putData, Headers.defaultHead, function(code)
+      if code == 200 then
         tip(isFavorited and "已取消收藏" or "收藏成功")
         if opts.onSuccess then
           -- 计算操作后是否还在任何收藏夹中
@@ -133,9 +133,9 @@ function M:showSelectionDialog(opts)
           layout_width = "0dp",
           layout_weight = 1,
           text = "选择收藏夹",
-          textSize = AppTextStyle.title.size,
-          textColor = AppTextStyle.title.color,
-          typeface = AppTextStyle.title.font,
+          textSize = AppTextStyle.titleSmall.size,
+          textColor = AppTextStyle.titleSmall.color,
+          typeface = AppTextStyle.titleSmall.font,
         },
         {
           MaterialWidgets.Button_Text,
@@ -184,8 +184,8 @@ function M:showSelectionDialog(opts)
           {
             MaterialTextView,
             text = " 加载中...",
-            textSize = AppTextStyle.caption.size,
-            textColor = AppTextStyle.caption.color,
+            textSize = AppTextStyle.bodySmall.size,
+            textColor = AppTextStyle.bodySmall.color,
           }
         },
       },
@@ -272,11 +272,11 @@ function M:showSelectionDialog(opts)
     end
     local putData = table.concat(params, "&")
 
-    NetWork.put(putUrl, putData, Headers.defaultHead, function(success)
+    NetWork.put(putUrl, putData, Headers.defaultHead, function(code)
       self.isSaving = false
       self.views.confirm_btn.setEnabled(true)
 
-      if success then
+      if code == 200 then
         -- 计算操作后的收藏状态：是否至少还有一个收藏夹被选中
         local stillInAnyCollection = false
         for _, item in ipairs(self.collections) do
@@ -352,16 +352,16 @@ function M:showSelectionDialog(opts)
           {
             MaterialTextView,
             id = "title",
-            textSize = AppTextStyle.body.size,
-            textColor = AppTextStyle.body.color,
-            typeface = AppTextStyle.body.font,
+            textSize = AppTextStyle.bodyMedium.size,
+            textColor = AppTextStyle.bodyMedium.color,
+            typeface = AppTextStyle.bodyMedium.font,
           },
           {
             MaterialTextView,
             id = "count",
-            textSize = AppTextStyle.caption.size,
-            textColor = AppTextStyle.caption.color,
-            typeface = AppTextStyle.caption.font,
+            textSize = AppTextStyle.bodySmall.size,
+            textColor = AppTextStyle.bodySmall.color,
+            typeface = AppTextStyle.bodySmall.font,
             visibility = View.GONE,
           }
         }
@@ -405,11 +405,11 @@ function M:loadMoreCollections()
   self.isLoading = true
   self.views.loading_layout.setVisibility(View.VISIBLE)
 
-  NetWork.get(url, Headers.defaultHead, function(success, content)
+  NetWork.get(url, Headers.defaultHead, function(code, content)
     self.isLoading = false
     self.views.loading_layout.setVisibility(View.GONE)
 
-    if not success then
+    if code ~= 200 then
       return
     end
 

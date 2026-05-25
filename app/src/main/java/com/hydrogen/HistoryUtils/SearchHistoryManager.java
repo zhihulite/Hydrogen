@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
+import org.jspecify.annotations.NonNull;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("unused")
 public class SearchHistoryManager {
 
     private static SearchHistoryManager instance;
@@ -27,7 +29,6 @@ public class SearchHistoryManager {
     private final Map<String, SearchHistoryItem> itemMap = new HashMap<>(); // ID->item 映射
 
     // 上下文相关
-    private Context context;
     private SharedPreferences sharedPreferences;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private final Runnable saveRunnable = this::saveToPreferences;
@@ -43,10 +44,8 @@ public class SearchHistoryManager {
     }
 
     public void init(Context ctx) {
-        if (context != null) return;
-        
-        this.context = ctx.getApplicationContext();
-        sharedPreferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+        Context applicationContext = ctx.getApplicationContext();
+        sharedPreferences = applicationContext.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
         
         if (historyList.isEmpty()) {
             loadFromPreferences();
@@ -178,18 +177,11 @@ public class SearchHistoryManager {
     }
 
     // ========== 历史项类 ==========
-    public static class SearchHistoryItem {
-        public final String id;
-        public final String value;
+        public record SearchHistoryItem(String id, String value) {
 
-        public SearchHistoryItem(String id, String value) {
-            this.id = id;
-            this.value = value;
-        }
-        
         @Override
-        public String toString() {
-            return value;
+            public @NonNull String toString() {
+                return value;
+            }
         }
-    }
 }

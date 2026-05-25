@@ -9,8 +9,7 @@ android {
     defaultConfig {
         applicationId "com.zhihu.hydrogen.x"
         minSdk = 24
-        //noinspection OldTargetApi
-        targetSdk = 33
+        targetSdk = 36
         versionCode 1
         versionName "new"
         resourceConfigurations += ['zh']
@@ -212,7 +211,7 @@ def setupApkRenaming(variantName) {
 
             def coreVer = getAppVersion()
             def appVersion = android.defaultConfig.versionName
-            def newName = "Hydrogen_${variantName}_${appVersion}_${coreVer}.apk"
+            def newName = "Hydrogen_${appVersion}_${coreVer}.apk"
             def newFile = new File(apkDir, newName)
 
             if (newFile.exists()) newFile.delete()

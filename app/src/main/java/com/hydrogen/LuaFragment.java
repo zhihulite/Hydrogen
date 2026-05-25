@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import com.google.android.material.textview.MaterialTextView;
 
+@SuppressWarnings("unused")
 public class LuaFragment extends Fragment {
 
     private static final String TAG = "LuaFragment";

@@ -39,7 +39,6 @@ function HotModel:parseResponse(response, params)
 end
 
 function HotModel:createAdapter()
-  local selfRef = self
   local closeImage = Extensions.Config.getBool(Constants.SharedDataKeys.HOT_CLOSE_IMAGE)
   local closeHeat = Extensions.Config.getBool(Constants.SharedDataKeys.HOT_CLOSE_HOTNESS)
 

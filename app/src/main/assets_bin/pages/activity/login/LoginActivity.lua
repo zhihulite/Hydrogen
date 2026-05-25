@@ -34,7 +34,7 @@ function LoginActivity:initViews()
   self.webViewHelper = WebViewHelper.new(self.views.webview)
   :initSettings()
   :initDownloadListener()
-  :setWebViewClient({
+  :setWebViewNetWork({
     shouldOverrideUrlLoading = function(_, url)
       if url:find("utm_id") or url:match("zhihu.com/?$") then
         self:checkLogin()
@@ -53,7 +53,7 @@ function LoginActivity:initViews()
       self.views.webview.setVisibility(View.VISIBLE)
     end,
   })
-  :setWebChromeClient({
+  :setWebChromeNetWork({
     onProgressChanged = function(_, p)
       self.views.progress.setVisibility(p < 100 and View.VISIBLE or View.GONE)
       self.views.webview.setVisibility(p < 100 and View.GONE or View.VISIBLE)

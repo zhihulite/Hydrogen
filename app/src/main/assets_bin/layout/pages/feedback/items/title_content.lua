@@ -13,16 +13,16 @@ return {
   {
     MaterialTextView,
     id = "title",
-    textSize = AppTextStyle.title.size,
-    textColor = AppTextStyle.title.color,
-    typeface = AppTextStyle.title.font,
+    textSize = AppTextStyle.titleSmall.size,
+    textColor = AppTextStyle.titleSmall.color,
+    typeface = AppTextStyle.titleSmall.font,
     layout_marginBottom = "8dp",
   },
   {
     MaterialTextView,
     id = "content",
-    textSize = AppTextStyle.body.size,
-    textColor = AppTextStyle.body.color,
-    typeface = AppTextStyle.body.font,
+    textSize = AppTextStyle.bodyMedium.size,
+    textColor = AppTextStyle.bodyMedium.color,
+    typeface = AppTextStyle.bodyMedium.font,
   }
 }

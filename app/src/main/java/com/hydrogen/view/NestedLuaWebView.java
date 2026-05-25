@@ -17,6 +17,7 @@ import androidx.core.view.NestedScrollingChildHelper;
 import androidx.core.view.ViewCompat;
 import com.androlua.LuaActivity;
 
+@SuppressWarnings("unused")
 // copied from https://github.com/gdutxiaoxu/NestedLuaWebView/blob/master/NestedLuaWebView/src/main/java/io/github/gdutxiaoxu/NestedLuaWebView/NestedLuaWebView.java
 public class NestedLuaWebView extends LuaWebView implements NestedScrollingChild3 {
 

@@ -295,10 +295,8 @@ function M:setupLoadFunction()
     error("loadFunction 已经创建，不能重复初始化")
   end
 
-  local selfRef = self
-
   self.loadFunction = function(key, loadPrev, isRefresh)
-    local page = selfRef:_getPage(key)
+    local page = self:_getPage(key)
     local state = page.state
 
     if isRefresh and state.isEnd then
@@ -318,23 +316,23 @@ function M:setupLoadFunction()
     end
 
     -- 获取请求 URL（优先使用分页 URL，否则使用 baseUrlGetter）
-    local url = selfRef:getRequestUrl(key, isRefresh, state)
+    local url = self:getRequestUrl(key, isRefresh, state)
 
-    if selfRef.needLogin and not needLoginCheck() then
+    if self.needLogin and not needLoginCheck() then
       return
     end
 
     -- 获取请求头
     local headers = {}
-    if selfRef.headersGetter then
-      headers = selfRef.headersGetter(key) or {}
+    if self.headersGetter then
+      headers = self.headersGetter(key) or {}
     end
 
-    if selfRef.urlProcessor then
-      url, headers = selfRef.urlProcessor(url, headers)
+    if self.urlProcessor then
+      url, headers = self.urlProcessor(url, headers)
     end
 
-    local rv, sr = selfRef:getPageView(key)
+    local rv, sr = self:getPageView(key)
     if not rv then return end
 
     local adapter = page.adapter
@@ -342,8 +340,8 @@ function M:setupLoadFunction()
       error("页面 " .. tostring(key) .. " 的适配器为空")
     end
 
-    NetWork.get(url, headers, self:runIfAlive(function(success, content)
-      if not success then
+    NetWork.get(url, headers, self:runIfAlive(function(code, content)
+      if code ~= 200 then
         state.loadPrev = false
         state.canLoad = true
         finishRefresh(rv, sr)
@@ -358,7 +356,7 @@ function M:setupLoadFunction()
         if isRefresh then
           clearTable(page.data)
           adapter.notifyDataSetChanged()
-          selfRef:resetPageState(page)
+          self:resetPageState(page)
         end
 
         if data.paging then
@@ -374,11 +372,11 @@ function M:setupLoadFunction()
         local isFirst = state.isFirstLoad
         if isFirst then
           state.isFirstLoad = false
-          if selfRef.onLoad then
-            selfRef.onLoad(data, page.data, key, true)
+          if self.onLoad then
+            self.onLoad(data, page.data, key, true)
           end
-         elseif selfRef.onLoad then
-          selfRef.onLoad(data, page.data, key, false)
+         elseif self.onLoad then
+          self.onLoad(data, page.data, key, false)
         end
 
         if state.needCheckFullPage then
@@ -394,7 +392,7 @@ function M:setupLoadFunction()
         end
 
         local oldCount = #page.data
-        local parser = selfRef.itemParsers[key]
+        local parser = self.itemParsers[key]
         if not parser then
           error("解析器缺失: " .. tostring(key))
         end
@@ -574,31 +572,30 @@ function M:setOnTabListener(callback)
   end
 
   callback = callback or function() end
-  local selfRef = self
 
   self.tabLayout.addOnTabSelectedListener({
     onTabSelected = function(tab)
       local pos = tab.getPosition()
-      local key = selfRef.pageKeys[pos + 1]
-      callback(selfRef, key)
+      local key = self.pageKeys[pos + 1]
+      callback(self, key)
       -- 跳过前置页面
       if self:isCurrentPagePrePage() then
         return
       end
-      selfRef:throttleTabClick(key, function()
-        selfRef:loadPage(key, false, true)
+      self:throttleTabClick(key, function()
+        self:loadPage(key, false, true)
       end)
     end,
     onTabReselected = function(tab)
       local pos = tab.getPosition()
-      local key = selfRef.pageKeys[pos + 1]
-      callback(selfRef, key)
+      local key = self.pageKeys[pos + 1]
+      callback(self, key)
       -- 跳过前置页面
       if self:isCurrentPagePrePage() then
         return
       end
-      selfRef:throttleTabClick(key, function()
-        selfRef:refresh(key)
+      self:throttleTabClick(key, function()
+        self:refresh(key)
       end)
     end
   })

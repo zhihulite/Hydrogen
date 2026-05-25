@@ -88,8 +88,6 @@ function ThemePickerFragment:initListView()
   local views = self.views
   if not views.recycler_view then return end
 
-  local selfRef = self
-
   self.adapter = SimpleRecyclerAdapter.new({
     items = self.items,
     getItemViewType = function(position, item)
@@ -104,7 +102,7 @@ function ThemePickerFragment:initListView()
       end
 
       if views.color_preview then
-        views.color_preview.setCardBackgroundColor(item.primary)
+        views.color_preview.setcardBackgroundColor(item.primary)
       end
 
       if views.radio then
@@ -113,7 +111,7 @@ function ThemePickerFragment:initListView()
 
       if views.card then
         views.card.onClick = function()
-          selfRef:onThemeSelect(item)
+          self:onThemeSelect(item)
         end
       end
     end

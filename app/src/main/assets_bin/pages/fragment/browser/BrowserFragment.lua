@@ -96,7 +96,7 @@ function BrowserFragment:initWebView()
     self.webViewHelper:setUA(ua)
   end
 
-  self.webViewHelper:setWebViewClient({
+  self.webViewHelper:setWebViewNetWork({
     shouldOverrideUrlLoading = function(view, url)
       -- 知乎日报特殊处理
       if url:find("^zhdaiy://") then
@@ -137,7 +137,7 @@ function BrowserFragment:initWebView()
     end
   })
 
-  self.webViewHelper:setWebChromeClient({
+  self.webViewHelper:setWebChromeNetWork({
     onReceivedTitle = function(view, title)
       self.views.toolbar.setTitle(title)
     end,
