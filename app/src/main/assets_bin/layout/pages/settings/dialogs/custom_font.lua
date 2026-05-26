@@ -23,7 +23,7 @@ return {
       text = "开启自定义字体",
       textSize  = AppTextStyle.titleSmall.size,
       textColor = AppTextStyle.titleSmall.color,
-      layout_width = "0dp",
+      layout_width = 0,
       layout_weight = 1,
       layout_marginLeft = "16dp",
       typeface  = AppTextStyle.titleSmall.font,

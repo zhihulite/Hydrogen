@@ -36,10 +36,10 @@ local function patchAndroLua()
   end
 
   -- 设置全局根目录为项目绝对目录
-  _G.ROOT = findRoot(activity.getLuaDir())
+  _G.ROOT = findRoot(activity.luaDir)
 
   -- 将根目录添加到模块搜索路径
-  local scriptDir = activity.getLuaDir()
+  local scriptDir = activity.luaDir
   if _G.ROOT ~= scriptDir then
     package.path = _G.ROOT .. "/?.lua;" .. _G.ROOT .. "/?/init.lua;" .. package.path
   end
@@ -88,10 +88,10 @@ local function patchLuaJ()
   end
 
   -- 设置全局根目录为项目绝对目录
-  _G.ROOT = activity.getLuaDir()
+  _G.ROOT = activity.luaDir
 
   -- 将当前脚本所在目录添加到模块搜索路径
-  local scriptDir = activity.getLuaPath():match("(.+)/[^/]+$")
+  local scriptDir = activity.luaPath:match("(.+)/[^/]+$")
   if scriptDir and not package.path:find(scriptDir) then
     package.path = package.path .. ";" .. scriptDir .. "/?.lua;" .. scriptDir .. "/?/init.lua"
   end
@@ -120,12 +120,12 @@ if activity then
       .setMessage(tostring(msg))
       .setPositiveButton("确定", nil)
       .show()
-      dialog.window.findViewById(message_id).setTextIsSelectable(true)
+      dialog.window.findViewById(message_id).textIsSelectable = true
     end)
   end
 
   -- 禁用默认 Toast 行为
-  activity.setDebug(false)
+  activity.debug = false
   _G.print = function(...)
     -- 没有开启就退出
     if Extensions.Config.getBool(Constants.SharedDataKeys.DEBUG_MODE) == false then return end
@@ -137,9 +137,9 @@ if activity then
     alert("Print", msg)
   end
 
-  local crashDir = activity.getExternalFilesDir(nil).getAbsolutePath() .. "/crash"
+  local crashDir = activity.getExternalFilesDir(nil).absolutePath .. "/crash"
   local dir = luajava.bindClass("java.io.File")(crashDir)
-  local path = crashDir .. "/" .. activity.getPackageName() .. ".txt"
+  local path = crashDir .. "/" .. activity.packageName .. ".txt"
 
   if not dir.exists() then
     dir.mkdirs()

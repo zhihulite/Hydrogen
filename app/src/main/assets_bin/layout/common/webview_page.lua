@@ -7,7 +7,7 @@ import "com.hydrogen.view.LuaWebView"
 import "com.google.android.material.appbar.MaterialToolbar"
 import "com.hydrogen.view.CustomSwipeRefresh"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,

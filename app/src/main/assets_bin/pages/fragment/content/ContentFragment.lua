@@ -116,7 +116,7 @@ function ContentFragment:initWebView()
     self:onBridgeMessage(action, data)
   end)
 
-  self.webViewHelper:setWebViewNetWork({
+  self.webViewHelper:setWebViewClient({
     shouldOverrideUrlLoading = function(view, url)
       -- 评论
       local commentType, id = url:match("comment/list/([^/]+)/(%d+)$")
@@ -140,35 +140,32 @@ function ContentFragment:initWebView()
       return true
     end,
     onPageStarted = function(view, url)
-      views.swipe_refresh.setRefreshing(true)
+      views.swipe_refresh.refreshing = true
     end,
     onPageFinished = function(view, url)
-      views.progress_bar.setVisibility(View.GONE)
-      views.swipe_refresh.setRefreshing(false)
+      views.progress_bar.visibility = View.GONE
+      views.swipe_refresh.refreshing = false
     end,
   })
 
-  self.webViewHelper:setWebChromeNetWork({
+  self.webViewHelper:setWebChromeClient({
     onProgressChanged = function(view, progress)
-      views.progress_bar.setVisibility(progress < 100 and View.VISIBLE or View.GONE)
-      views.progress_bar.setProgress(progress)
+      views.progress_bar.visibility = progress < 100 and View.VISIBLE or View.GONE
+      views.progress_bar.progress = progress
     end
   })
 
 
-  Helpers.UI.setupSwipeRefresh(views.swipe_refresh)
-  views.swipe_refresh.setOnRefreshListener({
-    onRefresh = self:runIfAlive(function()
-      self.webViewHelper:reload()
-    end)
-  })
+  Helpers.UI.setupSwipeRefresh(views.swipe_refresh, self:runIfAlive(function()
+    self.webViewHelper:reload()
+  end))
 end
 
 function ContentFragment:loadContent()
   self.model:load(nil, self:runIfAlive(function(success, data)
     if success and data and data.webUrl then
       self.webViewHelper.webView.loadUrl(data.webUrl)
-      self.views.toolbar.setTitle(data.title)
+      self.views.toolbar.title = data.title
     end
   end))
 end

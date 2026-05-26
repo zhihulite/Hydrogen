@@ -7,9 +7,9 @@ import "android.widget.FrameLayout"
 import "com.google.android.material.textview.MaterialTextView"
 import "com.google.android.material.imageview.ShapeableImageView"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
-local iconDrawable = activity.getPackageManager().getApplicationIcon(activity.getPackageName())
+local iconDrawable = activity.packageManager.getApplicationIcon(activity.packageName)
 
 return {
   LinearLayoutCompat,

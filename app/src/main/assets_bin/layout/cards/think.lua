@@ -10,10 +10,10 @@ import "com.google.android.material.shape.ShapeAppearanceModel"
 import "com.google.android.material.shape.RelativeCornerSize"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
-local imageShapeModel = ShapeAppearanceModel.builder()
-  .setAllCornerSizes(RelativeCornerSize(0.03))
-  .build()
+local colors = AppTheme.colors
+local imageShapeBuilder = ShapeAppearanceModel.builder()
+imageShapeBuilder.allCornerSizes = RelativeCornerSize(0.03)
+local imageShapeModel = imageShapeBuilder.build()
 
 return {
   LinearLayoutCompat,
@@ -71,7 +71,7 @@ return {
             id = "like_icon",
             layout_width = "20dp",
             layout_height = "20dp",
-            ImageBitmap = Helpers.Static.materialIcon("twotone_thumb_up"),
+            imageBitmap = Helpers.Static.materialIcon("twotone_thumb_up"),
             colorFilter = colors.onSurfaceVariant,
           },
           {
@@ -96,7 +96,7 @@ return {
             AppCompatImageView,
             layout_width = "20dp",
             layout_height = "20dp",
-            ImageBitmap = Helpers.Static.materialIcon("twotone_message"),
+            imageBitmap = Helpers.Static.materialIcon("twotone_message"),
             colorFilter = colors.onSurfaceVariant,
           },
           {

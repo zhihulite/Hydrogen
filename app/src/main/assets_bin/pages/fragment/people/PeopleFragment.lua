@@ -89,7 +89,7 @@ function PeopleFragment:updateUserInfo(data)
   if views.voteup_count then views.voteup_count.text = self:formatNumber(data.voteupCount) .. " 获赞" end
   if views.fans_count then views.fans_count.text = self:formatNumber(data.followerCount) .. " 粉丝" end
   if views.follow_count then views.follow_count.text = self:formatNumber(data.followingCount) .. " 关注" end
-  if views.toolbar then views.toolbar.setTitle(data.name or "用户详情") end
+  if views.toolbar then views.toolbar.title = data.name or "用户详情" end
 end
 
 function PeopleFragment:setupActionButtons(data)
@@ -97,11 +97,11 @@ function PeopleFragment:setupActionButtons(data)
   local currentUserId = Extensions.Config.get(Constants.SharedDataKeys.USER_ID)
 
   if currentUserId == self.userId then
-    if views.follow_btn then views.follow_btn.setVisibility(View.GONE) end
-    if views.message_btn then views.message_btn.setVisibility(View.GONE) end
+    if views.follow_btn then views.follow_btn.visibility = View.GONE end
+    if views.message_btn then views.message_btn.visibility = View.GONE end
   end
 
-  if views.action_buttons then views.action_buttons.setVisibility(View.VISIBLE) end
+  if views.action_buttons then views.action_buttons.visibility = View.VISIBLE end
 
   if views.follow_btn then
     views.follow_btn.text = self.isFollowing and "已关注" or "关注"
@@ -124,12 +124,12 @@ function PeopleFragment:loadTabsAndInitPager()
     -- 给所有 RecyclerView 加上导航栏底部间距
     for _, rv in ipairs(self.peopleModel:getAllRecyclerViews()) do
       rv.setPadding(
-        rv.getPaddingLeft(),
-        rv.getPaddingTop(),
-        rv.getPaddingRight(),
-        rv.getPaddingBottom() + (self.navBarHeight or 0)
+      rv.paddingLeft,
+      rv.paddingTop,
+      rv.paddingRight,
+      rv.paddingBottom + (self.navBarHeight or 0)
       )
-      rv.setClipToPadding(false)
+      rv.clipToPadding = false
     end
 
     self:addSortBarToAnswerTab()
@@ -145,7 +145,7 @@ function PeopleFragment:addSortBarToAnswerTab()
   if not rv then return end
 
   -- 获取当前 adapter
-  local originalAdapter = rv.getAdapter()
+  local originalAdapter = rv.adapter
   if not originalAdapter then return end
 
   -- 检查是否已经添加过 Header
@@ -166,7 +166,7 @@ function PeopleFragment:addSortBarToAnswerTab()
   -- 使用 RecyclerViewHelper 包装添加 Header
   self.sortHeaderHelper = RecyclerViewHelper.new(originalAdapter)
   self.sortHeaderHelper:addHeader(sortBar)
-  rv.setAdapter(self.sortHeaderHelper:getAdapter())
+  rv.adapter = self.sortHeaderHelper:getAdapter()
 end
 
 function PeopleFragment:showSortMenu()
@@ -175,12 +175,12 @@ function PeopleFragment:showSortMenu()
   local currentIndex = self.peopleModel:getCurrentSortIndex()
 
   for i, option in ipairs(options) do
-    popup.getMenu().add(0, i, i, option.name)
+    popup.menu.add(0, i, i, option.name)
   end
 
   popup.setOnMenuItemClickListener({
     onMenuItemClick = function(menuItem)
-      local itemId = menuItem.getItemId()
+      local itemId = menuItem.itemId
       if itemId ~= currentIndex then
         self.sortViews.sort_name.text = options[itemId].name
         self.peopleModel:setSort(itemId, function(success)
@@ -257,7 +257,7 @@ function PeopleFragment:showSearchContentDialog()
   .setTitle("搜索用户创作内容")
   .setView(loadlayout(Layouts.common.search_input, views))
   .setPositiveButton("搜索", function()
-    local keyword = views.edit.getText().toString()
+    local keyword = views.edit.text
     if keyword ~= "" then
       Router.go("search_result", {
         keyword = keyword,
@@ -290,11 +290,11 @@ function PeopleFragment:blockUser(menuItem)
         if isBlocking then
           tip("已取消拉黑")
           self.currentUserData.isBlocking = false
-          menuItem.setTitle("拉黑")
+          menuItem.title = "拉黑"
          else
           tip("已拉黑")
           self.currentUserData.isBlocking = true
-          menuItem.setTitle("取消拉黑")
+          menuItem.title = "取消拉黑"
         end
       end
     end

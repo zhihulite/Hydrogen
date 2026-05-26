@@ -7,7 +7,7 @@ import "com.google.android.material.textview.MaterialTextView"
 import "androidx.appcompat.widget.AppCompatImageView"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,
@@ -52,7 +52,7 @@ return {
             layout_width = "16dp",
             layout_height = "16dp",
             layout_marginLeft = "8dp",
-            ImageBitmap = Helpers.Static.materialIcon("twotone_lock"),
+            imageBitmap = Helpers.Static.materialIcon("twotone_lock"),
             colorFilter = colors.onSurfaceVariant,
             visibility = View.GONE,
           }

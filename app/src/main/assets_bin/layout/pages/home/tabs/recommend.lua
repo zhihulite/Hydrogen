@@ -10,8 +10,10 @@ import "androidx.recyclerview.widget.GridLayoutManager"
 import "android.view.View"
 
 local itemWidth = 300  -- 每个项目的宽度(dp)
-local availableWidth = px2dp(activity.getWidth() / 2)
+local availableWidth = px2dp(activity.width / 2)
 local columnCount = math.max(availableWidth // itemWidth, 1)
+-- 因为确保只创建一次，不会重复创建，所以固定在布局写死即可。
+local gridLayoutManager =  GridLayoutManager(activity, columnCount)
 
 return {
   LinearLayoutCompat,
@@ -37,8 +39,8 @@ return {
       id = "recycler_view",
       layout_height = "fill",
       layout_width = "fill",
-      nestedScrollingEnabled = true,
-      LayoutManager = GridLayoutManager(activity, columnCount),
+      layoutManager = gridLayoutManager,
+      nestedScrollingEnabled = true
     }
   }
 }

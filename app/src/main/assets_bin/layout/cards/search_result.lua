@@ -6,7 +6,7 @@ import "com.google.android.material.card.MaterialCardView"
 import "com.google.android.material.textview.MaterialTextView"
 import "androidx.appcompat.widget.AppCompatImageView"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,
@@ -68,7 +68,7 @@ return {
             id = "like_icon",
             layout_width = "16dp",
             layout_height = "16dp",
-            ImageBitmap = Helpers.Static.materialIcon("twotone_thumb_up"),
+            imageBitmap = Helpers.Static.materialIcon("twotone_thumb_up"),
             colorFilter = colors.onSurfaceVariant,
           },
           {
@@ -90,7 +90,7 @@ return {
             id = "comment_icon",
             layout_width = "16dp",
             layout_height = "16dp",
-            ImageBitmap = Helpers.Static.materialIcon("twotone_message"),
+            imageBitmap = Helpers.Static.materialIcon("twotone_message"),
             colorFilter = colors.onSurfaceVariant,
           },
           {

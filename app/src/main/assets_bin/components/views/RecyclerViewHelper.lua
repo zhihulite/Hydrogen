@@ -160,7 +160,7 @@ end
 
 function M:setup(recyclerView)
   self.recyclerView = recyclerView
-  recyclerView.setAdapter(self:getAdapter())
+  recyclerView.adapter = self:getAdapter()
   return self
 end
 

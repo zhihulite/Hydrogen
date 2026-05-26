@@ -42,7 +42,7 @@ local function ossPutObject(uploadUrl, objectKey, imageBytes, contentType, token
   local Locale = luajava.bindClass("java.util.Locale")
 
   local ossDate = SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'", Locale.US)
-  ossDate.setTimeZone(TimeZone.getTimeZone("GMT"))
+  ossDate.timeZone = TimeZone.getTimeZone("GMT")
 
   local ossDateStr = ossDate.format(luajava.newInstance("java.util.Date"))
 

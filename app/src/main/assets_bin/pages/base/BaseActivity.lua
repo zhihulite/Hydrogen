@@ -9,7 +9,7 @@ BaseActivity:chainUp("onDestroy")
 --- 设置内容视图（final 方法，子类不应重写）
 --- @note 此方法为 final 方法，子类不应重写
 function BaseActivity:setContentView()
-  activity.setContentView(self.root_view)
+  activity.ContentView = self.root_view
 end
 
 --- 启动 Activity（final 方法，子类不应重写）
@@ -42,7 +42,7 @@ function BaseActivity:addBackPressedCallback(options)
     handleOnBackCancelled = options.onBackCancelled,
   }, options.enabled == nil or options.enabled)
   
-  activity.getOnBackPressedDispatcher().addCallback(activity, callback)
+  activity.onBackPressedDispatcher.addCallback(activity, callback)
 
   if not self.backPressedCallbacks then
     self.backPressedCallbacks = {}

@@ -11,11 +11,11 @@ import "com.google.android.material.shape.RelativeCornerSize"
 import "androidx.recyclerview.widget.RecyclerView"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
-local circleShape = ShapeAppearanceModel.builder()
-.setAllCornerSizes(RelativeCornerSize(0.5))
-.build()
+local circleShapeBuilder = ShapeAppearanceModel.builder()
+circleShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
+local circleShapeModel = circleShapeBuilder.build()
 
 return {
   LinearLayoutCompat,
@@ -45,7 +45,7 @@ return {
           id = "avatar",
           layout_width = "28dp",
           layout_height = "28dp",
-          shapeAppearanceModel = circleShape,
+          shapeAppearanceModel = circleShapeModel,
         },
         {
           MaterialTextView,

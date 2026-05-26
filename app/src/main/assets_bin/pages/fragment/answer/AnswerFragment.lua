@@ -72,11 +72,11 @@ function AnswerFragment:setupToolbar()
     }
   })
 
-  -- 使用 GestureDetector 检测双击返回顶部
-  import "android.view.GestureDetector"
-  local detector = GestureDetector(activity, {
+  -- 使用 GestureDetectorCompat 检测双击返回顶部
+  import "androidx.core.view.GestureDetectorCompat"
+  local detector = GestureDetectorCompat(activity, luajava.createProxy("android.view.GestureDetector$OnGestureListener",{
     onDown = function(e) return true end
-  })
+  }))
 
   detector.setOnDoubleTapListener({
     onDoubleTap = function(e)
@@ -107,9 +107,9 @@ end
 
 function AnswerFragment:onBridgeMessage(action, data)
   if action == "disableParentScroll" then
-    self.views.view_pager.setUserInputEnabled(false)
+    self.views.view_pager.userInputEnabled = false
    elseif action == "enableParentScroll" then
-    self.views.view_pager.setUserInputEnabled(true)
+    self.views.view_pager.userInputEnabled = true
    elseif action == "screenshotResult" then
     activity.runOnUiThread(function()
       self:showScreenshotPreview(data)
@@ -135,25 +135,25 @@ function AnswerFragment:showScreenshotPreview(base64)
 
   -- 获取需要裁剪的顶部高度（user_card_wrapper 的高度，单位 px）
   local cropHeight = 0
-  cropHeight = self.currentPageIds.user_card_wrapper.getHeight()
+  cropHeight = self.currentPageIds.user_card_wrapper.height
 
-  if cropHeight > 0 and cropHeight < bmp.getHeight() then
-    local cropped = Bitmap.createBitmap(bmp, 0, cropHeight, bmp.getWidth(), bmp.getHeight() - cropHeight)
+  if cropHeight > 0 and cropHeight < bmp.height then
+    local cropped = Bitmap.createBitmap(bmp, 0, cropHeight, bmp.width, bmp.height - cropHeight)
     bmp.recycle()
     bmp = cropped
   end
 
-  local width = bmp.getWidth()
+  local width = bmp.width
 
   -- 标题栏布局
   local headerIds = {}
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
   local headerLayout = loadlayout(Layouts.pages.answer.screenshot_header, headerIds)
 
   -- 获取标题和作者
   local titleText = ""
-  titleText = self.views.toolbar.getTitle()
-  local authorText = self.currentPageIds.user_name.getText()
+  titleText = self.views.toolbar.title
+  local authorText = self.currentPageIds.user_name.text
 
   headerIds.title.text = titleText
   headerIds.author.text = authorText
@@ -163,30 +163,30 @@ function AnswerFragment:showScreenshotPreview(base64)
     if original == nil then
       return nil
     end
-    local size = math.min(original.getWidth(), original.getHeight())
+    local size = math.min(original.width, original.height)
     local output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
     local canvas = Canvas(output)
     local paint = Paint(Paint.ANTI_ALIAS_FLAG)
     local shader = BitmapShader(original, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP)
     local matrix = Matrix()
-    local scale = size / math.max(original.getWidth(), original.getHeight())
+    local scale = size / math.max(original.width, original.height)
     matrix.setScale(scale, scale)
-    if original.getWidth() > original.getHeight() then
-      matrix.postTranslate((size - original.getWidth() * scale) / 2, 0)
+    if original.width > original.height then
+      matrix.postTranslate((size - original.width * scale) / 2, 0)
      else
-      matrix.postTranslate(0, (size - original.getHeight() * scale) / 2)
+      matrix.postTranslate(0, (size - original.height * scale) / 2)
     end
-    shader.setLocalMatrix(matrix)
-    paint.setShader(shader)
+    shader.localMatrix = matrix
+    paint.shader = shader
     canvas.drawCircle(size / 2, size / 2, size / 2, paint)
     return output
   end
 
   -- 设置头像（圆形）
-  local avatarDrawable = self.currentPageIds.user_avatar.getDrawable()
+  local avatarDrawable = self.currentPageIds.user_avatar.drawable
   if avatarDrawable then
-    local w = avatarDrawable.getIntrinsicWidth()
-    local h = avatarDrawable.getIntrinsicHeight()
+    local w = avatarDrawable.intrinsicWidth
+    local h = avatarDrawable.intrinsicHeight
     if w > 0 and h > 0 then
       local src = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
       local canvas = Canvas(src)
@@ -194,7 +194,7 @@ function AnswerFragment:showScreenshotPreview(base64)
       avatarDrawable.draw(canvas)
       local circle = toCircleBitmap(src)
       if circle then
-        headerIds.avatar.setImageBitmap(circle)
+        headerIds.avatar.imageBitmap = circle
       end
       src.recycle()
     end
@@ -204,10 +204,10 @@ function AnswerFragment:showScreenshotPreview(base64)
   local widthSpec = View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY)
   local heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
   headerLayout.measure(widthSpec, heightSpec)
-  local headerHeight = headerLayout.getMeasuredHeight()
+  local headerHeight = headerLayout.measuredHeight
 
   -- 合成最终图片
-  local result = Bitmap.createBitmap(width, bmp.getHeight() + headerHeight, Bitmap.Config.ARGB_8888)
+  local result = Bitmap.createBitmap(width, bmp.height + headerHeight, Bitmap.Config.ARGB_8888)
   local canvas = Canvas(result)
 
   -- 绘制标题栏
@@ -249,17 +249,17 @@ function AnswerFragment:saveToLocal()
     return
   end
 
-  local url = webView.getUrl()
+  local url = webView.url
   if not url or url == "" then
     tip("无法获取当前页面URL")
     return
   end
 
   local toolbar = self.views.toolbar
-  local title = toolbar.getTitle()
+  local title = toolbar.title
   local id = self.currentAnswerId
   local authorText = "未知作者"
-  authorText = self.currentPageIds.user_name.getText()
+  authorText = self.currentPageIds.user_name.text
 
   Router.go("local_content", {
     mode = "save",
@@ -284,8 +284,8 @@ end
 
 function AnswerFragment:updateToolbar(title, answerCount)
   local toolbar = self.views.toolbar
-  toolbar.setTitle(title or "")
-  toolbar.setSubtitle(answerCount and ("共" .. answerCount .. "个回答") or "")
+  toolbar.title = title or ""
+  toolbar.subtitle = answerCount and ("共" .. answerCount .. "个回答" or "")
 end
 
 function AnswerFragment:loadQuestionInfo()
@@ -312,13 +312,13 @@ function AnswerFragment:updateBottomBar(data)
   local views = self.views
   if not data then error("updateBottomBar 传入 data 为空。") return end
 
-  views.vote_count.setText(tostring(data.voteupCount or 0))
-  views.thank_count.setText(tostring(data.thanksCount or 0))
-  views.comment_count.setText(tostring(data.commentCount or 0))
-  views.collect_count.setText(tostring(data.favlistsCount or 0))
-  views.vote_icon.setImageBitmap(Helpers.Static.materialIcon(data.isLiked and "twotone_thumb_up" or "outline_thumb_up"))
-  views.thank_icon.setImageBitmap(Helpers.Static.materialIcon(data.isThanked and "twotone_favorite" or "outline_favorite_border"))
-  views.collect_icon.setImageBitmap(Helpers.Static.materialIcon(data.isFavorited and "twotone_bookmark" or "outline_bookmark_border"))
+  views.vote_count.text = tostring(data.voteupCount or 0)
+  views.thank_count.text = tostring(data.thanksCount or 0)
+  views.comment_count.text = tostring(data.commentCount or 0)
+  views.collect_count.text = tostring(data.favlistsCount or 0)
+  views.vote_icon.imageBitmap = Helpers.Static.materialIcon(data.isLiked and "twotone_thumb_up" or "outline_thumb_up")
+  views.thank_icon.imageBitmap = Helpers.Static.materialIcon(data.isThanked and "twotone_favorite" or "outline_favorite_border")
+  views.collect_icon.imageBitmap = Helpers.Static.materialIcon(data.isFavorited and "twotone_bookmark" or "outline_bookmark_border")
 end
 
 -- 滚动联动
@@ -332,7 +332,7 @@ function AnswerFragment:onWebViewScroll(pageIds, scrollX, scrollY, oldScrollX, o
   end
 
   if cardHeight == 0 and pageIds.user_card_wrapper then
-    cardHeight = pageIds.user_card_wrapper.getHeight()
+    cardHeight = pageIds.user_card_wrapper.height
     if answerId and self.pageData[answerId] then
       self.pageData[answerId].cardHeight = cardHeight
     end
@@ -340,7 +340,7 @@ function AnswerFragment:onWebViewScroll(pageIds, scrollX, scrollY, oldScrollX, o
 
   local translation = math.min(scrollY, cardHeight)
   if pageIds and pageIds.user_card_wrapper then
-    pageIds.user_card_wrapper.setTranslationY(-translation)
+    pageIds.user_card_wrapper.translationY = -translation
   end
 end
 
@@ -353,11 +353,11 @@ function AnswerFragment:updateWebViewPadding(pageIds)
     cardHeight = self.pageData[answerId].cardHeight or 0
   end
   if cardHeight == 0 then
-    cardHeight = pageIds.user_card_wrapper.getHeight()
+    cardHeight = pageIds.user_card_wrapper.height
   end
 
   if cardHeight > 0 then
-    local dp = cardHeight / activity.getResources().getDisplayMetrics().density
+    local dp = cardHeight / activity.resources.displayMetrics.density
     pageIds.webview.evaluateJavascript("document.body.style.paddingTop='" .. dp .. "px'", nil)
   end
 end
@@ -382,7 +382,7 @@ function AnswerFragment:setupWebView(webview, answerId, pageIds)
     self:onBridgeMessage(action, data)
   end)
 
-  helper:setWebViewNetWork({
+  helper:setWebViewClient({
     shouldOverrideUrlLoading = function(view, url)
       if url ~= ("https://www.zhihu.com/appview/answer/" .. answerId) then
         Router.go("browser", { url = url })
@@ -392,19 +392,19 @@ function AnswerFragment:setupWebView(webview, answerId, pageIds)
     end,
     onPageFinished = function(view, url)
       self:updateWebViewPadding(pageIds)
-      pageIds.progress.setVisibility(View.GONE)
-      pageIds.webview.setVisibility(View.VISIBLE)
+      pageIds.progress.visibility = View.GONE
+      pageIds.webview.visibility = View.VISIBLE
     end
   })
-  helper:setWebChromeNetWork({
+  helper:setWebChromeClient({
     onProgressChanged = function(view, newProgress)
       if newProgress < 100 then
-        pageIds.progress.setProgress(newProgress)
-        if pageIds.progress.getVisibility() ~= View.VISIBLE then
-          pageIds.progress.setVisibility(View.VISIBLE)
+        pageIds.progress.progress = newProgress
+        if pageIds.progress.visibility ~= View.VISIBLE then
+          pageIds.progress.visibility = View.VISIBLE
         end
        else
-        pageIds.progress.setVisibility(View.GONE)
+        pageIds.progress.visibility = View.GONE
       end
     end,
   })
@@ -416,7 +416,7 @@ function AnswerFragment:setupViewPager2()
 
   -- 检查是否启用回答单页模式
   if Extensions.Config.getBool(Constants.SharedDataKeys.ANSWER_SINGLE_PAGE) then
-    viewPager.setUserInputEnabled(false)
+    viewPager.userInputEnabled = false
   end
 
   -- 调整滑动灵敏度
@@ -426,20 +426,20 @@ function AnswerFragment:setupViewPager2()
     local RecyclerView = luajava.bindClass("androidx.recyclerview.widget.RecyclerView")
 
     local recyclerViewField = ViewPager2.getDeclaredField("mRecyclerView")
-    recyclerViewField.setAccessible(true)
+    recyclerViewField.accessible = true
     local recyclerView = recyclerViewField.get(viewPager)
 
     local touchSlopField = RecyclerView.getDeclaredField("mTouchSlop")
-    touchSlopField.setAccessible(true)
+    touchSlopField.accessible = true
     local touchSlop = touchSlopField.get(recyclerView)
     touchSlopField.set(recyclerView, touchSlop * scrollSense)
   end)
 
-  viewPager.setOffscreenPageLimit(2)
+  viewPager.offscreenPageLimit = 2
 
   local LuaPager2Adapter = luajava.bindClass("com.hydrogen.adapter.LuaPager2Adapter")
   self.pagerAdapter = LuaPager2Adapter()
-  viewPager.setAdapter(self.pagerAdapter)
+  viewPager.adapter = self.pagerAdapter
 
   viewPager.registerOnPageChangeCallback(luajava.override(ViewPager2.OnPageChangeCallback, {
     onPageSelected = function(super, pos) self:onPageSelected(pos) end
@@ -490,7 +490,7 @@ function AnswerFragment:createPageView(answerId)
     -- 测量卡片高度后加载WebView
     pageIds.user_card_wrapper.post({
       run = self:runIfAlive(function()
-        local cardHeight = pageIds.user_card_wrapper.getHeight()
+        local cardHeight = pageIds.user_card_wrapper.height
         self.pageData[answerId].cardHeight = cardHeight
         self:loadWebView(answerId, pageIds)
       end)
@@ -515,7 +515,7 @@ function AnswerFragment:loadWebView(answerId, pageIds)
   page.loading = true
 
   if pageIds.progress then
-    pageIds.progress.setVisibility(View.VISIBLE)
+    pageIds.progress.visibility = View.VISIBLE
   end
 
   pageIds.webview.loadUrl("https://www.zhihu.com/appview/answer/" .. answerId)
@@ -550,12 +550,12 @@ function AnswerFragment:updatePageCard(pageIds, data)
   end
 
   if pageIds.user_name then
-    pageIds.user_name.setText(data.author and data.author.name or "未知用户")
+    pageIds.user_name.text = data.author and data.author.name or "未知用户"
   end
   if pageIds.user_headline then
     local headline = (data.author and data.author.headline) or ""
     if headline == "" then headline = "Ta还没有签名哦~" end
-    pageIds.user_headline.setText(headline)
+    pageIds.user_headline.text = headline
   end
   if pageIds.user_avatar and data.author then
     Helpers.Image.load(pageIds.user_avatar, data.author.avatarUrl)
@@ -615,7 +615,6 @@ function AnswerFragment:onPageSelected(pos)
     end
   end
   self:tryAddAdjacent(answerId)
-  self.views.floating_toolbar.setTranslationY(0)
 end
 
 function AnswerFragment:getCurrentData()
@@ -722,23 +721,23 @@ function AnswerFragment:initViews()
 
       -- 浮动滚动按钮避让导航栏
       if self.views.float_scroll_container then
-        local params = self.views.float_scroll_container.getLayoutParams()
+        local params = self.views.float_scroll_container.layoutParams
         if params and luajava.instanceof(params, CoordinatorLayout.LayoutParams) then
-          params.bottomMargin = navBarHeight
-          self.views.float_scroll_container.setLayoutParams(params)
+          params.bottomMargin = params.bottomMargin + navBarHeight
+          self.views.float_scroll_container.layoutParams = params
         end
       end
 
       --[[
       -- ViewPager2 底部留出导航栏间距
       self.views.view_pager.setPadding(
-      self.views.view_pager.getPaddingLeft(),
-      self.views.view_pager.getPaddingTop(),
-      self.views.view_pager.getPaddingRight(),
+      self.views.view_pager.paddingLeft,
+      self.views.view_pager.paddingTop,
+      self.views.view_pager.paddingRight,
       navBarHeight
       )
       ]]
-      self.views.view_pager.setClipToPadding(false)
+      self.views.view_pager.clipToPadding = false
     end
   })
 
@@ -746,12 +745,12 @@ function AnswerFragment:initViews()
   self:setupBottomBar()
   self:setupViewPager2()
   self:setupFloatButtons()
-  self.views.floating_toolbar.setOnGenericMotionListener(luajava.createProxy("android.view.View$OnGenericMotionListener", {
-    onGenericMotion = function(v, event) return true end
-  }))
-  self.views.float_scroll_container.setOnGenericMotionListener(luajava.createProxy("android.view.View$OnGenericMotionListener", {
-    onGenericMotion = function(v, event) return true end
-  }))
+  self.views.floating_toolbar.onGenericMotion = function()
+    return false
+  end
+  self.views.float_scroll_container.onGenericMotion = function()
+    return false
+  end
 
   self:loadQuestionInfo()
 end
@@ -763,7 +762,7 @@ function AnswerFragment:onVolumeUp()
   end
 
   local viewPager = self.views.view_pager
-  local current = viewPager.getCurrentItem()
+  local current = viewPager.currentItem
   if current > 0 then
     viewPager.setCurrentItem(current - 1, true)
     return true
@@ -778,10 +777,10 @@ function AnswerFragment:onVolumeDown()
   end
 
   local viewPager = self.views.view_pager
-  local current = viewPager.getCurrentItem()
-  local adapter = viewPager.getAdapter()
-  if adapter and current < adapter.getItemCount() - 1 then
     viewPager.setCurrentItem(current + 1, true)
+  local current = viewPager.currentItem
+  local adapter = viewPager.adapter
+  if adapter and current < adapter.itemCount - 1 then
     return true
   end
   return false

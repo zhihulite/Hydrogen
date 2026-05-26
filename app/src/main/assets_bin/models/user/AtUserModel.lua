@@ -45,7 +45,11 @@ import "com.google.android.material.textview.MaterialTextView"
 import "com.google.android.material.imageview.ShapeableImageView"
 -- 创建适配器（自带布局和点击事件）
 function AtUserModel:createAdapter(dataList, key)
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
+  
+  local circleShapeBuilder = ShapeAppearanceModel.builder()
+  circleShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
+  local circleShapeModel = circleShapeBuilder.build()
 
   return SimpleRecyclerAdapter.new({
     items = dataList,
@@ -62,14 +66,12 @@ function AtUserModel:createAdapter(dataList, key)
           id = "avatar",
           layout_width = "40dp",
           layout_height = "40dp",
-          shapeAppearanceModel = ShapeAppearanceModel.builder()
-          .setAllCornerSizes(RelativeCornerSize(0.5))
-          .build(),
+          shapeAppearanceModel = circleShapeModel,
         },
         {
           LinearLayoutCompat,
           orientation = "vertical",
-          layout_width = "0dp",
+          layout_width = 0,
           layout_weight = 1,
           layout_marginLeft = "12dp",
           {
@@ -93,9 +95,9 @@ function AtUserModel:createAdapter(dataList, key)
       v.name.text = item.name or ""
       if item.headline and item.headline ~= "" then
         v.headline.text = item.headline
-        v.headline.setVisibility(View.VISIBLE)
+        v.headline.visibility = View.VISIBLE
        else
-        v.headline.setVisibility(View.GONE)
+        v.headline.visibility = View.GONE
       end
       Helpers.Image.load(v.avatar, item.avatarUrl)
 

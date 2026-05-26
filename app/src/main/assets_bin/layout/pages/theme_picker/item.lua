@@ -6,7 +6,7 @@ import "com.google.android.material.card.MaterialCardView"
 import "com.google.android.material.textview.MaterialTextView"
 import "com.google.android.material.radiobutton.MaterialRadioButton"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,
@@ -36,13 +36,13 @@ return {
         layout_height = "32dp",
         layout_marginLeft = "20dp",
         radius = "16dp",
-        cardElevation = "0dp",
+        cardElevation = 0,
         strokeWidth = 0,
       },
       {
         MaterialTextView,
         id = "title",
-        layout_width = "0dp",
+        layout_width = 0,
         layout_weight = 1,
         layout_marginLeft = "16dp",
         textSize  = AppTextStyle.titleSmall.size,

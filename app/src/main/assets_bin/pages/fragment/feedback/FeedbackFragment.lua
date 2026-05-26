@@ -87,8 +87,8 @@ function FeedbackFragment:initListView()
     end
   })
 
-  views.recycler_view.setLayoutManager(LinearLayoutManager(activity))
-  views.recycler_view.setAdapter(self.adapter)
+  views.recycler_view.layoutManager = LinearLayoutManager(activity)
+  views.recycler_view.adapter = self.adapter
 end
 
 function FeedbackFragment:openGithubIssues()

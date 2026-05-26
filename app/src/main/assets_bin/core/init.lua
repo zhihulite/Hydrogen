@@ -119,7 +119,7 @@ _G.buildHeaders = function()
     ["Accept"] = "application/json, text/plain, */*",
   }
 
-  local cookieManager = luajava.bindClass("android.webkit.CookieManager").getInstance()
+  local cookieManager = luajava.bindClass("android.webkit.CookieManager").instance
   local cookie = cookieManager.getCookie("https://www.zhihu.com/")
   if cookie then
     baseHeaders["cookie"] = cookie
@@ -158,7 +158,7 @@ end
 buildHeaders()
 
 -- 屏幕信息
-local metrics = activity.getResources().getDisplayMetrics()
+local metrics = activity.resources.displayMetrics
 _G.Screen = {
   width = metrics.widthPixels,
   height = metrics.heightPixels,
@@ -182,7 +182,7 @@ if Extensions.Config.getBool(Constants.SharedDataKeys.USE_SYSTEM_FONT) then
   }
 end
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 -- 参考 https://github.com/material-components/material-components-android/blob/master/docs/theming/Typography.md
 _G.AppTextStyle = {
   -- ========== Display 超大展示文字 ==========

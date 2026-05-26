@@ -48,10 +48,10 @@ local function setIcon(menuItem, icon)
   if type(icon) == "string" then
     local bitmap = loadbitmap(icon)
     if bitmap then
-      menuItem.setIcon(bitmap)
+      menuItem.icon = bitmap
     end
    else
-    menuItem.setIcon(icon)
+    menuItem.icon = icon
   end
 end
 
@@ -128,21 +128,21 @@ local function loadmenu(menu, items)
 
     -- 设置显示模式（仅普通菜单有效）
     if cfg.asAction and not isSubMenu then
-      menuItem.setShowAsActionFlags(parseActionFlags(cfg.asAction))
+      menuItem.showAsActionFlags = parseActionFlags(cfg.asAction)
     end
 
     -- 设置属性
     if cfg.enabled == false then
-      menuItem.setEnabled(false)
+      menuItem.enabled = false
     end
     if cfg.visible == false then
-      menuItem.setVisible(false)
+      menuItem.visible = false
     end
     if cfg.checkable then
-      menuItem.setCheckable(true)
+      menuItem.checkable = true
     end
     if cfg.checked then
-      menuItem.setChecked(true)
+      menuItem.checked = true
     end
 
     -- 设置点击事件

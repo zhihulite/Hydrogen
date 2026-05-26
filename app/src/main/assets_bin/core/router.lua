@@ -87,9 +87,9 @@ end
 
 -- 返回上一页
 function M.back()
-  local fm = activity.getSupportFragmentManager()
+  local fm = activity.supportFragmentManager
 
-  if fm.getBackStackEntryCount() > 0 then
+  if fm.backStackEntryCount > 0 then
     fm.popBackStack()
     if #history > 0 then
       table.remove(history)
@@ -102,8 +102,8 @@ end
 
 -- 清空 Fragment 返回栈
 function M.clearBackStack()
-  local fm = activity.getSupportFragmentManager()
-  if fm.getBackStackEntryCount() > 0 then
+  local fm = activity.supportFragmentManager
+  if fm.backStackEntryCount > 0 then
     fm.popBackStack(nil, FragmentManager.POP_BACK_STACK_INCLUSIVE)
   end
 end
@@ -117,8 +117,8 @@ function M.getHistory()
 end
 
 function M.getBackStackCount()
-  local fm = activity.getSupportFragmentManager()
-  return fm.getBackStackEntryCount()
+  local fm = activity.supportFragmentManager
+  return fm.backStackEntryCount
 end
 
 return M

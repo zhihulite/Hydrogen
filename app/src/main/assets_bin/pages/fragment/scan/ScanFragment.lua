@@ -50,13 +50,13 @@ function ScanFragment:startScan()
 
   local formats = ArrayList()
   formats.add(BarcodeFormat.QR_CODE)
-  self.barcodeView.getBarcodeView().setDecoderFactory(DefaultDecoderFactory(formats))
+  self.barcodeView.barcodeView.decoderFactory = DefaultDecoderFactory(formats)
 
   self.barcodeView.decodeSingle(BarcodeCallback({
     barcodeResult = function(result)
       if self.hasHandledResult or result == nil then return end
 
-      local text = tostring(result.getText() or "")
+      local text = tostring(result.text or "")
       if text == "" then
         tip("未识别到内容，请重试")
         self:startScan()
@@ -76,15 +76,6 @@ function ScanFragment:startScan()
       end
     end
   }))
-
-  -- 防止 fragment 触摸点击穿透
-  self.barcodeView.onTouch = function()
-    return true
-  end
-  -- 防止 fragment 鼠标点击穿透
-  self.barcodeView.onGenericMotion = function()
-    return true
-  end
 
   self.barcodeView.resume()
 end

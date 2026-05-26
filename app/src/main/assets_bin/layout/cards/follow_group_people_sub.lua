@@ -9,11 +9,11 @@ import "com.google.android.material.shape.ShapeAppearanceModel"
 import "com.google.android.material.shape.RelativeCornerSize"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
-local circleShape = ShapeAppearanceModel.builder()
-.setAllCornerSizes(RelativeCornerSize(0.5))
-.build()
+local circleShapeBuilder = ShapeAppearanceModel.builder()
+circleShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
+local circleShapeModel = circleShapeBuilder.build()
 
 return {
   LinearLayoutCompat,
@@ -48,7 +48,7 @@ return {
       {
         LinearLayoutCompat,
         orientation = "vertical",
-        layout_width = "0dp",
+        layout_width = 0,
         layout_weight = 1,
         layout_marginLeft = "12dp",
         {

@@ -9,7 +9,7 @@ import "com.google.android.material.card.MaterialCardView"
 import "android.view.View"
 import "com.google.android.material.chip.Chip"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,
@@ -52,7 +52,7 @@ return {
     },
     {
       View,
-      layout_width = "0dp",
+      layout_width = 0,
       layout_weight = 1,
       layout_height = "1dp",
     },
@@ -69,7 +69,7 @@ return {
     RecyclerView,
     id = "recycler_view",
     layout_width = "match_parent",
-    layout_height = "0dp",
+    layout_height = 0,
     layout_weight = 1,
     clipToPadding = false,
     paddingTop = "4dp",
@@ -95,7 +95,7 @@ return {
         layout_width = "24dp",
         layout_height = "24dp",
         layout_marginRight = "12dp",
-        ImageBitmap = Helpers.Static.materialIcon("twotone_edit"),
+        imageBitmap = Helpers.Static.materialIcon("twotone_edit"),
         colorFilter = colors.onSurfaceVariant,
       },
       {
@@ -110,7 +110,7 @@ return {
         AppCompatImageView,
         layout_width = "24dp",
         layout_height = "24dp",
-        ImageBitmap = Helpers.Static.materialIcon("twotone_add_circle"),
+        imageBitmap = Helpers.Static.materialIcon("twotone_add_circle"),
         colorFilter = colors.onSurfaceVariant,
       },
     },

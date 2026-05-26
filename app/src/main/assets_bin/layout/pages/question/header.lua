@@ -10,11 +10,11 @@ import "com.google.android.material.shape.ShapeAppearanceModel"
 import "com.google.android.material.shape.RelativeCornerSize"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
-local circleShape = ShapeAppearanceModel.builder()
-.setAllCornerSizes(RelativeCornerSize(0.5))
-.build()
+local circleShapeBuilder = ShapeAppearanceModel.builder()
+circleShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
+local circleShapeModel = circleShapeBuilder.build()
 
 return {
   LinearLayoutCompat,
@@ -48,13 +48,13 @@ return {
           id = "author_avatar",
           layout_width = "32dp",
           layout_height = "32dp",
-          shapeAppearanceModel = circleShape,
+          shapeAppearanceModel = circleShapeModel,
           visibility = View.GONE,
         },
         {
           MaterialTextView,
           id = "author_name",
-          layout_width = "0dp",
+          layout_width = 0,
           layout_weight = 1,
           layout_marginLeft = "8dp",
           textSize = AppTextStyle.bodySmall.size,

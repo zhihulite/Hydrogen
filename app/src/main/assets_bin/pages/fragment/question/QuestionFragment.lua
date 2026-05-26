@@ -73,7 +73,7 @@ function QuestionFragment:initAnswerList()
   self:createQuestionHeader()
   self.model:setupSingle(views.recycler_view, views.swipe_refresh)
   self.model:ensureLoaded()
-  self.helper = RecyclerViewHelper.new(views.recycler_view.getAdapter())
+  self.helper = RecyclerViewHelper.new(views.recycler_view.adapter)
   self.helper:addHeader(self.headerView)
   self.helper:setup(views.recycler_view)
 end
@@ -91,28 +91,28 @@ function QuestionFragment:updateTopics(topics)
   container.removeAllViews()
 
   if not topics or #topics == 0 then
-    container.setVisibility(View.GONE)
+    container.visibility = View.GONE
     return
   end
 
-  container.setVisibility(View.VISIBLE)
+  container.visibility = View.VISIBLE
 
   for i, topic in ipairs(topics) do
     local chip = self:createTopicChip(topic)
     container.addView(chip)
     if i < #topics then
       local spacer = luajava.bindClass("android.widget.Space")(activity)
-      spacer.setLayoutParams(LinearLayoutCompat.LayoutParams(8, 0))
+      spacer.layoutParams = LinearLayoutCompat.LayoutParams(8, 0)
       container.addView(spacer)
     end
   end
 end
 
 function QuestionFragment:createTopicChip(topic)
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
   local chip = Helpers.MaterialWidgets.Chip_Assist_Elevated(activity)
-  chip.setText(topic.name)
-  chip.setTextColor(colors.primary)
+  chip.text = topic.name
+  chip.textColor = colors.primary
 
   chip.setOnClickListener({
     onClick = function()
@@ -135,8 +135,8 @@ function QuestionFragment:showExcerptDetail()
   local scrollView = loadlayout(Layouts.pages.question.excerpt_dialog, views)
 
   local webHelper = WebViewHelper.new(views.webview)
-  webHelper:initSettings():initNoImageMode():setWebViewNetWork():setWebChromeNetWork()
-  :setWebViewNetWork{
+  webHelper:initSettings():initNoImageMode():setWebViewClient():setWebChromeClient()
+  :setWebViewClient{
     shouldOverrideUrlLoading = function(view, url)
       Helpers.ZhihuParser.goUrl(url)
       return true
@@ -171,9 +171,9 @@ function QuestionFragment:updateQuestionCard(data)
 
   if data.author and data.author.name then
     self.headerViews.author_name.text = data.author.name .. " 提问"
-    self.headerViews.author_name.setVisibility(View.VISIBLE)
+    self.headerViews.author_name.visibility = View.VISIBLE
     if data.author.avatarUrl then
-      self.headerViews.author_avatar.setVisibility(View.VISIBLE)
+      self.headerViews.author_avatar.visibility = View.VISIBLE
       Helpers.Image.load(self.headerViews.author_avatar, data.author.avatarUrl)
     end
 
@@ -185,8 +185,8 @@ function QuestionFragment:updateQuestionCard(data)
       Router.go("people", { id = authorId })
     end
    else
-    self.headerViews.author_name.setVisibility(View.GONE)
-    self.headerViews.author_avatar.setVisibility(View.GONE)
+    self.headerViews.author_name.visibility = View.GONE
+    self.headerViews.author_avatar.visibility = View.GONE
   end
 
   self.headerViews.question_title.text = data.title or ""
@@ -199,10 +199,10 @@ function QuestionFragment:updateQuestionCard(data)
 
   if data.excerpt and data.excerpt ~= "" then
     self.headerViews.excerpt.text = "问题描述：" .. data.excerpt
-    self.headerViews.excerpt.setVisibility(View.VISIBLE)
+    self.headerViews.excerpt.visibility = View.VISIBLE
   end
 
-  self.views.toolbar.setTitle(data.title or self.questionTitle or "问题详情")
+  self.views.toolbar.title = data.title or self.questionTitle or "问题详情"
 
   -- 更新关注菜单项文本
   self:updateFollowMenuItem()
@@ -212,7 +212,7 @@ end
 function QuestionFragment:updateFollowMenuItem()
   if not self.followMenuItem or not self.questionData then return end
   local newTitle = self.questionData.isFollowing and "取消关注" or "关注问题"
-  self.followMenuItem.setTitle(newTitle)
+  self.followMenuItem.title = newTitle
 end
 
 function QuestionFragment:loadQuestionDetail()
@@ -227,7 +227,7 @@ end
 
 function QuestionFragment:refresh()
   self.model:refresh(0)
-  self.views.swipe_refresh.setRefreshing(false)
+  self.views.swipe_refresh.refreshing = false
 end
 
 -- 修改 toggleFollow，不需要参数

@@ -100,19 +100,19 @@ function HistoryFragment:loadData()
   self.adapter.notifyDataSetChanged()
   self:updateEmptyState()
 
-  self.views.swipe_refresh.setRefreshing(false)
+  self.views.swipe_refresh.refreshing = false
 end
 
 function HistoryFragment:updateEmptyState()
   local isEmpty = #self.items == 0
-  self.views.swipe_refresh.setVisibility(isEmpty and View.GONE or View.VISIBLE)
-  self.views.empty_view.setVisibility(isEmpty and View.VISIBLE or View.GONE)
+  self.views.swipe_refresh.visibility = isEmpty and View.GONE or View.VISIBLE
+  self.views.empty_view.visibility = isEmpty and View.VISIBLE or View.GONE
 end
 
 function HistoryFragment:initListView()
   local views = self.views
   if not views.recycler_view then return end
-  
+
   self.adapter = SimpleRecyclerAdapter.new({
     items = self.items,
     onCreateView = function()
@@ -122,7 +122,7 @@ function HistoryFragment:initListView()
       views.type_text.text = item.typeName or "内容"
       views.title.text = item.title or ""
       local hasPreview = item.preview and item.preview ~= ""
-      views.preview.setVisibility(hasPreview and View.VISIBLE or View.GONE)
+      views.preview.visibility = hasPreview and View.VISIBLE or View.GONE
       views.preview.text = item.preview or ""
       views.card.onClick = function()
         self:onItemClick(item, position)
@@ -134,8 +134,8 @@ function HistoryFragment:initListView()
     end,
   })
 
-  views.recycler_view.setLayoutManager(LinearLayoutManager(activity))
-  views.recycler_view.setAdapter(self.adapter)
+  views.recycler_view.layoutManager = LinearLayoutManager(activity)
+  views.recycler_view.adapter = self.adapter
 end
 
 function HistoryFragment:onItemClick(item, position)

@@ -80,7 +80,7 @@ function HomeFragment:_getCurrentModel()
     if homeModels then
       local viewPager = self.homePageViews.view_pager
       if viewPager then
-        local pos = viewPager.getCurrentItem()
+        local pos = viewPager.currentItem
         local tab = self.displayTabs[pos + 1]
         if tab then
           return homeModels[tab.name]
@@ -112,8 +112,8 @@ end
 function HomeFragment:applyNavBarPaddingToAllModels(navBarHeight)
   local function applyPadding(rv)
     if not rv then return end
-    rv.setPadding(rv.getPaddingLeft(), rv.getPaddingTop(), rv.getPaddingRight(), navBarHeight)
-    rv.setClipToPadding(false)
+    rv.setPadding(rv.paddingLeft, rv.paddingTop, rv.paddingRight, navBarHeight)
+    rv.clipToPadding = false
   end
 
   local function processModel(model)
@@ -191,7 +191,7 @@ function HomeFragment:initAllPages()
     if pageView then
       self.pageViews[pageInfo.name] = { view = pageView, views = views, type = pageInfo.type }
       pageContainer.addView(pageView)
-      pageView.setVisibility(View.GONE)
+      pageView.visibility = View.GONE
       if pageInfo.type == "home" then
         self.homePageViews = views
         self:initHomePage(views)
@@ -266,10 +266,10 @@ function HomeFragment:initHomePage(views)
     end
   end
 
-  viewPager.setAdapter(adapter)
-  viewPager.setOffscreenPageLimit(3)
+  viewPager.adapter = adapter
+  viewPager.offscreenPageLimit = 3
 
-  local menu = bottomNav.getMenu()
+  local menu = bottomNav.menu
   menu.clear()
   local config = {}
   for i, tab in ipairs(displayTabs) do
@@ -299,7 +299,7 @@ function HomeFragment:initHomePage(views)
   for i, tab in ipairs(displayTabs) do
     if tab.name == self.homeConfig.startItem then startIndex = i - 1 break end
   end
-  if viewPager.getCurrentItem() == startIndex then
+  if viewPager.currentItem == startIndex then
     self:onHomePageSelected(startIndex, displayTabs)
   end
   viewPager.setCurrentItem(startIndex, false)
@@ -327,9 +327,9 @@ end
 
 function HomeFragment:updateBottomNavSelection(position)
   if not self.homePageViews or not self.homePageViews.bottom_nav then return end
-  local menu = self.homePageViews.bottom_nav.getMenu()
+  local menu = self.homePageViews.bottom_nav.menu
   for i = 0, menu.size() - 1 do
-    menu.getItem(i).setChecked(i == position)
+    menu.getItem(i).checked = (i == position)
   end
 end
 
@@ -392,7 +392,7 @@ function HomeFragment:setupDrawerHeader()
       local headers = {
         ["cookie"] = NetWork.getCookie("https://www.zhihu.com/")
       }
-      NetWork.get("https://www.zhihu.com/logout", headers, function(success, content)
+      NetWork.get("https://www.zhihu.com/logout", headers, function(code, content)
         NetWork.clearCookies()
         Extensions.Config.delete(Constants.SharedDataKeys.SIGN_IN_DATA)
         Extensions.Config.delete(Constants.SharedDataKeys.USER_ID)
@@ -408,7 +408,7 @@ end
 
 function HomeFragment:setupDrawerMenu()
   local nav = self.views.nav_view
-  local menu = nav.getMenu()
+  local menu = nav.menu
   menu.clear()
   loadmenu(menu, {
     { id = "home", title = "主页", icon = Helpers.Static.materialDrawable("twotone_home", 24), checkable = true, checked = true, group = 1 },
@@ -423,7 +423,7 @@ function HomeFragment:setupDrawerMenu()
   })
   nav.setNavigationItemSelectedListener({
     onNavigationItemSelected = function(menuItem)
-      local title = menuItem.getTitle()
+      local title = menuItem.title
       local pageMap = { ["主页"] = "主页", ["收藏"] = "收藏", ["日报"] = "日报", ["关注"] = "关注" }
       if pageMap[title] then
         if (title == "收藏" or title == "关注") and not Extensions.Config.has(Constants.SharedDataKeys.USER_ID) then
@@ -475,9 +475,9 @@ function HomeFragment:switchToPage(pageName)
   local page = self.pageViews[pageName]
   if page then
     for _, p in pairs(self.pageViews) do
-      if p.view then p.view.setVisibility(View.GONE) end
+      if p.view then p.view.visibility = View.GONE end
     end
-    page.view.setVisibility(View.VISIBLE)
+    page.view.visibility = View.VISIBLE
     if self.views.toolbar then self.views.toolbar.title = pageName end
     self.currentPage = pageName
     -- 根据当前页面更新右上角菜单
@@ -508,24 +508,23 @@ end
 function HomeFragment:setupDrawerEdge()
   local drawer = self.views.drawer
   if not drawer then return end
-  pcall(function()
-    local drawerClass = drawer.getClass()
-    local leftDraggerField = drawerClass.getDeclaredField("mLeftDragger")
-    leftDraggerField.setAccessible(true)
-    local viewDragHelper = leftDraggerField.get(drawer)
-    local edgeSizeField = viewDragHelper.getClass().getDeclaredField("mDefaultEdgeSize")
-    edgeSizeField.setAccessible(true)
-    edgeSizeField.setInt(viewDragHelper, Helpers.UI.screenWidth())
-    local touchSlopField = viewDragHelper.getClass().getDeclaredField("mTouchSlop")
-    touchSlopField.setAccessible(true)
-    touchSlopField.setInt(viewDragHelper, touchSlopField.getInt(viewDragHelper) * 4)
-    local leftCallbackField = drawerClass.getDeclaredField("mLeftCallback")
-    leftCallbackField.setAccessible(true)
-    local dragCallback = leftCallbackField.get(drawer)
-    local peekRunnableField = dragCallback.getClass().getDeclaredField("mPeekRunnable")
-    peekRunnableField.setAccessible(true)
-    peekRunnableField.set(dragCallback, luajava.createProxy("java.lang.Runnable", { run = function() end }))
-  end)
+
+  local drawerClass = drawer.class
+  local leftDraggerField = drawerClass.getDeclaredField("mLeftDragger")
+  leftDraggerField.accessible = true
+  local viewDragHelper = leftDraggerField.get(drawer)
+  local edgeSizeField = viewDragHelper.class.getDeclaredField("mDefaultEdgeSize")
+  edgeSizeField.accessible = true
+  edgeSizeField.setInt(viewDragHelper, Helpers.UI.screenWidth())
+  local touchSlopField = viewDragHelper.class.getDeclaredField("mTouchSlop")
+  touchSlopField.accessible = true
+  touchSlopField.setInt(viewDragHelper, touchSlopField.getInt(viewDragHelper) * 4)
+  local leftCallbackField = drawerClass.getDeclaredField("mLeftCallback")
+  leftCallbackField.accessible = true
+  local dragCallback = leftCallbackField.get(drawer)
+  local peekRunnableField = dragCallback.class.getDeclaredField("mPeekRunnable")
+  peekRunnableField.accessible = true
+  peekRunnableField.set(dragCallback, luajava.createProxy("java.lang.Runnable", { run = function() end }))
 end
 
 function HomeFragment:loadUserInfo()
@@ -545,14 +544,14 @@ end
 function HomeFragment:updateDrawerUser(data)
   if not self.drawerHeader then return end
   if data then
-    self.drawerHeader.name.setText(data.name)
-    self.drawerHeader.signature.setText(data.headline and data.headline ~= "" and data.headline or "暂无签名")
-    self.drawerHeader.logout.setVisibility(View.VISIBLE)
+    self.drawerHeader.name.text = data.name
+    self.drawerHeader.signature.text = data.headline and data.headline ~= "" and data.headline or "暂无签名"
+    self.drawerHeader.logout.visibility = View.VISIBLE
     Helpers.Image.load(self.drawerHeader.avatar, data.avatarUrl)
    else
-    self.drawerHeader.name.setText("未登录")
-    self.drawerHeader.signature.setText("点击登录")
-    self.drawerHeader.logout.setVisibility(View.GONE)
+    self.drawerHeader.name.text = "未登录"
+    self.drawerHeader.signature.text = "点击登录"
+    self.drawerHeader.logout.visibility = View.GONE
     Helpers.Image.load(self.drawerHeader.avatar, "logo")
   end
 end
@@ -591,7 +590,7 @@ function HomeFragment:searchInCollection()
   .show()
 
   dialog.getButton(dialog.BUTTON_POSITIVE).onClick = function()
-    local keyword = views.edit and views.edit.getText().toString()
+    local keyword = views.edit and views.edit.text
     if keyword == "" then
       tip("请输入关键词")
       return

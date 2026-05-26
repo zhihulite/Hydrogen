@@ -14,7 +14,6 @@ import "com.google.android.material.checkbox.MaterialCheckBox"
 import "com.google.android.material.divider.MaterialDivider"
 
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
-local MaterialWidgets = Helpers.MaterialWidgets
 local CollectionEditSheet = require("components.dialog.CollectionEditSheet")
 
 --- 收藏夹操作
@@ -108,7 +107,7 @@ function M:showSelectionDialog(opts)
   self.isLoading = false
   self.isSaving = false
 
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
 
   local layout = {
     LinearLayoutCompat,
@@ -130,7 +129,7 @@ function M:showSelectionDialog(opts)
         paddingRight = "16dp",
         {
           MaterialTextView,
-          layout_width = "0dp",
+          layout_width = 0,
           layout_weight = 1,
           text = "选择收藏夹",
           textSize = AppTextStyle.titleSmall.size,
@@ -138,7 +137,7 @@ function M:showSelectionDialog(opts)
           typeface = AppTextStyle.titleSmall.font,
         },
         {
-          MaterialWidgets.Button_Text,
+          Helpers.MaterialWidgets.Button_Text,
           id = "new_btn",
           layout_width = "wrap_content",
           layout_height = "wrap_content",
@@ -146,7 +145,7 @@ function M:showSelectionDialog(opts)
           textColor = colors.primary,
         },
         {
-          MaterialWidgets.Button_Text,
+          Helpers.MaterialWidgets.Button_Text,
           id = "close_btn",
           layout_width = "wrap_content",
           layout_height = "wrap_content",
@@ -260,7 +259,7 @@ function M:showSelectionDialog(opts)
     end
 
     self.isSaving = true
-    self.views.confirm_btn.setEnabled(false)
+    self.views.confirm_btn.enabled = false
 
     local putUrl = "https://api.zhihu.com/collections/contents/" .. self.opts.contentType .. "/" .. self.opts.contentId
     local params = {}
@@ -274,7 +273,7 @@ function M:showSelectionDialog(opts)
 
     NetWork.put(putUrl, putData, Headers.defaultHead, function(code)
       self.isSaving = false
-      self.views.confirm_btn.setEnabled(true)
+      self.views.confirm_btn.enabled = true
 
       if code == 200 then
         -- 计算操作后的收藏状态：是否至少还有一个收藏夹被选中
@@ -312,7 +311,7 @@ function M:showSelectionDialog(opts)
 
   -- 初始化 RecyclerView
   local lm = LinearLayoutManager(activity)
-  self.views.recycler_view.setLayoutManager(lm)
+  self.views.recycler_view.layoutManager = lm
 
   -- 创建适配器
   self.adapter = SimpleRecyclerAdapter.new({
@@ -347,7 +346,7 @@ function M:showSelectionDialog(opts)
         {
           LinearLayoutCompat,
           orientation = "vertical",
-          layout_width = "0dp",
+          layout_width = 0,
           layout_weight = 1,
           {
             MaterialTextView,
@@ -369,23 +368,23 @@ function M:showSelectionDialog(opts)
     end,
     onBind = function(views, item, position)
       views.title.text = item.title or ""
-      views.checkbox.setChecked(item.checked or false)
+      views.checkbox.checked = item.checked or false
       if item.count and item.count > 0 then
         views.count.text = tostring(item.count) .. "个内容"
-        views.count.setVisibility(View.VISIBLE)
+        views.count.visibility = View.VISIBLE
        else
-        views.count.setVisibility(View.GONE)
+        views.count.visibility = View.GONE
       end
     end
   })
-  self.views.recycler_view.setAdapter(self.adapter)
+  self.views.recycler_view.adapter = self.adapter
 
   self.bottomSheet = BottomSheetDialog(activity)
-  self.bottomSheet.setContentView(self.root)
+  self.bottomSheet.contentView = self.root
 
-  local behavior = self.bottomSheet.getBehavior()
-  behavior.setSkipCollapsed(true)
-  behavior.setPeekHeight(-1)
+  local behavior = self.bottomSheet.behavior
+  behavior.skipCollapsed = true
+  behavior.peekHeight = -1
 
   self.bottomSheet.show()
 
@@ -403,11 +402,11 @@ function M:loadMoreCollections()
   if not url then return end
 
   self.isLoading = true
-  self.views.loading_layout.setVisibility(View.VISIBLE)
+  self.views.loading_layout.visibility = View.VISIBLE
 
   NetWork.get(url, Headers.defaultHead, function(code, content)
     self.isLoading = false
-    self.views.loading_layout.setVisibility(View.GONE)
+    self.views.loading_layout.visibility = View.GONE
 
     if code ~= 200 then
       return

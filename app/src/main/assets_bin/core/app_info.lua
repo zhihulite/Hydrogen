@@ -6,7 +6,7 @@ local M = {}
 M.name = "Hydrogen"
 M.versionName = "new"
 M.version = 0.613
-M.packageName = activity.getPackageName()
+M.packageName = activity.packageName
 
 function M.getName()
   return M.name

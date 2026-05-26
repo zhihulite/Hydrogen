@@ -47,7 +47,7 @@ end
 
 -- 获取表情路径
 function M.getEmoji(name)
-  local cacheDir = activity.getExternalCacheDir().toString()
+  local cacheDir = activity.externalCacheDir.toString()
   return cacheDir .. "/zemoji/" .. name .. ".png"
 end
 

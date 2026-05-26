@@ -7,7 +7,7 @@ import "com.google.android.material.textview.MaterialTextView"
 import "androidx.appcompat.widget.AppCompatImageView"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,
@@ -24,8 +24,8 @@ return {
     layout_marginRight = "12dp",
     layout_marginTop = "2dp",
     layout_marginBottom = "2dp",
-    radius = "0dp",
-    cardElevation = "0dp",
+    radius = 0,
+    cardElevation = 0,
     {
       LinearLayoutCompat,
       orientation = "horizontal",
@@ -38,7 +38,7 @@ return {
       {
         MaterialTextView,
         id = "title",
-        layout_width = "0dp",
+        layout_width = 0,
         layout_weight = 1,
         textSize  = AppTextStyle.titleSmall.size,
         textColor = AppTextStyle.titleSmall.color,
@@ -49,7 +49,7 @@ return {
         id = "arrow",
         layout_width = "24dp",
         layout_height = "24dp",
-        ImageBitmap = Helpers.Static.materialIcon("twotone_chevron_right"),
+        imageBitmap = Helpers.Static.materialIcon("twotone_chevron_right"),
         colorFilter = colors.onSurfaceVariant,
         visibility = View.GONE,
       }

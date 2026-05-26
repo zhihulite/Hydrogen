@@ -6,7 +6,7 @@ import "com.hydrogen.view.CustomSwipeRefresh"
 import "androidx.recyclerview.widget.RecyclerView"
 import "com.google.android.material.appbar.MaterialToolbar"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,

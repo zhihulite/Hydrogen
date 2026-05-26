@@ -58,11 +58,11 @@ local function saveToMediaStoreInternal(data, fileName, mimeType, relativePath, 
   -- 必须为 int
   values.put(MediaStore.MediaColumns.IS_PENDING, int(1))
 
-  local uri = activity.getContentResolver().insert(collection, values)
+  local uri = activity.contentResolver.insert(collection, values)
   if not uri then return false end
 
   local ok,result = xpcall(function()
-    local stream = activity.getContentResolver().openOutputStream(uri)
+    local stream = activity.contentResolver.openOutputStream(uri)
     if isGif or mimeType == "image/gif" then
       local bytes = data
       stream.write(bytes)
@@ -83,7 +83,7 @@ local function saveToMediaStoreInternal(data, fileName, mimeType, relativePath, 
 
     -- 必须为 int
     values.put(MediaStore.MediaColumns.IS_PENDING, int(0))
-    activity.getContentResolver().update(uri, values, nil, nil)
+    activity.contentResolver.update(uri, values, nil, nil)
     end,function(e)
     return debug.traceback(e, 2)
   end)
@@ -126,7 +126,7 @@ local function saveToFileInternal(data, fileName, relativePath, quality, isGif, 
     stream.close()
 
     local intent = Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE)
-    intent.setData(Uri.fromFile(file))
+    intent.data = Uri.fromFile(file)
     activity.sendBroadcast(intent)
   end)
 
@@ -178,7 +178,7 @@ function M.init()
       if uri and task.callback then
         local displayName = ""
         pcall(function()
-          local cursor = activity.getContentResolver().query(uri, nil, nil, nil, nil)
+          local cursor = activity.contentResolver.query(uri, nil, nil, nil, nil)
           if cursor then
             if cursor.moveToFirst() then
               local nameIndex = cursor.getColumnIndex("_display_name")
@@ -249,7 +249,7 @@ end
 ---@return boolean 是否成功
 function M.write(path, content)
   local file = File(path)
-  local parent = file.getParentFile()
+  local parent = file.parentFile
   if not parent.exists() then
     parent.mkdirs()
   end
@@ -311,7 +311,7 @@ function M.copy(src, dest)
   if srcFile.isDirectory() then
     destFile.mkdirs()
     for _, f in ipairs(luajava.astable(srcFile.listFiles())) do
-      M.copy(tostring(f), dest .. "/" .. f.getName())
+      M.copy(tostring(f), dest .. "/" .. f.name)
     end
    else
     local input = io.open(src, "rb")
@@ -381,7 +381,7 @@ end
 ---获取缓存目录
 ---@return string 缓存目录路径
 function M.getCacheDir()
-  return activity.getCacheDir().toString()
+  return activity.cacheDir.toString()
 end
 
 ---过滤文件名中的非法字符
@@ -612,7 +612,7 @@ end
 function M.writeToUri(uri, data, quality, isGif)
   quality = quality or 95
   local ok = pcall(function()
-    local stream = activity.getContentResolver().openOutputStream(uri, "w")
+    local stream = activity.contentResolver.openOutputStream(uri, "w")
 
     if isGif then
       local bytes = data
@@ -659,7 +659,7 @@ end
 ---@return string 文件内容
 function M.readUri(uri)
   if not uri then return "" end
-  local stream = activity.getContentResolver().openInputStream(uri)
+  local stream = activity.contentResolver.openInputStream(uri)
   if not stream then return "" end
 
   local buffer = luajava.newInstance("java.io.ByteArrayOutputStream")
@@ -680,7 +680,7 @@ end
 ---@return userdata|nil Java byte[] 对象
 function M.readUriAsBytes(uri)
   if not uri then return nil end
-  local stream = activity.getContentResolver().openInputStream(uri)
+  local stream = activity.contentResolver.openInputStream(uri)
   if not stream then return nil end
 
   local buffer = luajava.newInstance("java.io.ByteArrayOutputStream")
@@ -703,11 +703,11 @@ end
 function M.copyFromUri(uri, destPath)
   if not uri then return false end
 
-  local inputStream = activity.getContentResolver().openInputStream(uri)
+  local inputStream = activity.contentResolver.openInputStream(uri)
   if not inputStream then return false end
 
   local destFile = File(destPath)
-  local parent = destFile.getParentFile()
+  local parent = destFile.parentFile
   if parent and not parent.exists() then
     parent.mkdirs()
   end
@@ -742,11 +742,11 @@ function M.downloadFile(url, options)
   if options.mimeType then mimeType = options.mimeType end
 
   local request = DownloadManager.Request(Uri.parse(url))
-  request.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_MOBILE | DownloadManager.Request.NETWORK_WIFI)
-  request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-  request.setTitle(fileName)
-  request.setMimeType(mimeType)
-  request.setAllowedOverRoaming(true)
+  request.allowedNetworkTypes = DownloadManager.Request.NETWORK_MOBILE | DownloadManager.Request.NETWORK_WIFI
+  request.notificationVisibility = DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+  request.title = fileName
+  request.mimeType = mimeType
+  request.allowedOverRoaming = true
   request.allowScanningByMediaScanner()
   request.addRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
   request.addRequestHeader("Referer", url)
@@ -776,7 +776,7 @@ function M.getImageSizeFromUri(uri)
   local options = luajava.newInstance("android.graphics.BitmapFactory$Options")
   options.inJustDecodeBounds = true
 
-  local inputStream = activity.getContentResolver().openInputStream(uri)
+  local inputStream = activity.contentResolver.openInputStream(uri)
   if not inputStream then return 0, 0 end
 
   BitmapFactory.decodeStream(inputStream, nil, options)
@@ -818,7 +818,7 @@ end
 function M.isGifFromUri(uri)
   if not uri then return false end
 
-  local inputStream = activity.getContentResolver().openInputStream(uri)
+  local inputStream = activity.contentResolver.openInputStream(uri)
   if not inputStream then return false end
 
   local header = {}

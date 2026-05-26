@@ -11,11 +11,11 @@ import "com.google.android.material.textview.MaterialTextView"
 import "com.google.android.material.card.MaterialCardView"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
-local circleShape = ShapeAppearanceModel.builder()
-.setAllCornerSizes(RelativeCornerSize(0.5))
-.build()
+local circleShapeBuilder = ShapeAppearanceModel.builder()
+circleShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
+local circleShapeModel = circleShapeBuilder.build()
 
 local authorCardLayout =
 {
@@ -29,8 +29,8 @@ local authorCardLayout =
     layout_width = "fill",
     layout_height = "wrap_content",
     layout_margin = "16dp",
-    layout_marginTop = "0dp",
-    layout_marginBottom = "0dp",
+    layout_marginTop = 0,
+    layout_marginBottom = 0,
     {
       LinearLayoutCompat,
       id = "userinfo",
@@ -44,11 +44,11 @@ local authorCardLayout =
         id = "user_avatar",
         layout_width = "48dp",
         layout_height = "48dp",
-        shapeAppearanceModel = circleShape,
+        shapeAppearanceModel = circleShapeModel,
       },
       {
         LinearLayoutCompat,
-        layout_width = "0dp",
+        layout_width = 0,
         layout_weight = 1,
         layout_height = "wrap_content",
         orientation = "vertical",

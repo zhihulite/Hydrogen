@@ -55,12 +55,14 @@ local loadlayout
 
 local scaleTypeEnum  = ScaleType.values()
 
-local metrics        = context.getResources().getDisplayMetrics()
+local metrics        = context.resources.displayMetrics
 local widthPixels    = metrics.widthPixels
 local heightPixels   = metrics.heightPixels
 local density        = metrics.density
 local scaledDensity  = metrics.scaledDensity
 local xdpi           = metrics.xdpi
+
+local packageName = context.packageName
 
 local ignoreAttributes = {
     [1]                     = true,
@@ -509,12 +511,12 @@ end
 -- 存储设置属性方法的表
 local attributeSetterMap = {
     items = function(view, value)
-        local adapter = view.getAdapter()
+        local adapter = view.adapter
         if adapter then
             adapter.addAll(value)
         else
             adapter = ArrayListAdapter(context, AndroidR.layout.simple_list_item_1, String(value))
-            view.setAdapter(adapter)
+            view.adapter = adapter
         end
     end,
     pages = function(view, value, valueType, layoutParams, views)
@@ -523,7 +525,7 @@ local attributeSetterMap = {
             pages[k] = type(v) == "userdata" and
                        v or loadlayout(v, views)
         end
-        view.setAdapter(LuaPagerAdapter(pages))
+        view.adapter = LuaPagerAdapter(pages)
     end,
     pagesWithTitle = function(view, value, valueType, layoutParams, views)
         local pages = {}
@@ -531,24 +533,24 @@ local attributeSetterMap = {
             pages[k] = type(v) == "userdata" and
                        v or loadlayout(v, views)
         end
-        view.setAdapter(LuaPagerAdapter(pages, value[2]))
+        view.adapter = LuaPagerAdapter(pages, value[2])
     end,
     background = function(view, value, valueType)
         if valueType == "string" then
             if stringSub(value, 1, 1) == "#" or
                stringFind(value, "^?color") then
-                view.setBackgroundColor(parseColor(value))
+                view.backgroundColor = parseColor(value)
             elseif stringSub(value, 1, 1) == "?" then
-                local id = context.getResources().getIdentifier(stringSub(value, 2, -1), "attr", context.getPackageName())
+                local id = context.resources.getIdentifier(stringSub(value, 2, -1), "attr", packageName)
                 assert(id ~= 0, "Unknown resource " .. value)
-                view.setBackgroundResource(id)
+                view.backgroundResource = id
             elseif stringFind(value, "%.9%.png$") then
-                view.setBackground(NineBitmapDrawable(value))
+                view.background = NineBitmapDrawable(value)
             else
-                view.setBackground(LuaBitmapDrawable(context, value))
+                view.background = LuaBitmapDrawable(context, value)
             end
         else
-            view.setBackground(value)
+            view.background = value
         end
     end,
     onClick = function(view, value, valueType, layoutParams, views)
@@ -562,28 +564,28 @@ local attributeSetterMap = {
         end or value
     end,
     src = function(view, value)
-        view.setImageBitmap(LuaBitmap.getBitmap(context, value))
+        view.imageBitmap = LuaBitmap.getBitmap(context, value)
     end,
     gravity = function(view, value)
-        view.setGravity(parseConstants(value, gravityConstants))
+        view.gravity = parseConstants(value, gravityConstants)
     end,
     text = function(view, value)
-        view.setText(value)
+        view.text = value
     end,
     tag = function(view, value)
-        view.setTag(value)
+        view.tag = value
     end,
     title = function(view, value)
-        view.setTitle(value)
+        view.title = value
     end,
     subtitle = function(view, value)
-        view.setSubtitle(value)
+        view.subtitle = value
     end,
     hint = function(view, value)
-        view.setHint(value)
+        view.hint = value
     end,
     summary = function(view, value)
-        view.setSummary(value)
+        view.summary = value
     end,
     textAppearance = function(view, value)
         view.setTextAppearance(context, value)
@@ -602,28 +604,28 @@ local attributeSetterMap = {
         end
     end,
     scaleType = function(view, value)
-        view.setScaleType(scaleTypeEnum[scaleTypeConstants[value]] or tonumber(value))
+        view.scaleType = scaleTypeEnum[scaleTypeConstants[value]] or tonumber(value)
     end,
     ellipsize = function(view, value)
-        view.setEllipsize(TruncateAt[stringUpper(value)])
+        view.ellipsize = TruncateAt[stringUpper(value)]
     end,
     layoutDirection = function(view, value)
-        view.setLayoutDirection(viewConstants[value] or tonumber(value))
+        view.layoutDirection = viewConstants[value] or tonumber(value)
     end,
     imeOptions = function(view, value)
-        view.setImeOptions(viewConstants[value] or tonumber(value))
+        view.imeOptions = viewConstants[value] or tonumber(value)
     end,
     inputType = function(view, value)
-        view.setInputType(viewConstants[value] or tonumber(value))
+        view.inputType = viewConstants[value] or tonumber(value)
     end,
     textAlignment = function(view, value)
-        view.setTextAlignment(viewConstants[value] or tonumber(value))
+        view.textAlignment = viewConstants[value] or tonumber(value)
     end,
     autoLink = function(view, value)
-        view.setAutoLink(viewConstants[value] or tonumber(value))
+        view.autoLink = viewConstants[value] or tonumber(value)
     end,
     scrollbarStyle = function(view, value)
-        view.setScrollbarStyle(viewConstants[value] or tonumber(value))
+        view.scrollbarStyle = viewConstants[value] or tonumber(value)
     end,
     textSize = function(view, value, valueType)
         local size = tonumber(value)
@@ -637,28 +639,28 @@ local attributeSetterMap = {
         end
     end,
     radius = function(view, value)
-        view.setRadius(parseSize(value))
+        view.radius = parseSize(value)
     end,
     cardElevation = function(view, value)
-        view.setCardElevation(parseSize(value))
+        view.cardElevation = parseSize(value)
     end,
     elevation = function(view, value)
-        view.setElevation(parseSize(value))
+        view.elevation = parseSize(value)
     end,
     strokeWidth = function(view, value)
-        view.setStrokeWidth(parseSize(value))
+        view.strokeWidth = parseSize(value)
     end,
     minHeight = function(view, value)
-        view.setMinimumHeight(parseSize(value))
+        view.minimumHeight = parseSize(value)
     end,
     minWidth = function(view, value)
-        view.setMinimumWidth(parseSize(value))
+        view.minimumWidth = parseSize(value)
     end,
     textColor = function(view, value)
-        view.setTextColor(parseColor(value))
+        view.textColor = parseColor(value)
     end,
     backgroundColor = function(view, value)
-        view.setBackgroundColor(parseColor(value))
+        view.backgroundColor = parseColor(value)
     end,
     password = function(view, value)
         view.setInputType(
@@ -713,17 +715,17 @@ local attributeSetterMap = {
         )
     end,
     layout_anchor = function(view, value, valueType, layoutParams, views)
-        layoutParams.setAnchorId(views[value].getId())
+        layoutParams.anchorId = views[value].id
     end,
     layout_collapseParallaxMultiplier = function(view, value, valueType, layoutParams)
-        layoutParams.setParallaxMultiplier(tonumber(value))
+        layoutParams.parallaxMultiplier = tonumber(value)
     end,
     layout_behavior = function(view, value, valueType, layoutParams)
         local behavior = layoutBehaviorConstants[value]
         if behavior then
-            layoutParams.setBehavior(newInstance(behavior))
+            layoutParams.behavior = newInstance(behavior)
          else
-            layoutParams.setBehavior(value)
+            layoutParams.behavior = value
         end
     end,
     layout_weight = function(view, value, valueType, layoutParams)
@@ -733,7 +735,7 @@ local attributeSetterMap = {
         layoutParams.gravity = parseConstants(value, gravityConstants)
     end,
     layout_scrollFlags = function(view, value, valueType, layoutParams)
-        layoutParams.setScrollFlags(parseConstants(value, viewConstants))
+        layoutParams.scrollFlags = parseConstants(value, viewConstants)
     end,
     layout_marginHorizontal = function(view, value, valueType, layoutParams)
         value = parseSize(value)
@@ -758,10 +760,10 @@ local attributeSetterMap = {
         layoutParams.bottomMargin = parseSize(value)
     end,
     layout_marginStart = function(view, value, valueType, layoutParams)
-        layoutParams.setMarginStart(parseSize(value))
+        layoutParams.marginStart = parseSize(value)
     end,
     layout_marginEnd = function(view, value, valueType, layoutParams)
-        layoutParams.setMarginEnd(parseSize(value))
+        layoutParams.marginEnd = parseSize(value)
     end,
     layout_goneMarginHorizontal = function(view, value, layoutParams, views)
       value = parseSize(value)
@@ -932,8 +934,8 @@ local function createView(layout, views)
 
         if style and type(style) == "string" then
             style = stringSub(style, 1, 1) == "?" and
-                    context.getResources().getIdentifier(stringSub(style, 2, -1), "attr", context.getPackageName()) or
-                    context.getResources().getIdentifier(style, "style", context.getPackageName())
+                    context.resources.getIdentifier(stringSub(style, 2, -1), "attr", packageName) or
+                    context.resources.getIdentifier(style, "style", packageName)
             assert(style ~= 0, "Unknown style " .. layout.style)
         end
   
@@ -942,7 +944,7 @@ local function createView(layout, views)
                view(viewContext)
     end
     
-    view.setId(layout.viewId or View.generateViewId())
+    view.id = layout.viewId or View.generateViewId()
     local id = layout.id
     if id then
         views[id] = view
@@ -1009,7 +1011,7 @@ local function inflateChildern(layout, view, layoutParams, views)
             else
                 local childLayout = getLayoutTable(v)
                 local childView = createView(childLayout, views)
-                local childLayoutParams = generateLayoutParams(childLayout, view.getClass())
+                local childLayoutParams = generateLayoutParams(childLayout, view.class)
                 inflateChildern(childLayout, childView, childLayoutParams, views)
                 view.addView(childView, childLayoutParams)
             end
@@ -1043,13 +1045,13 @@ function loadlayout(layout, views, parentViewClass)
     
     for k, v in ipairs(deferredSet) do
         if v.rule then
-            v.layoutParams.addRule(v.rule, views[v.value].getId())
+            v.layoutParams.addRule(v.rule, views[v.value].id)
         elseif v.constraintSetter then
-            v.constraintSetter(v.layoutParams, views[v.value].getId())
+            v.constraintSetter(v.layoutParams, views[v.value].id)
         end
     end
     
-    view.setLayoutParams(layoutParams)
+    view.layoutParams = layoutParams
     return view
 end
 

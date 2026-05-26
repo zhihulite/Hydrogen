@@ -13,9 +13,9 @@ local AboutFragment = Extensions.Class(BaseFragment)
 AboutFragment:chainUp("onDestroy")
 
 local appInfo = {
-  name = AppInfo.getName(),
-  versionName = AppInfo.getVersionName(),
-  versio = AppInfo.getVersion(),
+  name = AppInfo.name,
+  versionName = AppInfo.versionName,
+  versio = AppInfo.version,
   message = "让每次点击都有意义",
 }
 
@@ -161,22 +161,22 @@ function AboutFragment:initListView()
 
       if item.summary then
         views.summary.text = item.summary
-        views.summary.setVisibility(View.VISIBLE)
+        views.summary.visibility = View.VISIBLE
        elseif views.summary then
-        views.summary.setVisibility(View.GONE)
+        views.summary.visibility = View.GONE
       end
 
       if item.type == "item" then
-        views.arrow.setVisibility(item.arrow == false and View.GONE or View.VISIBLE)
+        views.arrow.visibility = item.arrow == false and View.GONE or View.VISIBLE
        elseif views.arrow then
-        views.arrow.setVisibility(View.GONE)
+        views.arrow.visibility = View.GONE
       end
 
       if item.type == "developer" then
         if item.route and (item.route:find("^http") or item.route:find("^qq://")) then
-          views.external_icon.setVisibility(View.VISIBLE)
+          views.external_icon.visibility = View.VISIBLE
          else
-          views.external_icon.setVisibility(View.GONE)
+          views.external_icon.visibility = View.GONE
         end
       end
 
@@ -192,8 +192,8 @@ function AboutFragment:initListView()
     end
   })
 
-  views.recycler_view.setAdapter(self.adapter)
-  views.recycler_view.setLayoutManager(LinearLayoutManager(activity))
+  views.recycler_view.adapter = self.adapter
+  views.recycler_view.layoutManager = LinearLayoutManager(activity)
 end
 
 function AboutFragment:onItemClick(item)

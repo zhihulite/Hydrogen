@@ -4,7 +4,7 @@
 import "androidx.appcompat.widget.LinearLayoutCompat"
 import "com.journeyapps.barcodescanner.DecoratedBarcodeView"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,

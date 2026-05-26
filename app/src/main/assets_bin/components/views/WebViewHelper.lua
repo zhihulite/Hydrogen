@@ -16,8 +16,8 @@ import "com.google.android.material.textview.MaterialTextView"
 import "com.google.android.material.dialog.MaterialAlertDialogBuilder"
 import "java.io.File"
 import "java.io.FileInputStream"
-import "com.hydrogen.LuaWebViewNetWorkCreator"
-import "com.hydrogen.LuaWebChromeNetWorkCreator"
+import "com.hydrogen.LuaWebViewClientCreator"
+import "com.hydrogen.LuaWebChromeClientCreator"
 
 local M = {}
 local LuaWebView = luajava.bindClass("com.hydrogen.view.LuaWebView")
@@ -112,22 +112,22 @@ end
 
 function M:initSettings()
   if not self:isAlive() then return self end
-  local settings = self.webView.getSettings()
-  settings.setAppCacheEnabled(true)
-  settings.setCacheMode(WebSettings.LOAD_DEFAULT)
-  settings.setDomStorageEnabled(true)
-  settings.setDatabaseEnabled(true)
-  settings.setJavaScriptEnabled(true)
-  settings.setMixedContentMode(WebSettings.MIXED_CONTENT_ALWAYS_ALLOW)
-  self.webView.setBackgroundColor(0)
-  self.webView.setWebContentsDebuggingEnabled(true)
+  local settings = self.webView.settings
+  settings.appCacheEnabled = true
+  settings.cacheMode = WebSettings.LOAD_DEFAULT
+  settings.domStorageEnabled = true
+  settings.databaseEnabled = true
+  settings.javaScriptEnabled = true
+  settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
+  self.webView.backgroundColor = 0
+  self.webView.webContentsDebuggingEnabled = true
   return self
 end
 
 function M:initNoImageMode()
   if not self:isAlive() then return self end
   local noImage = Extensions.Config.getBool(Constants.SharedDataKeys.NO_IMAGE)
-  self.webView.getSettings().setBlockNetworkImage(noImage)
+  self.webView.settings.blockNetworkImage = noImage
   return self
 end
 
@@ -143,22 +143,22 @@ end
 
 function M:setUA(ua)
   if not self:isAlive() then return self end
-  self.webView.getSettings().setUserAgentString(ua)
+  self.webView.settings.userAgentString = ua
   return self
 end
 
 function M:setPCUA()
   if not self:isAlive() then return self end
   local ua = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-  self.webView.getSettings().setUserAgentString(ua)
+  self.webView.settings.userAgentString = ua
   return self
 end
 
 function M:setZhiHuUA()
   if not self:isAlive() then return self end
-  local currentUA = self.webView.getSettings().getUserAgentString()
+  local currentUA = self.webView.settings.userAgentString
   local ua = "ZhihuHybrid com.zhihu.android/Futureve/9.13.0 " .. currentUA
-  self.webView.getSettings().setUserAgentString(ua)
+  self.webView.settings.userAgentString = ua
   return self
 end
 
@@ -166,11 +166,11 @@ end
 function M:setQQUA()
   if not self:isAlive() then return self end
   local ua = "Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/120.0.0.0 Mobile MQQBrowser/6.2 TBS/123456 Safari/537.36 V1_AND_SQ_8.9.90_xxx QQ/8.9.90 NetType/WIFI WebP/0.3.0 Pixel/1440"
-  self.webView.getSettings().setUserAgentString(ua)
+  self.webView.settings.userAgentString = ua
   return self
 end
 
-function M:setWebViewNetWork(callbacks)
+function M:setWebViewClient(callbacks)
   if not self:isAlive() then return self end
   callbacks = callbacks or {}
 
@@ -209,8 +209,8 @@ function M:setWebViewNetWork(callbacks)
     end
   end
 
-  self.webView.setWebViewNetWork(LuaWebViewNetWorkCreator(luajava.createProxy(
-  "com.hydrogen.LuaWebViewNetWorkCreator$Creator", merged)))
+  self.webView.setWebViewClient(LuaWebViewClientCreator(luajava.createProxy(
+  "com.hydrogen.LuaWebViewClientCreator$Creator", merged)))
   return self
 end
 
@@ -233,7 +233,7 @@ function M:onInterceptRequest(view, url)
   return nil
 end
 
-function M:setWebChromeNetWork(callbacks)
+function M:setWebChromeClient(callbacks)
   if not self:isAlive() then return self end
   callbacks = callbacks or {}
 
@@ -247,11 +247,11 @@ function M:setWebChromeNetWork(callbacks)
 
   for k in pairs(callbacks) do
     if protectedCallbacks[k] then
-      error("禁止覆盖 WebChromeNetWork 的默认回调: " .. k)
+      error("禁止覆盖 WebChromeClient 的默认回调: " .. k)
     end
   end
 
-  local rootView = activity.getDecorView()
+  local rootView = activity.decorView
   local webVideoView = nil
   local savedScrollY = nil
 
@@ -259,13 +259,13 @@ function M:setWebChromeNetWork(callbacks)
     onShowCustomView = function(view, callback)
       _G.webViewfullscreenMode = true
       webVideoView = view
-      savedScrollY = self.webView.getScrollY()
-      self.webView.setVisibility(View.GONE)
+      savedScrollY = self:getScrollY()
+      self.webView.visibility = View.GONE
       rootView.addView(view)
     end,
     onHideCustomView = function()
       _G.webViewfullscreenMode = false
-      self.webView.setVisibility(View.VISIBLE)
+      self.webView.visibility = View.VISIBLE
       rootView.removeView(webVideoView)
       task(200, self:runIfAlive(function()
         self.webView.scrollTo(0, savedScrollY or 0)
@@ -321,8 +321,8 @@ function M:setWebChromeNetWork(callbacks)
     end
   end
 
-  self.webView.setWebChromeNetWork(LuaWebChromeNetWorkCreator(luajava.createProxy(
-  "com.hydrogen.LuaWebChromeNetWorkCreator$Creator", merged)))
+  self.webView.setWebChromeClient(LuaWebChromeClientCreator(luajava.createProxy(
+  "com.hydrogen.LuaWebChromeClientCreator$Creator", merged)))
   return self
 end
 
@@ -387,7 +387,7 @@ end
 
 function M:getUrl()
   if not self:isAlive() then return nil end
-  return self.webView.getUrl()
+  return self.webView.url
 end
 
 function M:reload()
@@ -431,7 +431,7 @@ end
 
 function M:getScrollY()
   if not self:isAlive() then return 0 end
-  return self.webView.getScrollY()
+  return self.webView.scrollY
 end
 
 function M:saveWebArchive(path)

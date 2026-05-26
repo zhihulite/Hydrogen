@@ -12,10 +12,7 @@ import "androidx.recyclerview.widget.LinearLayoutManager"
 import "com.google.android.material.chip.ChipGroup"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
-
-local hotGridLayoutManager = GridLayoutManager(activity, 2)
-local suggestLayoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,
@@ -65,7 +62,6 @@ return {
         layout_height = "wrap_content",
         layout_marginLeft = "12dp",
         layout_marginRight = "12dp",
-        layoutManager = hotGridLayoutManager,
         nestedScrollingEnabled = false,
       },
       {
@@ -109,7 +105,6 @@ return {
     id = "suggest_list",
     layout_width = "fill",
     layout_height = "fill",
-    visibility = View.GONE,
-    layoutManager = suggestLayoutManager,
+    visibility = View.GONE
   }
 }

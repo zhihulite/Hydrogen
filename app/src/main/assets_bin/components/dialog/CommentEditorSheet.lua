@@ -117,7 +117,7 @@ function M.show(opts)
   local placeholder = opts.placeholder or (authorName ~= "" and "回复 " .. authorName or "发表评论")
 
   local views = {}
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
   local layout = {
     LinearLayoutCompat,
     orientation = "vertical",
@@ -127,7 +127,7 @@ function M.show(opts)
       NestedScrollView,
       id = "scroll_view",
       layout_width = "match_parent",
-      layout_height = "0dp",
+      layout_height = 0,
       layout_weight = 1,
       fillViewport = true,
       {
@@ -159,7 +159,7 @@ function M.show(opts)
       {
         LinearLayoutCompat,
         orientation = "horizontal",
-        layout_width = "0dp",
+        layout_width = 0,
         layout_weight = 1,
         layout_height = "wrap_content",
         {
@@ -167,7 +167,7 @@ function M.show(opts)
           id = "image_btn",
           layout_width = "28dp",
           layout_height = "28dp",
-          ImageBitmap = Helpers.Static.materialIcon("twotone_image"),
+          imageBitmap = Helpers.Static.materialIcon("twotone_image"),
           colorFilter = colors.onSurfaceVariant,
         },
         {
@@ -176,7 +176,7 @@ function M.show(opts)
           layout_width = "28dp",
           layout_height = "28dp",
           layout_marginLeft = "20dp",
-          ImageBitmap = Helpers.Static.materialIcon("twotone_alternate_email"),
+          imageBitmap = Helpers.Static.materialIcon("twotone_alternate_email"),
           colorFilter = colors.onSurfaceVariant,
         },
         {
@@ -185,7 +185,7 @@ function M.show(opts)
           layout_width = "28dp",
           layout_height = "28dp",
           layout_marginLeft = "20dp",
-          ImageBitmap = Helpers.Static.materialIcon("twotone_emoji_emotions"),
+          imageBitmap = Helpers.Static.materialIcon("twotone_emoji_emotions"),
           colorFilter = colors.onSurfaceVariant,
         },
       },
@@ -194,7 +194,7 @@ function M.show(opts)
         id = "send_btn",
         layout_width = "28dp",
         layout_height = "28dp",
-        ImageBitmap = Helpers.Static.materialIcon("twotone_send"),
+        imageBitmap = Helpers.Static.materialIcon("twotone_send"),
         colorFilter = colors.onSurfaceVariant,
       },
     },
@@ -219,7 +219,7 @@ function M.show(opts)
         id = "remove_image_btn",
         layout_width = "24dp",
         layout_height = "24dp",
-        ImageBitmap = Helpers.Static.materialIcon("twotone_close"),
+        imageBitmap = Helpers.Static.materialIcon("twotone_close"),
         colorFilter = colors.error,
       },
     },
@@ -256,7 +256,7 @@ function M.show(opts)
   local function checkAndConvertUrl(editable)
     if isProcessingUrl then return end
 
-    local cursor = inputView.getSelectionStart()
+    local cursor = inputView.selectionStart
     if cursor <= 0 then return end
 
     local lastChar = editable.charAt(cursor - 1)
@@ -301,8 +301,7 @@ function M.show(opts)
   views.image_btn.onClick = function()
     Extensions.File.pickFile("image/*", function(uri, name)
       if uri then
-        imageUri = uri
-        views.image_preview.setVisibility(View.VISIBLE)
+        views.image_preview.visibility = View.VISIBLE
         Helpers.Image.load(views.preview_img, uri)
 
         local width, height = Extensions.File.getImageSizeFromUri(uri)
@@ -310,11 +309,11 @@ function M.show(opts)
 
         local imageBytes = Extensions.File.readUriAsBytes(uri)
         if imageBytes then
-          views.upload_progress.setVisibility(View.VISIBLE)
-          views.upload_progress.setIndeterminate(true)
+          views.upload_progress.visibility = View.VISIBLE
+          views.upload_progress.indeterminate = true
 
           ImageUploader.upload(imageBytes, function(success, imageUrl)
-            views.upload_progress.setVisibility(View.GONE)
+            views.upload_progress.visibility = View.GONE
             if success then
               uploadedImageUrl = imageUrl
               uploadedImageWidth = width
@@ -333,10 +332,9 @@ function M.show(opts)
   end
 
   views.remove_image_btn.onClick = function()
-    imageUri = nil
     uploadedImageUrl = nil
-    views.image_preview.setVisibility(View.GONE)
-    views.upload_progress.setVisibility(View.GONE)
+    views.image_preview.visibility = View.GONE
+    views.upload_progress.visibility = View.GONE
   end
 
   local mainWatcher = luajava.createProxy("android.text.TextWatcher", {
@@ -344,7 +342,8 @@ function M.show(opts)
     onTextChanged = function() end,
     afterTextChanged = function(editable)
       if not isAtSheetOpen then
-        local cursor = inputView.getSelectionStart()
+        local cursor = inputView.selectionStart
+        -- @
         if cursor > 0 and editable.charAt(cursor - 1) == 64 then
           isAtSheetOpen = true
 
@@ -353,13 +352,13 @@ function M.show(opts)
             onSelected = function(userId, userName)
               editable.delete(cursor - 1, cursor)
               local mentionText = "@" .. userName .. " "
-              local insertPos = inputView.getSelectionStart()
+              local insertPos = inputView.selectionStart
               if insertPos < 0 then insertPos = editable.length() end
               editable.insert(insertPos, mentionText)
               local insertEndPos = insertPos + utf8.len(mentionText)
               local mention = MentionSpan.new(userId, userName)
               mention.setSpan(editable, insertPos, insertEndPos, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-              inputView.setSelection(insertEndPos)
+              inputView.selection = insertEndPos
               isAtSheetOpen = false
             end
           })
@@ -383,8 +382,8 @@ function M.show(opts)
     local AtUserSheet = require("components.dialog.AtUserSheet")
     AtUserSheet.show({
       onSelected = function(userId, userName)
-        local editable = inputView.getText()
-        local insertPos = inputView.getSelectionStart()
+        local editable = inputView.getEditableText()
+        local insertPos = inputView.selectionStart
         if insertPos < 0 then insertPos = editable.length() end
 
         local mentionText = "@" .. userName .. " "
@@ -392,7 +391,7 @@ function M.show(opts)
         local insertEndPos = insertPos + utf8.len(mentionText)
         local mention = MentionSpan.new(userId, userName)
         mention.setSpan(editable, insertPos, insertEndPos, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        inputView.setSelection(insertEndPos)
+        inputView.selection = insertEndPos
 
         isAtSheetOpen = false
       end
@@ -423,36 +422,35 @@ function M.show(opts)
     onBind = function(v, item, position, holder)
       local drawable = Helpers.Static.zemojiDrawable(item, 32, true)
       if drawable then
-        v.emoji_img.setImageDrawable(drawable)
+        v.emoji_img.imageDrawable = drawable
       end
       holder.itemView.onClick = function()
-        local editable = inputView.getText()
-        local insertPos = inputView.getSelectionStart()
+        local editable = inputView.getEditableText()
+        local insertPos = inputView.selectionStart
         if insertPos < 0 then insertPos = editable.length() end
         local emojiTag = "[" .. item .. "]"
         local insertEndPos = insertPos + utf8.len(emojiTag)
-
         editable.insert(insertPos, emojiTag)
         local span = EmojiSpan.new(item, 20)
 
         local emoji = EmojiSpan.new(item, 20)
         emoji.setSpan(editable, insertPos, insertEndPos, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-        inputView.setSelection(insertEndPos)
+        inputView.selection = insertEndPos
       end
     end,
   })
 
-  views.emoji_grid.setLayoutManager(GridLayoutManager(activity, 8))
-  views.emoji_grid.setAdapter(emojiAdapter)
+  views.emoji_grid.layoutManager = GridLayoutManager(activity, 8)
+  views.emoji_grid.adapter = emojiAdapter
 
   views.emoji_panel_btn.onClick = function()
     emojiVisible = not emojiVisible
-    views.emoji_grid.setVisibility(emojiVisible and View.VISIBLE or View.GONE)
+    views.emoji_grid.visibility = emojiVisible and View.VISIBLE or View.GONE
   end
 
   local bottomSheet
   views.send_btn.onClick = function()
-    local sendText = getSendText(inputView.getText(), uploadedImageUrl, uploadedImageWidth, uploadedImageHeight, uploadedImageIsGif)
+    local sendText = getSendText(inputView.getEditableText(), uploadedImageUrl, uploadedImageWidth, uploadedImageHeight, uploadedImageIsGif)
     if sendText == "" then
       tip("请输入内容或选择图片")
       return
@@ -484,7 +482,7 @@ function M.show(opts)
   end
 
   bottomSheet = BottomSheetDialog(activity)
-  bottomSheet.setContentView(root)
+  bottomSheet.contentView = root
   bottomSheet.show()
 
   local InputMethodManager = luajava.bindClass("android.view.inputmethod.InputMethodManager")

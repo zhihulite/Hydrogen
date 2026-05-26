@@ -10,9 +10,9 @@ import "com.google.android.material.shape.RelativeCornerSize"
 import "android.view.View"
 
 -- 创建圆角 ShapeAppearanceModel (8dp圆角)
-local cornerShape = ShapeAppearanceModel.builder()
-  .setAllCornerSizes(dp2px(8))
-  .build()
+local cornerShapeBuilder = ShapeAppearanceModel.builder()
+cornerShapeBuilder.allCornerSizes = dp2px(8)
+local cornerShapeModel = cornerShapeBuilder.build()
 
 return {
   LinearLayoutCompat,
@@ -44,7 +44,7 @@ return {
       },
       {
         LinearLayoutCompat,
-        layout_width = "0dp",
+        layout_width = 0,
         layout_weight = 1,
         orientation = "vertical",
         layout_marginStart = "8dp",
@@ -88,7 +88,7 @@ return {
           layout_width = "80dp",
           layout_height = "60dp",
           scaleType = "centerCrop",
-          shapeAppearanceModel = cornerShape,
+          shapeAppearanceModel = cornerShapeModel,
         }
       }
     }

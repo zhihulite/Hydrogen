@@ -76,57 +76,55 @@ local function getColorValue(key)
   return Helpers.Resources[mapping.type].attr[mapping.attr]
 end
 
+M.colors = setmetatable({}, {
+  __index = function()
+    error("AppTheme 未初始化，请先调用 AppTheme.init()")
+  end
+})
+
 -- 初始化主题
 function M.init()
   M.applyNightMode()
   M.applyTheme()
   initialized = true
+
+  -- 构建颜色缓存
+  local colorsCache = setmetatable({}, {
+    __index = function(t, k)
+      local v = getColorValue(k)
+      rawset(t, k, v)
+      return v
+    end
+  })
+
+  -- OLED 模式判断
+  local isOled = Extensions.Config.getBool(Constants.SharedDataKeys.OLED_MODE) and M.isEffectiveNight()
+  -- OLED 模式覆盖：仅在夜间模式下生效
+  if isOled then
+    M.colors = setmetatable({}, {
+      __index = function(t, k)
+        if k == "background" or k == "surface" or k == "surfaceVariant" then
+          return oledColorsInt[k]
+        end
+        return colorsCache[k]
+      end
+    })
+   else
+    M.colors = colorsCache
+  end
+
 end
 
 -- 判断是否夜间模式
 function M.isEffectiveNight()
-  local resources = activity.getResources()
-  local config = resources.getConfiguration()
+  local resources = activity.resources
+  local config = resources.configuration
   local isNight = (config.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
   return isNight
 end
 
--- 获取颜色表
-local colorsCache = nil
-
-function M.getColors()
-  if not initialized then error("AppTheme 未初始化，请先调用 AppTheme.init()") end
-
-  if colorsCache == nil then
-    colorsCache = setmetatable({}, {
-      __index = function(t, k)
-        local v = getColorValue(k)
-        rawset(t, k, v)
-        return v
-      end
-    })
-  end
-
-  -- OLED 模式覆盖：仅在夜间模式下生效
-  local isOled = Extensions.Config.getBool(Constants.SharedDataKeys.OLED_MODE)
-  local isNight = M.isEffectiveNight()
-  if isOled and isNight then
-    return setmetatable({}, {
-      __index = function(t, k)
-        if k == "background" then return oledColorsInt.background
-         elseif k == "surface" then return oledColorsInt.surface
-         elseif k == "surfaceVariant" then return oledColorsInt.surfaceVariant
-         else return colorsCache[k]
-        end
-      end
-    })
-  end
-
-  return colorsCache
-end
-
 function M.getColor(name)
-  return M.getColors()[name] or 0
+  return M.colors[name] or 0
 end
 
 -- 应用夜间模式
@@ -168,10 +166,10 @@ end
 -- 应用主题
 function M.applyTheme()
   local themeName = M.getThemeConfig()
-  local R = luajava.bindClass(activity.getPackageName() .. ".R")
+  local R = luajava.bindClass(activity.packageName .. ".R")
   local ok, themeResId = pcall(function() return R.style["Theme_" .. themeName] end)
   if ok and themeResId then
-    activity.setTheme(themeResId)
+    activity.theme = themeResId
   end
 end
 

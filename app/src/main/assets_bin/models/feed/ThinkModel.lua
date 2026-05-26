@@ -53,9 +53,9 @@ function ThinkModel:createAdapter(dataList)
       views.comment_count.text = tostring(item.commentCount)
       if item.imageUrl then
         Helpers.Image.load(views.image, item.imageUrl)
-        views.image.setVisibility(View.VISIBLE)
+        views.image.visibility = View.VISIBLE
        else
-        views.image.setVisibility(View.GONE)
+        views.image.visibility = View.GONE
       end
       views.card.onClick = function()
         Router.go("content", { id = item.id, type = "pin" }, { sharedElement = views.card })

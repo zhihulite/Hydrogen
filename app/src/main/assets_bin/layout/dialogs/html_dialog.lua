@@ -25,7 +25,7 @@ return {
       textSize  = AppTextStyle.bodyMedium.size,
       textColor = AppTextStyle.bodyMedium.color,
       typeface  = AppTextStyle.bodyMedium.font,
-      movementMethod = LinkMovementMethod.getInstance(),
+      movementMethod = LinkMovementMethod.instance,
     }
   }
 }

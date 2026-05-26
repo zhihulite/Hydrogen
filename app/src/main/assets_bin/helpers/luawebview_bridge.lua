@@ -14,7 +14,7 @@ local function colorToHex(colorInt)
 end
 
 local function getDefaultSettings()
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
   local background_color = colors.surface or 0xFFFFFFFF
   local hexColor = colorToHex(background_color)
   return {
@@ -96,8 +96,8 @@ function M.getMergedModulesJS()
 
   local debug = false
   if debug then
-    local cacheDir = activity.getCacheDir()
-    local path = cacheDir.getPath() .. "/megred.js"
+    local cacheDir = activity.cacheDir
+    local path = cacheDir.path .. "/megred.js"
     Extensions.File.write(path, table.concat(codes, "\n"))
     print("luawebview_bridge [debug] megred.js 保存到: " .. path)
   end
@@ -161,7 +161,7 @@ function M.addBridge(webView, userSettings)
     end
   })
 
-  webView.setBridge(bridge)
+  webView.bridge = bridge
 
   return {
     setMessageListener = function(listener)

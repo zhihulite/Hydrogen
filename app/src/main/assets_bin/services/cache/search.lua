@@ -11,7 +11,7 @@ function M.init()
     if initialized then return end
     
     local SearchHistoryManagerClass = luajava.bindClass("com.hydrogen.HistoryUtils.SearchHistoryManager")
-    SearchHistoryManager = SearchHistoryManagerClass.getInstance()
+    SearchHistoryManager = SearchHistoryManagerClass.instance
     SearchHistoryManager.init(activity)
     initialized = true
 end
@@ -26,7 +26,7 @@ end
 -- 获取所有搜索历史
 function M.getAll()
     M.init()
-    return luajava.astable(SearchHistoryManager.getRecentFirst())
+    return luajava.astable(SearchHistoryManager.recentFirst)
 end
 
 -- 删除搜索历史

@@ -24,11 +24,11 @@ function M.new(userId, userName, repinInfo)
     end,
     draw = function(super, canvas, cs, start, end_, x, top, y, bottom, paint)
       if start >= end_ then return end
-      local colors = AppTheme.getColors()
-      local originalColor = paint.getColor()
-      paint.setColor(colors.primary)
+      local colors = AppTheme.colors
+      local originalColor = paint.color
+      paint.color = colors.primary
       canvas.drawText(displayText, x, y, paint)
-      paint.setColor(originalColor)
+      paint.color = originalColor
     end,
     toString = function(super)
       return htmlTag
@@ -42,9 +42,9 @@ function M.new(userId, userName, repinInfo)
     end,
     updateDrawState = function(super, ds)
       super.updateDrawState(ds)
-      local colors = AppTheme.getColors()
-      ds.setColor(colors.primary)
-      ds.setUnderlineText(false)
+      local colors = AppTheme.colors
+      ds.color = colors.primary
+      ds.underlineText = false
     end
   })
 

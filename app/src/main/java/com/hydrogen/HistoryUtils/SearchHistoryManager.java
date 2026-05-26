@@ -6,12 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 import org.jspecify.annotations.NonNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("unused")
@@ -34,7 +29,8 @@ public class SearchHistoryManager {
     private final Runnable saveRunnable = this::saveToPreferences;
 
     // ========== 单例模式 ==========
-    private SearchHistoryManager() {}
+    private SearchHistoryManager() {
+    }
 
     public static synchronized SearchHistoryManager getInstance() {
         if (instance == null) {
@@ -46,7 +42,7 @@ public class SearchHistoryManager {
     public void init(Context ctx) {
         Context applicationContext = ctx.getApplicationContext();
         sharedPreferences = applicationContext.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
-        
+
         if (historyList.isEmpty()) {
             loadFromPreferences();
         }
@@ -74,17 +70,17 @@ public class SearchHistoryManager {
         // 创建新条目
         String newId = UUID.randomUUID().toString();
         SearchHistoryItem newItem = new SearchHistoryItem(newId, value);
-        
+
         // 添加到数据结构
         historyList.add(0, newItem);
         itemMap.put(newId, newItem);
-        
+
         // 修剪大小
         if (historyList.size() > MAX_SIZE) {
             SearchHistoryItem removed = historyList.remove(historyList.size() - 1);
             itemMap.remove(removed.id);
         }
-        
+
         scheduleSave();
     }
 
@@ -93,7 +89,7 @@ public class SearchHistoryManager {
      */
     public void remove(String id) {
         if (id == null) return;
-        
+
         SearchHistoryItem item = itemMap.get(id);
         if (item != null) {
             historyList.remove(item);
@@ -129,21 +125,21 @@ public class SearchHistoryManager {
         // 1. 加载顺序列表
         String orderString = sharedPreferences.getString(KEY_ORDER, "");
         if (orderString.isEmpty()) return;
-        
+
         // 使用 ORDER_DELIMITER 分割
         String[] itemIds = orderString.split(Pattern.quote(ORDER_DELIMITER));
-        
+
         // 2. 按顺序加载条目
         for (String id : itemIds) {
             if (id.isEmpty()) continue;
-            
+
             // 获取条目数据
             String value = sharedPreferences.getString(id, null);
             if (value == null) continue;
-            
+
             // 创建历史项
             SearchHistoryItem item = new SearchHistoryItem(id, value);
-            
+
             // 添加到数据结构
             historyList.add(item);
             itemMap.put(id, item);
@@ -153,7 +149,7 @@ public class SearchHistoryManager {
     private void saveToPreferences() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear(); // 清除旧数据
-        
+
         // 1. 保存顺序列表
         StringBuilder orderBuilder = new StringBuilder();
         for (SearchHistoryItem item : historyList) {
@@ -162,12 +158,12 @@ public class SearchHistoryManager {
                 orderBuilder.append(ORDER_DELIMITER);
             }
             orderBuilder.append(item.id);
-            
+
             // 2. 保存条目数据
             editor.putString(item.id, item.value);
         }
         editor.putString(KEY_ORDER, orderBuilder.toString());
-        
+
         editor.apply();
     }
 
@@ -177,11 +173,11 @@ public class SearchHistoryManager {
     }
 
     // ========== 历史项类 ==========
-        public record SearchHistoryItem(String id, String value) {
+    public record SearchHistoryItem(String id, String value) {
 
         @Override
-            public @NonNull String toString() {
-                return value;
-            }
+        public @NonNull String toString() {
+            return value;
         }
+    }
 }

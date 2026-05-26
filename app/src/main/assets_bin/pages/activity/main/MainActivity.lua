@@ -32,18 +32,18 @@ function MainActivity:ctor()
 end
 
 local function isTablet()
-  local metrics = activity.getResources().getDisplayMetrics()
+  local metrics = activity.resources.displayMetrics
   local widthDp = metrics.widthPixels / metrics.density
   return widthDp >= 600
 end
 
 function MainActivity:refreshIcon()
-  local packageName = activity.getPackageName()
-  local launchIntent = activity.getPackageManager().getLaunchIntentForPackage(packageName)
+  local packageName = activity.packageName
+  local launchIntent = activity.packageManager.getLaunchIntentForPackage(packageName)
   if launchIntent then
-    local componentName = launchIntent.getComponent()
+    local componentName = launchIntent.component
     if componentName then
-      local packageManager = activity.getPackageManager()
+      local packageManager = activity.packageManager
       packageManager.clearPackagePreferredActivities(packageName)
       packageManager.setComponentEnabledSetting(componentName,
       PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP)
@@ -56,7 +56,7 @@ end
 function MainActivity:setupWebViewSwitch()
   local webviewPackageName = "com.android.chrome"
   if Extensions.Config.getString(Constants.SharedDataKeys.SWITCH_WEBVIEW) == "true" then
-    local pm = activity.getPackageManager()
+    local pm = activity.packageManager
     local installed = pcall(function() return pm.getPackageInfo(webviewPackageName, 0) end)
     if not installed then
       Extensions.Config.set(Constants.SharedDataKeys.SWITCH_WEBVIEW, false)
@@ -65,8 +65,8 @@ function MainActivity:setupWebViewSwitch()
     end
     import "com.norman.webviewup.lib.WebViewUpgrade"
     import "com.norman.webviewup.lib.source.UpgradePackageSource"
-    if WebViewUpgrade.getUpgradeWebViewPackageName() ~= webviewPackageName then
-      local upgradeSource = UpgradePackageSource(activity.getApplicationContext(), webviewPackageName)
+    if WebViewUpgrade.upgradeWebViewPackageName ~= webviewPackageName then
+      local upgradeSource = UpgradePackageSource(activity.applicationContext, webviewPackageName)
       WebViewUpgrade.upgrade(upgradeSource)
     end
   end
@@ -77,9 +77,9 @@ function MainActivity:setupSmartNoImage()
     _G.onStart = function()
       if self.noImageReminded then return end
       local connMgr = activity.getSystemService(Context.CONNECTIVITY_SERVICE)
-      local info = connMgr.getActiveNetworkInfo()
+      local info = connMgr.activeNetworkInfo
       if not info then return end
-      local netType = info.getType()
+      local netType = info.type
       local isWifiConn = netType == ConnectivityManager.TYPE_WIFI and info.isConnected()
       local isMobileConn = netType == ConnectivityManager.TYPE_MOBILE and info.isConnected()
       local noImage = Extensions.Config.getBool(Constants.SharedDataKeys.NO_IMAGE)
@@ -125,9 +125,9 @@ function MainActivity:onCreate(params)
     AppInfo.showUpdateDialog(false)
   end
   if Extensions.Config.getBool(Constants.SharedDataKeys.PREDICTIVE_BACK) == false then
-    activity.getSupportFragmentManager().enablePredictiveBack(false)
+    activity.supportFragmentManager.enablePredictiveBack(false)
    else
-    activity.getSupportFragmentManager().enablePredictiveBack(true)
+    activity.supportFragmentManager.enablePredictiveBack(true)
   end
 end
 
@@ -201,7 +201,7 @@ function MainActivity:setupFragmentLoader()
       return false
     end
 
-    local transaction = activity.getSupportFragmentManager().beginTransaction()
+    local transaction = activity.supportFragmentManager.beginTransaction()
 
     -- 获取共享元素视图
     local sharedView = data.sharedElement
@@ -215,7 +215,7 @@ function MainActivity:setupFragmentLoader()
     end
 
     -- 可能需要 replace 才生效
-    transaction.add(targetContainer.getId(), fragment, data.name)
+    transaction.add(targetContainer.id, fragment, data.name)
     if not data.noBackStack then
       transaction.addToBackStack(data.name)
     end
@@ -242,8 +242,8 @@ function MainActivity:setupDefaultTransition(fragment, fragmentModule)
     local defaultAxis = MaterialSharedAxis(MaterialSharedAxis.Z, true)
     .addTarget(container)
 
-    fragment.setEnterTransition(defaultAxis)
-    fragment.setReturnTransition(defaultAxis)
+    fragment.enterTransition = defaultAxis
+    fragment.returnTransition = defaultAxis
     fragment.postponeEnterTransition()
     fragment.startPostponedEnterTransition()
   end)
@@ -266,10 +266,10 @@ function MainActivity:setupSharedElementTransition(transaction, fragment, fragme
     -- 可能需要 replace 才生效
     local sharedViewName = _transition_name..generate_id()
     ViewCompat.setTransitionName(sharedView, sharedViewName)
-    transaction.addSharedElement(sharedView, sharedViewName);
+    transaction.addSharedElement(sharedView, sharedViewName)
     local sharedViewName = _transition_name..generate_id()
     ViewCompat.setTransitionName(container, sharedViewName)
-    transaction.addSharedElement(container, sharedViewName);
+    transaction.addSharedElement(container, sharedViewName)
 
     self:setupEnterTransition(fragment, container, sharedView)
     self:setupReturnTransition(fragment, container, sharedView)
@@ -294,9 +294,9 @@ function MainActivity:setupEnterTransition(fragment, container, sharedView)
   .addTransition(containerTransform)
   .addTransition(axisForward)
 
-  fragment.setEnterTransition(forward)
+  fragment.enterTransition = forward
   -- 可能需要 replace 才生效
-  fragment.setSharedElementEnterTransition(forward)
+  fragment.sharedElementEnterTransition = forward
 end
 
 -- 设置返回转场
@@ -316,9 +316,9 @@ function MainActivity:setupReturnTransition(fragment, container, sharedView)
   .addTransition(containerBackward)
   .addTransition(axisBackward)
   
-  fragment.setReturnTransition(backward)
+  fragment.returnTransition = backward
   -- 可能需要 replace 才生效
-  fragment.setSharedElementReturnTransition(backward)
+  fragment.sharedElementReturnTransition = backward
 end
 
 function MainActivity:initLayout()
@@ -329,8 +329,8 @@ function MainActivity:initViews()
   self.leftContainer = self.views.leftContainer
   self.rightContainer = self.views.rightContainer
 
-  self.leftContainer.setId(View.generateViewId())
-  self.rightContainer.setId(View.generateViewId())
+  self.leftContainer.id = View.generateViewId()
+  self.rightContainer.id = View.generateViewId()
 
   self:updateParallelWorld()
   Router.go("home", nil , { noBackStack = true })
@@ -348,38 +348,38 @@ function MainActivity:updateParallelWorld()
 
   self.isParallelWorld = newParallel
 
-  -- 延迟执行，等布局完成
-  activity.getDecorView().postDelayed(function()
-    local screenWidth = activity.getDecorView().width
-    local decorView = activity.getWindow().getDecorView()
+    -- 延迟执行，等布局完成
+    local decorView = activity.window.decorView
+    decorView.postDelayed(function()
+    local screenWidth = decorView.width
 
     -- 获取 DecorView 的左右 padding
-    local paddingLeft = decorView.getPaddingLeft()
-    local paddingRight = decorView.getPaddingRight()
+    local paddingLeft = decorView.paddingLeft
+    local paddingRight = decorView.paddingRight
 
-    local leftLp = self.leftContainer.getLayoutParams()
-    local rightLp = self.rightContainer.getLayoutParams()
+    local leftLp = self.leftContainer.layoutParams
+    local rightLp = self.rightContainer.layoutParams
 
     if self.isParallelWorld then
       -- 并排模式：各占一半，减去 padding
       local halfWidth = (screenWidth - paddingLeft - paddingRight) / 2
       leftLp.width = halfWidth
       rightLp.width = halfWidth
-      self.rightContainer.setVisibility(View.VISIBLE)
+      self.rightContainer.visibility = View.VISIBLE
      else
       -- 普通模式：左边全屏，右边隐藏
       leftLp.width = screenWidth - paddingLeft - paddingRight
-      self.rightContainer.setVisibility(View.GONE)
+      self.rightContainer.visibility = View.GONE
       if self.currentRightFragment then
-        local transaction = activity.getSupportFragmentManager().beginTransaction()
+        local transaction = activity.supportFragmentManager.beginTransaction()
         transaction.remove(self.currentRightFragment:getFragment())
         transaction.commit()
         self.currentRightFragment = nil
       end
     end
 
-    self.leftContainer.setLayoutParams(leftLp)
-    self.rightContainer.setLayoutParams(rightLp)
+    self.leftContainer.layoutParams = leftLp
+    self.rightContainer.layoutParams = rightLp
   end, 50)
 end
 
@@ -426,7 +426,7 @@ function MainActivity:checkClipboard()
   if not Extensions.Config.getBool(Constants.SharedDataKeys.AUTO_OPEN_CLIPBOARD) then return end
   local cm = activity.getSystemService(Context.CLIPBOARD_SERVICE)
   if not cm.hasPrimaryClip() then return end
-  local clipText = tostring(cm.getPrimaryClip().getItemAt(0).getText())
+  local clipText = tostring(cm.primaryClip.getItemAt(0).text)
   if not clipText or clipText == "" then return end
 
   local result = Helpers.ZhihuParser.parse(clipText)
@@ -458,14 +458,14 @@ function MainActivity:setupTalkBack()
   local containers = { self.leftContainer, self.rightContainer }
 
   local function getFragmentsInContainer(container)
-    local fm = activity.getSupportFragmentManager()
-    local fragments = fm.getFragments()
+    local fm = activity.supportFragmentManager
+    local fragments = fm.fragments
     local result = {}
 
     for i = 0, fragments.size() - 1 do
       local fragment = fragments.get(i)
-      if fragment and fragment.getView() then
-        local parent = fragment.getView().getParent()
+      if fragment and fragment.view then
+        local parent = fragment.view.parent()
         if parent == container then
           table.insert(result, fragment)
         end
@@ -476,23 +476,23 @@ function MainActivity:setupTalkBack()
 
   local function doUpdateAccessibility()
     for _, container in ipairs(containers) do
-      if container and container.getVisibility() == View.VISIBLE then
+      if container and container.visibility == View.VISIBLE then
         local fragmentsInContainer = getFragmentsInContainer(container)
 
         -- 最后一个（最上层）可触摸，其他完全禁用
         for i, fragment in ipairs(fragmentsInContainer) do
-          local view = fragment.getView()
+          local view = fragment.view
           if view then
             if i == #fragmentsInContainer then
-              view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_AUTO)
-              view.setFocusable(true)
-              view.setClickable(true)
+              view.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_AUTO
+              view.focusable = true
+              view.clickable = true
               view.requestFocus()
               view.sendAccessibilityEvent(AccessibilityEvent.TYPE_VIEW_FOCUSED)
              else
-              view.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS)
-              view.setFocusable(false)
-              view.setClickable(false)
+              view.importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS
+              view.focusable = false
+              view.clickable = false
             end
           end
         end
@@ -502,7 +502,7 @@ function MainActivity:setupTalkBack()
 
   local debouncedUpdate = Helpers.UI.debounce(doUpdateAccessibility, 100)
 
-  activity.getSupportFragmentManager().addOnBackStackChangedListener({
+  activity.supportFragmentManager.addOnBackStackChangedListener({
     onBackStackChanged = function()
       debouncedUpdate()
     end

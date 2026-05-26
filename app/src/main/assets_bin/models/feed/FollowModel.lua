@@ -286,9 +286,9 @@ end
 function FollowModel:bindNormalItem(views, item)
   if views.group_badge and item.groupText then
     views.group_badge.text = item.groupText
-    views.group_badge.setVisibility(View.VISIBLE)
+    views.group_badge.visibility = View.VISIBLE
    elseif views.group_badge then
-    views.group_badge.setVisibility(View.GONE)
+    views.group_badge.visibility = View.GONE
   end
 
   if views.avatar and item.avatar then
@@ -310,9 +310,9 @@ function FollowModel:bindNormalItem(views, item)
   if views.preview then
     if item.preview then
       views.preview.text = item.preview
-      views.preview.setVisibility(View.VISIBLE)
+      views.preview.visibility = View.VISIBLE
      else
-      views.preview.setVisibility(View.GONE)
+      views.preview.visibility = View.GONE
     end
   end
 
@@ -326,9 +326,9 @@ function FollowModel:bindNormalItem(views, item)
       if views.comment_count then
         views.comment_count.text = tostring(commentCount)
       end
-      views.comment_layout.setVisibility(View.VISIBLE)
+      views.comment_layout.visibility = View.VISIBLE
      else
-      views.comment_layout.setVisibility(View.GONE)
+      views.comment_layout.visibility = View.GONE
     end
   end
 end
@@ -349,7 +349,7 @@ function FollowModel:bindGroupItem(views, item, position, adapter)
   local isExpanded = item._expanded
 
   if views.sub_container then
-    views.sub_container.setVisibility(View.VISIBLE)
+    views.sub_container.visibility = View.VISIBLE
     if isExpanded then
       self:setupSubList(views.sub_list, item.subItems)
      else
@@ -359,12 +359,12 @@ function FollowModel:bindGroupItem(views, item, position, adapter)
 
   if views.expand_btn_layout then
     if item.hasMore and not isExpanded then
-      views.expand_btn_layout.setVisibility(View.VISIBLE)
+      views.expand_btn_layout.visibility = View.VISIBLE
       if views.expand_text then
         views.expand_text.text = item.groupText or "展开"
       end
       if views.expand_icon then
-        views.expand_icon.setImageBitmap(Helpers.Static.materialIcon("twotone_expand_more"))
+        views.expand_icon.imageBitmap = Helpers.Static.materialIcon("twotone_expand_more")
       end
       views.expand_btn_layout.onClick = function()
         item._expanded = true
@@ -373,7 +373,7 @@ function FollowModel:bindGroupItem(views, item, position, adapter)
         end
       end
      else
-      views.expand_btn_layout.setVisibility(View.GONE)
+      views.expand_btn_layout.visibility = View.GONE
     end
   end
 end
@@ -398,7 +398,7 @@ function FollowModel:setupSubList(recyclerView, items)
         views.title.text = subItem.title or ""
         local hasPreview = subItem.preview and subItem.preview ~= ""
         views.preview.text = subItem.preview or ""
-        views.preview.setVisibility(hasPreview and View.VISIBLE or View.GONE)
+        views.preview.visibility = hasPreview and View.VISIBLE or View.GONE
         views.desc.text = subItem.desc or ""
       end
       if subItem.id and subItem.type then
@@ -409,8 +409,8 @@ function FollowModel:setupSubList(recyclerView, items)
     end,
   })
 
-  recyclerView.setAdapter(adapter)
-  recyclerView.setLayoutManager(LinearLayoutManager(activity))
+  recyclerView.adapter = adapter
+  recyclerView.layoutManager = LinearLayoutManager(activity)
 end
 
 function FollowModel:bindPeopleSubItem(views, item)

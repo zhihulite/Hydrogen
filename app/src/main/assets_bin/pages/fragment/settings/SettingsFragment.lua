@@ -17,12 +17,12 @@ local SharedDataKeys = Constants.SharedDataKeys
 
 -- 卡片圆角模型（用于 item/switch/slider 的连续圆角效果）
 local function getShapeModel(tl, tr, br, bl)
-  return ShapeAppearanceModel.builder()
-  .setTopLeftCornerSize(RelativeCornerSize(tl))
-  .setTopRightCornerSize(RelativeCornerSize(tr))
-  .setBottomRightCornerSize(RelativeCornerSize(br))
-  .setBottomLeftCornerSize(RelativeCornerSize(bl))
-  .build()
+  local shapeBuilder = ShapeAppearanceModel.builder()
+  shapeBuilder.topLeftCornerSize = RelativeCornerSize(tl)
+  shapeBuilder.topRightCornerSize = RelativeCornerSize(tr)
+  shapeBuilder.bottomRightCornerSize = RelativeCornerSize(br)
+  shapeBuilder.bottomLeftCornerSize = RelativeCornerSize(bl)
+  return shapeBuilder.build()
 end
 
 local shapeModels = {
@@ -199,19 +199,19 @@ function SettingsFragment:initListView()
       end
 
       if item.type == "item" then
-        views.arrow.setVisibility(item.arrow and View.VISIBLE or View.GONE)
+        views.arrow.visibility = item.arrow and View.VISIBLE or View.GONE
       end
 
       if item.type == "switch" then
-        views.switch_btn.setChecked(item.checked or false)
+        views.switch_btn.checked = item.checked or false
       end
 
       if item.type == "slider" then
         views.slider.clearOnChangeListeners()
-        views.slider.setValueFrom(item.from or 12)
-        views.slider.setValueTo(item.to or 30)
-        views.slider.setValue(item.value or item.from or 16)
-        if item.step then views.slider.setStepSize(item.step) end
+        views.slider.valueFrom = item.from or 12
+        views.slider.valueTo = item.to or 30
+        views.slider.value = item.value or item.from or 16
+        if item.step then views.slider.stepSize = item.step end
 
         local function formatValue(val)
           if item.step then
@@ -221,7 +221,7 @@ function SettingsFragment:initListView()
           end
         end
 
-        views.value.text = formatValue(views.slider.getValue())
+        views.value.text = formatValue(views.slider.value)
         views.slider.addOnChangeListener({
           onValueChange = function(slider, value, fromUser)
             if fromUser then
@@ -239,7 +239,7 @@ function SettingsFragment:initListView()
             self:onItemClick(item.key)
            elseif item.type == "switch" then
             local newState = not views.switch_btn.isChecked()
-            views.switch_btn.setChecked(newState)
+            views.switch_btn.checked = newState
             self:onSwitchChanged(item.key, newState)
           end
         end
@@ -247,8 +247,8 @@ function SettingsFragment:initListView()
     end
   })
 
-  views.recycler_view.setAdapter(self.adapter)
-  views.recycler_view.setLayoutManager(LinearLayoutManager(activity))
+  views.recycler_view.adapter = self.adapter
+  views.recycler_view.layoutManager = LinearLayoutManager(activity)
 end
 
 -- 更新 items 中的开关状态
@@ -301,7 +301,7 @@ function SettingsFragment:onSwitchChanged(key, value)
    elseif key == SharedDataKeys.SWITCH_WEBVIEW then
     if value then
       local pkg = "com.android.chrome"
-      local pm = activity.getPackageManager()
+      local pm = activity.packageManager
       local installed = pcall(function() return pm.getPackageInfo(pkg, 0) end)
       if not installed then
         Extensions.Config.set(key, false)
@@ -390,9 +390,9 @@ function SettingsFragment:manageStorage()
   import "android.content.pm.PackageManager"
 
   local resolveIntent = Intent(Intent.ACTION_GET_CONTENT)
-  .setType("text/plain")
-  .addCategory(Intent.CATEGORY_OPENABLE)
-  local info = activity.getPackageManager().resolveActivity(resolveIntent, PackageManager.MATCH_DEFAULT_ONLY)
+  resolveIntent.type = "text/plain"
+  resolveIntent.addCategory(Intent.CATEGORY_OPENABLE)
+  local info = activity.packageManager.resolveActivity(resolveIntent, PackageManager.MATCH_DEFAULT_ONLY)
 
   if not info or not info.activityInfo then
     tip("无法找到系统文件管理器，请手动管理存储空间")
@@ -401,12 +401,12 @@ function SettingsFragment:manageStorage()
 
   local packageName = info.activityInfo.packageName
   local targetIntent = Intent()
-  targetIntent.setType("*/*")
-  local uri = Uri.parse("content://com.android.externalstorage.documents/document/primary%3AAndroid%2Fdata%2F" .. activity.getPackageName() .. "%2Ffiles")
-  targetIntent.setData(uri)
-  targetIntent.setAction(Intent.ACTION_VIEW)
+  targetIntent.type = "*/*"
+  local uri = Uri.parse("content://com.android.externalstorage.documents/document/primary%3AAndroid%2Fdata%2F" .. activity.packageName .. "%2Ffiles")
+  targetIntent.data = uri
+  targetIntent.action = Intent.ACTION_VIEW
   local componentName = ComponentName(packageName, "com.android.documentsui.files.FilesActivity")
-  targetIntent.setComponent(componentName)
+  targetIntent.component = componentName
 
   local success, err = pcall(function() activity.startActivity(targetIntent) end)
   if success then
@@ -426,7 +426,7 @@ function SettingsFragment:showSearchEngineDialog()
     onClick = function()
       local editText = views.edit
       if not editText then return end
-      local url = editText.getText().toString()
+      local url = editText.text
       if url:gsub(" ", "") == "" then
         tip("请输入搜索引擎地址")
         return
@@ -448,7 +448,7 @@ function SettingsFragment:showBlockWordsDialog()
   .setView(loadlayout(DIALOGS.block_words, views))
   .setPositiveButton("保存", {
     onClick = function()
-      local text = views.edit.getText().toString()
+      local text = views.edit.text
       Extensions.Config.set(SharedDataKeys.BLOCK_WORDS, text)
       tip("已保存")
     end
@@ -525,7 +525,7 @@ function SettingsFragment:showHomeLayoutDialog()
         views.header.text = item.header
        else
         views.title.text = item.title
-        views.radio.setChecked(item.isHome)
+        views.radio.checked = item.isHome
         views.itemRoot.onClick = function()
           for _, v in ipairs(pageData) do
             if v.title then v.isHome = false end
@@ -544,11 +544,11 @@ function SettingsFragment:showHomeLayoutDialog()
       return int(ItemTouchHelper.Callback.makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0))
     end,
     canDropOver = function(_, _, current, target)
-      return target.getAdapterPosition() > 0
+      return target.adapterPosition > 0
     end,
     onMove = function(_, _, vh, target)
-      local from = vh.getAdapterPosition() + 1
-      local to = target.getAdapterPosition() + 1
+      local from = vh.adapterPosition + 1
+      local to = target.adapterPosition + 1
       pageData[from], pageData[to] = pageData[to], pageData[from]
       adapter.notifyItemMoved(from - 1, to - 1)
       return true
@@ -557,8 +557,8 @@ function SettingsFragment:showHomeLayoutDialog()
 
   ItemTouchHelper(dragCallback).attachToRecyclerView(dialogViews.recycler)
 
-  dialogViews.recycler.setLayoutManager(LinearLayoutManager(activity))
-  dialogViews.recycler.setAdapter(adapter)
+  dialogViews.recycler.layoutManager = LinearLayoutManager(activity)
+  dialogViews.recycler.adapter = adapter
 end
 
 function SettingsFragment:showStartFollowDialog()
@@ -608,20 +608,21 @@ function SettingsFragment:showCustomFontDialog()
   .show()
 
   local hasFont = currentPath ~= ""
-  views.font_switch.setChecked(hasFont)
-  views.font_container.setVisibility(hasFont and View.VISIBLE or View.GONE)
+  views.font_switch.checked = hasFont
+  views.font_container.visibility = hasFont and View.VISIBLE or View.GONE
 
-  views.font_switch.setOnCheckedChangeListener({ onCheckedChanged = function(buttonView, isChecked)
-      views.font_container.setVisibility(isChecked and View.VISIBLE or View.GONE)
-      if not isChecked then
-        local fontDir = Extensions.File.getAppDir("fonts")
-        if Extensions.File.exists(fontDir) then
-          Extensions.File.delete(fontDir)
-        end
-        Extensions.Config.delete(SharedDataKeys.CUSTOM_WEB_FONT)
-        tip("已关闭自定义字体，重启生效")
+  views.font_switch.setOnCheckedChangeListener(luajava.createProxy("android.widget.CompoundButton$OnCheckedChangeListener", {
+    onCheckedChanged = function(switchView, isChecked)
+    views.font_container.visibility = isChecked and View.VISIBLE or View.GONE
+    if not isChecked then
+      local fontDir = Extensions.File.getAppDir("fonts")
+      if Extensions.File.exists(fontDir) then
+        Extensions.File.delete(fontDir)
       end
-  end })
+      Extensions.Config.delete(SharedDataKeys.CUSTOM_WEB_FONT)
+      tip("已关闭自定义字体，重启生效")
+    end
+  end}))
 
   -- 使用 App 字体
   views.app_font_btn.onClick = function()
@@ -681,7 +682,7 @@ function SettingsFragment:showHomeLocationDialog()
 
     local edit = views.edit
     dialog.getButton(dialog.BUTTON_POSITIVE).onClick = function()
-      local city = edit.getText().toString():gsub("%s+", "")
+      local city = edit.text:gsub("%s+", "")
       if city == "" then
         tip("请输入城市名")
         return
@@ -693,8 +694,8 @@ function SettingsFragment:showHomeLocationDialog()
       local postHeaders = Headers["defaultHead"] or {}
       postHeaders["content-type"] = "application/json"
       local postData = '{"city":"' .. city .. '"}'
-      NetWork.post("https://api.zhihu.com/feed-root/sections/saveUserCity", postData, postHeaders, function(success)
-        if success then
+      NetWork.post("https://api.zhihu.com/feed-root/sections/saveUserCity", postData, postHeaders, function(code)
+        if code == 200 then
           tip("修改成功，重启生效")
           dialog.dismiss()
          else

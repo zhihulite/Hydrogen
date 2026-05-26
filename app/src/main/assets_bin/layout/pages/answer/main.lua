@@ -12,7 +12,7 @@ import "androidx.appcompat.widget.AppCompatImageView"
 import "com.google.android.material.floatingtoolbar.FloatingToolbarLayout"
 import "com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 local actionBarSize = Helpers.Resources.android.attr.actionBarSize
 local toolbarHeight = actionBarSize
 
@@ -46,7 +46,7 @@ local floatingToolbar = {
         id = "vote_icon",
         layout_width = "24dp",
         layout_height = "24dp",
-        ImageBitmap = Helpers.Static.materialIcon("outline_thumb_up"),
+        imageBitmap = Helpers.Static.materialIcon("outline_thumb_up"),
         colorFilter = colors.primary,
       },
       {
@@ -73,7 +73,7 @@ local floatingToolbar = {
         id = "thank_icon",
         layout_width = "24dp",
         layout_height = "24dp",
-        ImageBitmap = Helpers.Static.materialIcon("outline_favorite_border"),
+        imageBitmap = Helpers.Static.materialIcon("outline_favorite_border"),
         colorFilter = colors.primary,
       },
       {
@@ -100,7 +100,7 @@ local floatingToolbar = {
         id = "collect_icon",
         layout_width = "24dp",
         layout_height = "24dp",
-        ImageBitmap = Helpers.Static.materialIcon("outline_bookmark_border"),
+        imageBitmap = Helpers.Static.materialIcon("outline_bookmark_border"),
         colorFilter = colors.primary,
       },
       {
@@ -134,7 +134,7 @@ local floatingToolbar = {
           AppCompatImageView,
           layout_width = "24dp",
           layout_height = "24dp",
-          ImageBitmap = Helpers.Static.materialIcon("twotone_message"),
+          imageBitmap = Helpers.Static.materialIcon("twotone_message"),
           colorFilter = colors.primary,
         },
         {
@@ -161,10 +161,10 @@ local floatScrollButtons = {
   layout_marginRight = "16dp",
   layout_marginBottom = "80dp",
   radius = "28dp",
-  cardElevation = "0dp",
+  cardElevation = 0,
   cardBackgroundColor = colors.surface,
   alpha = 0.9,
-  Visibility = 8,
+  visibility = 8,
   {
     LinearLayoutCompat,
     orientation = "vertical",
@@ -176,7 +176,7 @@ local floatScrollButtons = {
       id = "scroll_up",
       layout_width = "40dp",
       layout_height = "40dp",
-      ImageBitmap = Helpers.Static.materialIcon("twotone_arrow_drop_up"),
+      imageBitmap = Helpers.Static.materialIcon("twotone_arrow_drop_up"),
       colorFilter = colors.primary,
       padding = "8dp",
     },
@@ -185,7 +185,7 @@ local floatScrollButtons = {
       id = "scroll_down",
       layout_width = "40dp",
       layout_height = "40dp",
-      ImageBitmap = Helpers.Static.materialIcon("twotone_arrow_drop_down"),
+      imageBitmap = Helpers.Static.materialIcon("twotone_arrow_drop_down"),
       colorFilter = colors.primary,
       padding = "8dp",
     },

@@ -184,11 +184,11 @@ function PeopleMoreModel:createAdapter(dataList)
 
         local hasPreview = item.preview and item.preview ~= ""
         views.preview.text = item.preview or ""
-        views.preview.setVisibility(hasPreview and View.VISIBLE or View.GONE)
+        views.preview.visibility = hasPreview and View.VISIBLE or View.GONE
 
         local hasBottomText = item.bottomText ~= nil
         views.bottom_text.text = item.bottomText or ""
-        views.bottom_text.setVisibility(hasBottomText and View.VISIBLE or View.GONE)
+        views.bottom_text.visibility = hasBottomText and View.VISIBLE or View.GONE
 
         views.card.onClick = function()
           if item.type == "video_collection" then

@@ -10,7 +10,10 @@ import "com.google.android.material.shape.ShapeAppearanceModel"
 import "com.google.android.material.shape.RelativeCornerSize"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
+local circleShapeBuilder = ShapeAppearanceModel.builder()
+circleShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
+local circleShapeModel = circleShapeBuilder.build()
 
 return {
   CoordinatorLayout,
@@ -63,10 +66,8 @@ return {
     layout_gravity = "bottom|end",
     layout_marginRight = "20dp",
     layout_marginBottom = "32dp",
-    ImageDrawable = Helpers.Static.materialDrawable("twotone_download", 24, true),
-    shapeAppearanceModel = ShapeAppearanceModel.builder()
-    .setAllCornerSizes(RelativeCornerSize(0.5))
-    .build(),
+    imageDrawable = Helpers.Static.materialDrawable("twotone_download", 24, true),
+    shapeAppearanceModel = circleShapeModel,
     scaleType = "center",
     colorFilter=0xffffffff,
     backgroundColor = colors.primary,

@@ -29,13 +29,11 @@ function BaseFragment:createFragment(params)
         self.container = self.fragmentView
       end
       -- 修复点击穿透
-      self.fragmentView.setClickable(true)
+      self.fragmentView.clickable = true
       -- 鼠标点击适配
-      self.fragmentView.setOnGenericMotionListener(luajava.createProxy("android.view.View$OnGenericMotionListener",{
-        onGenericMotion = function()
-          return false
-        end
-      }))
+      self.fragmentView.onGenericMotion = function()
+        return false
+      end
       return self.fragmentView
     end,
 
@@ -110,7 +108,7 @@ function BaseFragment:addBackPressedCallback(options)
   end
 
   local fragment = self.fragment
-  local activity = fragment.getActivity()
+  local activity = fragment.activity
 
   local callback = luajava.override(OnBackPressedCallback, {
     handleOnBackPressed = options.handleOnBackPressed,
@@ -119,7 +117,7 @@ function BaseFragment:addBackPressedCallback(options)
     handleOnBackCancelled = options.onBackCancelled,
   }, options.enabled == nil or options.enabled)
 
-  activity.getOnBackPressedDispatcher().addCallback(fragment, callback)
+  activity.onBackPressedDispatcher.addCallback(fragment, callback)
   return callback
 end
 

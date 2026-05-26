@@ -70,7 +70,7 @@ end
 function BrowserFragment:updateBackButtonState()
   if self.backCallback and self.webViewHelper then
     local canGoBack = self.webViewHelper:canGoBack()
-    self.backCallback.setEnabled(canGoBack)
+    self.backCallback.enabled = canGoBack
   end
 end
 
@@ -96,7 +96,7 @@ function BrowserFragment:initWebView()
     self.webViewHelper:setUA(ua)
   end
 
-  self.webViewHelper:setWebViewNetWork({
+  self.webViewHelper:setWebViewClient({
     shouldOverrideUrlLoading = function(view, url)
       -- 知乎日报特殊处理
       if url:find("^zhdaiy://") then
@@ -124,12 +124,12 @@ function BrowserFragment:initWebView()
       return false
     end,
     onPageStarted = function(view, url)
-      self.views.swipe_refresh.setRefreshing(true)
-      self.views.webview.setVisibility(View.GONE)
+      self.views.swipe_refresh.refreshing = true
+      self.views.webview.visibility = View.GONE
     end,
     onPageFinished = function(view, url)
-      self.views.swipe_refresh.setRefreshing(false)
-      self.views.webview.setVisibility(View.VISIBLE)
+      self.views.swipe_refresh.refreshing = false
+      self.views.webview.visibility = View.VISIBLE
       self:updateBackButtonState()
     end,
     doUpdateVisitedHistory = function(view, url, isReload)
@@ -137,24 +137,24 @@ function BrowserFragment:initWebView()
     end
   })
 
-  self.webViewHelper:setWebChromeNetWork({
+  self.webViewHelper:setWebChromeClient({
     onReceivedTitle = function(view, title)
-      self.views.toolbar.setTitle(title)
+      self.views.toolbar.title = title
     end,
     onProgressChanged = function(view, progress)
       local bar = self.views.progress_bar
       if progress == 100 then
-        bar.setVisibility(View.GONE) bar.setProgress(0)
+        bar.visibility = View.GONE bar.progress = 0
        else
-        if bar.getVisibility() ~= View.VISIBLE then bar.setVisibility(View.VISIBLE) end
-        bar.setProgress(progress)
+        if bar.visibility ~= View.VISIBLE then bar.visibility = View.VISIBLE end
+        bar.progress = progress
       end
     end
   })
 end
 
 function BrowserFragment:loadUrl()
-  self.views.webview.setVisibility(View.GONE)
+  self.views.webview.visibility = View.GONE
   self.webView.loadUrl(self.startUrl)
 end
 
@@ -167,17 +167,17 @@ function BrowserFragment:goBack()
 end
 
 function BrowserFragment:shareUrl()
-  local url = self.webView.getUrl()
+  local url = self.webView.url
   if url then Helpers.UI.shareText(url) end
 end
 
 function BrowserFragment:copyUrl()
-  local url = self.webView.getUrl()
+  local url = self.webView.url
   if url then Helpers.UI.copyText(url) end
 end
 
 function BrowserFragment:openInBrowser()
-  local url = self.webView.getUrl()
+  local url = self.webView.url
   if url then Helpers.UI.openUrl(url) end
 end
 

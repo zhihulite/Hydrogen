@@ -10,11 +10,11 @@ import "com.google.android.material.shape.ShapeAppearanceModel"
 import "com.google.android.material.shape.RelativeCornerSize"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
-local circleShape = ShapeAppearanceModel.builder()
-.setAllCornerSizes(RelativeCornerSize(0.5))
-.build()
+local circleShapeBuilder = ShapeAppearanceModel.builder()
+circleShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
+local circleShapeModel = circleShapeBuilder.build()
 
 return {
   LinearLayoutCompat,
@@ -54,7 +54,7 @@ return {
           id = "avatar",
           layout_width = "28dp",
           layout_height = "28dp",
-          shapeAppearanceModel = circleShape,
+          shapeAppearanceModel = circleShapeModel,
         },
         {
           MaterialTextView,
@@ -105,7 +105,7 @@ return {
             id = "like_icon",
             layout_width = "16dp",
             layout_height = "16dp",
-            ImageBitmap = Helpers.Static.materialIcon("twotone_thumb_up"),
+            imageBitmap = Helpers.Static.materialIcon("twotone_thumb_up"),
             colorFilter = colors.onSurfaceVariant,
           },
           {
@@ -129,7 +129,7 @@ return {
             id = "comment_icon",
             layout_width = "16dp",
             layout_height = "16dp",
-            ImageBitmap = Helpers.Static.materialIcon("twotone_message"),
+            imageBitmap = Helpers.Static.materialIcon("twotone_message"),
             colorFilter = colors.onSurfaceVariant,
           },
           {

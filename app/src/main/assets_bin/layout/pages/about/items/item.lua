@@ -8,7 +8,7 @@ import "androidx.appcompat.widget.AppCompatImageView"
 import "android.view.View"
 import "com.google.android.material.shape.ShapeAppearanceModel"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,
@@ -36,7 +36,7 @@ return {
       {
         LinearLayoutCompat,
         orientation = "vertical",
-        layout_width = "0dp",
+        layout_width = 0,
         layout_weight = 1,
         {
           MaterialTextView,
@@ -62,7 +62,7 @@ return {
         layout_height = "20dp",
         layout_marginLeft = "8dp",
         layout_marginRight = "16dp",
-        ImageBitmap = Helpers.Static.materialIcon("twotone_chevron_right"),
+        imageBitmap = Helpers.Static.materialIcon("twotone_chevron_right"),
         colorFilter = colors.onSurfaceVariant,
         visibility = View.GONE,
       }

@@ -8,7 +8,7 @@ local LayoutInflater = luajava.bindClass("android.view.LayoutInflater")
 local prefix = "material_widgets_"
 local function create(suffix)
   local name = prefix .. suffix
-  local id = activity.getResources().getIdentifier(name, "layout", activity.getPackageName())
+  local id = activity.resources.getIdentifier(name, "layout", activity.packageName)
 
   return function(ctx)
     return LayoutInflater.from(ctx).inflate(id, nil)

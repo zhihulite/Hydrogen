@@ -5,7 +5,7 @@ import "androidx.appcompat.widget.LinearLayoutCompat"
 import "com.google.android.material.card.MaterialCardView"
 import "com.google.android.material.textview.MaterialTextView"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,
@@ -21,6 +21,7 @@ return {
     layout_height = "wrap_content",
     layout_marginTop = "4dp",
     layout_marginBottom = "4dp",
+    cardBackgroundColor = colors.surface,
     clickable = true,
     {
       LinearLayoutCompat,
@@ -56,7 +57,7 @@ return {
           textSize = AppTextStyle.bodySmall.size,
           textColor = AppTextStyle.bodySmall.color,
           typeface = AppTextStyle.bodySmall.font,
-          layout_width = "0dp",
+          layout_width = 0,
           layout_weight = 1,
         },
         {

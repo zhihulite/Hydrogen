@@ -4,7 +4,7 @@
 import "androidx.appcompat.widget.LinearLayoutCompat"
 import "com.google.android.material.appbar.MaterialToolbar"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,
@@ -18,12 +18,12 @@ return {
     id = "toolbar",
     layout_width = "fill",
     layout_height = "wrap",
-    elevation = "0dp",
+    elevation = 0,
   },
   {
     LinearLayoutCompat,
     layout_width = "fill",
-    layout_height = "0dp",
+    layout_height = 0,
     layout_weight = 1,
     Layouts.pages.home.page_collections,
   }

@@ -10,7 +10,7 @@ import "com.google.android.material.appbar.MaterialToolbar"
 import "com.google.android.material.textview.MaterialTextView"
 import "androidx.appcompat.widget.AppCompatImageView"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,
@@ -63,7 +63,7 @@ return {
       layout_width = "80dp",
       layout_height = "80dp",
       layout_marginBottom = "16dp",
-      ImageBitmap = Helpers.Static.materialIcon("history"),
+      imageBitmap = Helpers.Static.materialIcon("history"),
       colorFilter = colors.onSurfaceVariant,
     },
     {

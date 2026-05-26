@@ -30,67 +30,10 @@ import "android.text.style.ClickableSpan"
 local MentionSpan = require("components.span.MentionSpan")
 local EmojiSpan = require("components.span.EmojiSpan")
 local LinkSpan = require("components.span.LinkSpan")
-local linkMovementMethodInstance = LinkMovementMethod.getInstance()
+local linkMovementMethodInstance = LinkMovementMethod.instance
 
 local CommentModel = Extensions.Class(PageToolModel)
 CommentModel:chainUp("destroy")
-
-local pattern_cache = {}
-local emoji_list_cache = nil -- 表情名列表缓存
-
--- 创建可点击的 URL Span
-local function create_clickable_span(url)
-  return luajava.override(ClickableSpan, {
-    onClick = function(widge,t)
-      Helpers.UI.openUrl(url)
-    end
-  })
-end
-
--- 获取表情名列表（带缓存）
-local function get_emoji_list()
-  if not emoji_list_cache then
-    emoji_list_cache = Helpers.Static.zemojiList()
-  end
-  return emoji_list_cache
-end
-
--- 在 Spannable 中用正则匹配并替换为 Drawable
-local function spannable_image(spannable, pattern_str, drawable, flags)
-  local pattern = pattern_cache[pattern_str]
-  if not pattern then
-    pattern = Pattern.compile(pattern_str)
-    pattern_cache[pattern_str] = pattern
-  end
-
-  local text = tostring(spannable)
-  local matcher = pattern.matcher(text)
-
-  while matcher.find() do
-    local start_pos = matcher.start()
-    local end_pos = matcher["end"]()
-    if drawable then
-      spannable.setSpan(ImageSpan(drawable), start_pos, end_pos,flags or Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
-    end
-  end
-end
-
--- 手工创建表情 Drawable（按 sp 缩放，带缓存）
-local emoji_drawable_cache = {}
-local function get_emoji_drawable(name)
-  local cached = emoji_drawable_cache[name]
-  if cached then return cached end
-
-  local bitmap = Helpers.Static.zemoji(name)
-  if not bitmap then return nil end
-
-  local sizePx = sp2px(20) -- 想调大小只改这里
-  local scaled = Bitmap.createScaledBitmap(bitmap, sizePx, sizePx, true)
-  local d = BitmapDrawable(activity.getResources(), scaled)
-  d.setBounds(0, 0, sizePx, sizePx)
-  emoji_drawable_cache[name] = d
-  return d
-end
 
 local function calcImageSize(w, h)
   if not w or not h or w <= 0 or h <= 0 then return 0, 0 end
@@ -160,7 +103,7 @@ function CommentModel:formatContent(content)
   -- 1. 处理 @提及 和 链接：将 URLSpan 替换为对应的自定义 Span
   local urlSpans = luajava.astable(spannable.getSpans(0, spannable.length(), URLSpan))
   for _, span in ipairs(urlSpans) do
-    local url = span.getURL()
+    local url = span.URL
     local start = spannable.getSpanStart(span)
     local endPos = spannable.getSpanEnd(span)
     local displayText = tostring(spannable.subSequence(start, endPos))
@@ -320,7 +263,7 @@ function CommentModel:createAdapter(dataList)
       Helpers.Image.load(views.avatar, item.avatarUrl)
 
       if item.hasImage then
-        views.comment_image.setVisibility(View.VISIBLE)
+        views.comment_image.visibility = View.VISIBLE
 
         views.comment_image.onClick = function()
           Helpers.UI.showImage(item.imageUrl)
@@ -331,18 +274,18 @@ function CommentModel:createAdapter(dataList)
           centerCrop = true
         })
        else
-        views.comment_image.setVisibility(View.GONE)
+        views.comment_image.visibility = View.GONE
       end
 
       if item.hasUrl then
-        views.comment_content.setMovementMethod(linkMovementMethodInstance)
+        views.comment_content.movementMethod  = linkMovementMethodInstance
       end
 
       if item.childCount > 0 then
         views.comment_count.text = tostring(item.childCount)
-        views.reply_layout.setVisibility(View.VISIBLE)
+        views.reply_layout.visibility = View.VISIBLE
        else
-        views.reply_layout.setVisibility(View.VISIBLE)
+        views.reply_layout.visibility = View.VISIBLE
         views.comment_count.text = "0"
       end
 
@@ -350,7 +293,7 @@ function CommentModel:createAdapter(dataList)
 
       if item.childCount > #(item.childComments or {}) then
         views.more_replies.text = string.format("查看全部%d条回复", item.childCount)
-        views.more_replies.setVisibility(View.VISIBLE)
+        views.more_replies.visibility = View.VISIBLE
         views.more_replies.onClick = function()
           if self.contentType == "comment" then
             tip("当前已在当前回复中")
@@ -359,7 +302,7 @@ function CommentModel:createAdapter(dataList)
           self:notifyListeners("showMoreComments", item.id, item.childNextOffset)
         end
        else
-        views.more_replies.setVisibility(View.GONE)
+        views.more_replies.visibility = View.GONE
       end
 
       self:updateLikeIcon(views.like_icon, item.isLiked)
@@ -387,16 +330,14 @@ end
 
 function CommentModel:setupChildRecycler(childRecycler, item)
   if not item.childComments or #item.childComments == 0 then
-    childRecycler.setVisibility(View.GONE)
+    childRecycler.visibility = View.GONE
     return
   end
 
-  childRecycler.setVisibility(View.VISIBLE)
+  childRecycler.visibility = View.VISIBLE
 
-  if not childRecycler.getLayoutManager() then
-    childRecycler.setLayoutManager(
-    luajava.bindClass("androidx.recyclerview.widget.LinearLayoutManager")(activity)
-    )
+  if not childRecycler.layoutManager then
+    childRecycler.layoutManager = luajava.bindClass("androidx.recyclerview.widget.LinearLayoutManager")(activity)
   end
 
   local adapter = SimpleRecyclerAdapter.new({
@@ -410,7 +351,7 @@ function CommentModel:setupChildRecycler(childRecycler, item)
       views.comment_bottom.text = childItem.commentBottom or ""
 
       if childItem.hasUrl then
-        views.comment_content.setMovementMethod(linkMovementMethodInstance)
+        views.comment_content.movementMethod  = linkMovementMethodInstance
       end
 
       views.like_count.text = tostring(childItem.likeCount)
@@ -430,7 +371,7 @@ function CommentModel:setupChildRecycler(childRecycler, item)
       end
 
       if childItem.hasImage then
-        views.comment_image.setVisibility(View.VISIBLE)
+        views.comment_image.visibility = View.VISIBLE
         views.comment_image.onClick = function()
           Helpers.UI.showImage(childItem.imageUrl)
         end
@@ -440,7 +381,7 @@ function CommentModel:setupChildRecycler(childRecycler, item)
           centerCrop = true
         })
        else
-        views.comment_image.setVisibility(View.GONE)
+        views.comment_image.visibility = View.GONE
       end
 
       views.card.onClick = function()
@@ -454,12 +395,12 @@ function CommentModel:setupChildRecycler(childRecycler, item)
     end,
   })
 
-  childRecycler.setAdapter(adapter)
+  childRecycler.adapter = adapter
 end
 
 function CommentModel:updateLikeIcon(iconView, isLiked)
   local iconName = isLiked and "twotone_favorite" or "outline_favorite_border"
-  iconView.setImageBitmap(Helpers.Static.materialIcon(iconName))
+  iconView.imageBitmap = Helpers.Static.materialIcon(iconName)
 end
 
 function CommentModel:likeComment(commentId, isLike, callback)

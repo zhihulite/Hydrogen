@@ -6,7 +6,7 @@ import "com.google.android.material.card.MaterialCardView"
 import "com.google.android.material.textview.MaterialTextView"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,
@@ -42,7 +42,7 @@ return {
           layout_height = "24dp",
           radius = "12dp",
           layout_marginRight = "12dp",
-          cardElevation = "0dp",
+          cardElevation = 0,
           cardBackgroundColor = colors.primary,
           {
             MaterialTextView,
@@ -58,7 +58,7 @@ return {
         {
           MaterialTextView,
           id = "title",
-          layout_width = "0dp",
+          layout_width = 0,
           layout_weight = 1,
           textSize = AppTextStyle.titleSmall.size,
           textColor = AppTextStyle.titleSmall.color,

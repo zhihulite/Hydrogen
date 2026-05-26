@@ -25,7 +25,7 @@ local TabBar = {}
 ---@return table tabs  { card, label, name } 数组
 function TabBar.create(parent, tabNames, onSelected, options)
   local opt = options or {}
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
 
   -- 合并默认配置
   local tabHeight = opt.tabHeight or DEFAULT_CONFIG.tabHeight
@@ -105,7 +105,7 @@ end
 ---@param index number
 ---@param colorsConfig table { selectedColor, selectedTextColor, normalColor, normalTextColor }
 function TabBar.select(tabs, index, colorsConfig)
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
   local cfg = colorsConfig or {}
   local selectedColor = cfg.selectedColor or colors.primary
   local selectedTextColor = cfg.selectedTextColor or colors.surfaceBright
@@ -113,14 +113,14 @@ function TabBar.select(tabs, index, colorsConfig)
   local normalTextColor = cfg.normalTextColor or colors.onSurface
 
   for _, tab in ipairs(tabs) do
-    tab.card.setcardBackgroundColor(normalColor)
-    tab.label.setTextColor(normalTextColor)
+    tab.card.cardBackgroundColor = normalColor
+    tab.label.textColor = normalTextColor
   end
 
   local selected = tabs[index]
   if selected then
-    selected.card.setcardBackgroundColor(selectedColor)
-    selected.label.setTextColor(selectedTextColor)
+    selected.card.cardBackgroundColor = selectedColor
+    selected.label.textColor = selectedTextColor
   end
 end
 

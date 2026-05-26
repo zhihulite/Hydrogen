@@ -36,11 +36,12 @@ end
 function WelcomeActivity:initViews()
   local views = self.views
   views.nextButton.onClick = function() self:goToNext() end
-  views.toolbar.setNavigationOnClickListener(function() self:goToPrev() end)
+  local navCallback = function() self:goToPrev() end
+  views.toolbar.navigationOnClickListener = { onClick = navCallback }
 
-  local colors = AppTheme.getColors()
-  views.toolbar.setTitleTextColor(colors.primary)
-  views.toolbar.setNavigationIconTint(colors.primary)
+  local colors = AppTheme.colors
+  views.toolbar.titleTextColor = colors.primary
+  views.toolbar.navigationIconTint = colors.primary
 
   self.container = views.pageContainer
   self:showPage(0)
@@ -117,17 +118,17 @@ function WelcomeActivity:updateUI()
   self:updateToolbarTitle()
 
   if self.currentPage == self.maxPage - 1 then
-    views.nextButton.setText("开始体验")
+    views.nextButton.text = "开始体验"
    else
-    views.nextButton.setText("下一步")
+    views.nextButton.text = "下一步"
   end
 
-  views.nextButton.setEnabled(self:canGoToNext())
+  views.nextButton.enabled = self:canGoToNext()
 
   if self.currentPage == 0 then
-    views.toolbar.setNavigationIcon(nil)
+    views.toolbar.navigationIcon = nil
    else
-    views.toolbar.setNavigationIcon(Helpers.Static.materialDrawable("twotone_arrow_back", 24))
+    views.toolbar.navigationIcon = Helpers.Static.materialDrawable("twotone_arrow_back", 24)
   end
 end
 
@@ -135,19 +136,19 @@ function WelcomeActivity:updateToolbarTitle()
   local views = self.views
 
   if self.currentPage == 0 then
-    views.toolbar.setTitle("欢迎")
+    views.toolbar.title = "欢迎"
    elseif self.currentPage <= #agreements then
     local agreement = agreements[self.currentPage]
-    views.toolbar.setTitle("同意《" .. agreement.title .. "》")
+    views.toolbar.title = "同意《" .. agreement.title .. "》"
    elseif self.currentPage == #agreements + 1 then
-    views.toolbar.setTitle("权限说明")
+    views.toolbar.title = "权限说明"
    elseif self.currentPage == self.maxPage - 1 then
-    views.toolbar.setTitle("准备就绪")
+    views.toolbar.title = "准备就绪"
   end
 end
 
 function WelcomeActivity:createStartPage()
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
 
   local page = loadlayout({
     LinearLayoutCompat,
@@ -196,7 +197,7 @@ end
 
 function WelcomeActivity:createAgreementPage(agreement, index)
   local LinkMovementMethod = luajava.bindClass("android.text.method.LinkMovementMethod")
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
 
   local htmlContent = self:readAgreement(agreement.name) or agreement.title .. "内容加载中..."
   local spanned = fromHtml(htmlContent)
@@ -220,7 +221,7 @@ function WelcomeActivity:createAgreementPage(agreement, index)
         textSize = AppTextStyle.bodyMedium.size,
         textColor = AppTextStyle.bodyMedium.color,
         typeface = AppTextStyle.bodyMedium.font,
-        movementMethod = LinkMovementMethod.getInstance(),
+        movementMethod = LinkMovementMethod.instance,
       }
     },
     {
@@ -245,16 +246,17 @@ function WelcomeActivity:createAgreementPage(agreement, index)
   }, views)
 
   self.agreementStatus[index] = false
-  views.check.setOnCheckedChangeListener({ onCheckedChanged = function(_, isChecked)
+  views.check.setOnCheckedChangeListener(luajava.createProxy("android.widget.CompoundButton$OnCheckedChangeListener", {
+    onCheckedChanged = function(_, isChecked)
       self.agreementStatus[index] = isChecked
       self:updateUI()
-  end })
+  end}))
 
   return page
 end
 
 function WelcomeActivity:createPermissionPage()
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
   local views = {}
 
   local page = loadlayout({
@@ -337,7 +339,7 @@ function WelcomeActivity:createPermissionPage()
 end
 
 function WelcomeActivity:createCompletePage()
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
 
   local page = loadlayout({
     LinearLayoutCompat,

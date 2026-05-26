@@ -50,7 +50,7 @@ function M.show(opts)
   local root = loadlayout(layout, views)
 
   -- 初始化列表
-  views.user_list.setLayoutManager(LinearLayoutManager(activity))
+  views.user_list.layoutManager = LinearLayoutManager(activity)
   model:setupSingle(views.user_list, nil)
   model:ensureLoaded() -- 默认加载
 
@@ -64,7 +64,7 @@ function M.show(opts)
 
   -- 创建并显示 BottomSheet
   local bottomSheet = BottomSheetDialog(activity)
-  bottomSheet.setContentView(root)
+  bottomSheet.contentView = root
   model:setBottomSheet(bottomSheet)
 
   -- 关闭时销毁 Model

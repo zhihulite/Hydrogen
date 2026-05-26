@@ -6,7 +6,7 @@ import "androidx.appcompat.widget.LinearLayoutCompat"
 import "androidx.appcompat.widget.AppCompatImageView"
 import "com.google.android.material.textview.MaterialTextView"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,

@@ -71,12 +71,12 @@ local function getDrawableFromDir(dir, name, sizeDp, raw, useExts)
   end
   local sizePx = dp2px(sizeDp)
   local scaledBitmap = Bitmap.createScaledBitmap(bitmap, sizePx, sizePx, true)
-  local drawable = BitmapDrawable(activity.getResources(), scaledBitmap)
+  local drawable = BitmapDrawable(activity.resources, scaledBitmap)
   
   drawable.setBounds(0, 0, sizePx, sizePx)
   if not raw then
-    local colors = AppTheme.getColors()
-    drawable.setTint(colors.primary)
+    local colors = AppTheme.colors
+    drawable.tint = colors.primary
   end
   return drawable
 end
@@ -131,7 +131,7 @@ function M.zemojiList()
   if dir.exists() and dir.isDirectory() then
     local files = luajava.astable(dir.listFiles() or {})
     for _, f in ipairs(files) do
-      local name = f.getName()
+      local name = f.name
       local baseName = name:match("(.+)%..+$")
       if baseName then
         table.insert(list, baseName)

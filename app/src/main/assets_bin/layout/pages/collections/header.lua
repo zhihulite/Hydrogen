@@ -11,11 +11,11 @@ import "com.google.android.material.shape.RelativeCornerSize"
 import "com.google.android.material.divider.MaterialDivider"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
-local avatarShape = ShapeAppearanceModel.builder()
-.setAllCornerSizes(RelativeCornerSize(0.5))
-.build()
+local avatarShapeBuilder = ShapeAppearanceModel.builder()
+avatarShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
+local avatarShapeModel = avatarShapeBuilder.build()
 
 return {
   LinearLayoutCompat,
@@ -28,7 +28,7 @@ return {
     layout_height = "wrap_content",
     layout_margin = "8dp",
     radius = "12dp",
-    cardElevation = "0dp",
+    cardElevation = 0,
     cardBackgroundColor = colors.surface,
     strokeWidth = "1dp",
     strokeColor = colors.outline,
@@ -75,7 +75,7 @@ return {
           id = "creator_avatar",
           layout_width = "24dp",
           layout_height = "24dp",
-          shapeAppearanceModel = avatarShape,
+          shapeAppearanceModel = avatarShapeModel,
         },
         {
           MaterialTextView,

@@ -17,7 +17,7 @@ function M.new(emojiName, sizeDp)
   local span = luajava.override(ReplacementSpan, {
     getSize = function(super, paint, cs, start, end_, fm)
       if fm then
-        local paintFm = paint.getFontMetricsInt()
+        local paintFm = paint.fontMetricsInt
         local textHeight = paintFm.bottom - paintFm.top
         local imageHalf = sizePx / 2
         local quarter = math.floor(textHeight / 4)
@@ -40,7 +40,7 @@ function M.new(emojiName, sizeDp)
       end
 
       if bitmap then
-        local fm = paint.getFontMetricsInt()
+        local fm = paint.fontMetricsInt
         local imageTop = (fm.descent + y + y + fm.ascent) / 2 - sizePx / 2
         canvas.drawBitmap(bitmap, x, imageTop, paint)
       end

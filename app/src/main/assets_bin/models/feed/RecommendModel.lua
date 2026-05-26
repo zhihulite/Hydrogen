@@ -1,5 +1,5 @@
 -- models/feed/RecommendModel.lua
--- 推荐流 - PageToolModel（支持长按弹出不感兴趣菜单）
+-- 推荐流 - PageToolModel
 
 local PageToolModel = require("models.base.PageToolModel")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
@@ -53,28 +53,30 @@ function RecommendModel:setupSectionTabs(tabLayout)
 
   self:loadSections(function(sections)
     if not sections or #sections == 0 then
-      tabLayout.setVisibility(View.GONE)
+      tabLayout.visibility = View.GONE
       return
     end
 
     for _, sec in ipairs(sections) do
       local name = sec.section_name or "推荐"
-      tabLayout.addTab(tabLayout.newTab().setText(name), false)
+      local tab = tabLayout.newTab()
+      tab.text = name
+      tabLayout.addTab(tab, false)
       table.insert(self.sectionUrls, buildSectionUrl(sec))
     end
 
-    tabLayout.setVisibility(View.VISIBLE)
+    tabLayout.visibility = View.VISIBLE
 
     tabLayout.addOnTabSelectedListener(TabLayout.OnTabSelectedListener({
       onTabSelected = function(tab)
-        local pos = tab.getPosition()
+        local pos = tab.position
         local url = self.sectionUrls[pos + 1]
         if url then self:setSectionUrl(url) end
       end,
       onTabReselected = function(tab) self:refresh() end,
     }))
 
-    if tabLayout.getTabCount() > 0 then
+    if tabLayout.tabCount > 0 then
       tabLayout.selectTab(tabLayout.getTabAt(0))
       if #self.sectionUrls > 0 then
         self:setSectionUrl(self.sectionUrls[1])
@@ -185,7 +187,7 @@ function RecommendModel:showDislikeMenu(item, anchor)
 
     -- 创建并显示 PopupMenu
     local popup = PopupMenu(activity, anchor)
-    local menu = popup.getMenu()
+    local menu = popup.menu
 
     for i, menuItem in ipairs(menuItems) do
       menu.add(0, i, 0, menuItem.title)
@@ -193,7 +195,7 @@ function RecommendModel:showDislikeMenu(item, anchor)
 
     popup.setOnMenuItemClickListener({
       onMenuItemClick = function(menuItem)
-        local callback = menuItems[menuItem.getItemId()]
+        local callback = menuItems[menuItem.itemId]
         if callback and callback.action then
           callback.action()
         end

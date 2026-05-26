@@ -173,12 +173,12 @@ end
 function CollectionContentModel:showItemMenu(item, anchorView)
   local popup = PopupMenu(activity, anchorView)
 
-  popup.getMenu().add("取消收藏")
-  popup.getMenu().add("移动到其他收藏夹")
+  popup.menu.add("取消收藏")
+  popup.menu.add("移动到其他收藏夹")
 
   popup.setOnMenuItemClickListener({
     onMenuItemClick = function(menuItem)
-      local title = menuItem.getTitle()
+      local title = menuItem.title
       if title == "取消收藏" then
         self:removeFromCollection(item.id, item.type)
        elseif title == "移动到其他收藏夹" then

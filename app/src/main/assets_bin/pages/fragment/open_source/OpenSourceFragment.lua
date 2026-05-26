@@ -82,9 +82,9 @@ function OpenSourceFragment:initListView()
 
       if item.message and item.message ~= "" then
         views.message.text = item.message
-        views.message.setVisibility(View.VISIBLE)
+        views.message.visibility = View.VISIBLE
        else
-        views.message.setVisibility(View.GONE)
+        views.message.visibility = View.GONE
       end
 
       if views.card then
@@ -98,8 +98,8 @@ function OpenSourceFragment:initListView()
     end
   })
 
-  views.recycler_view.setAdapter(self.adapter)
-  views.recycler_view.setLayoutManager(LinearLayoutManager(activity))
+  views.recycler_view.adapter = self.adapter
+  views.recycler_view.layoutManager = LinearLayoutManager(activity)
 end
 
 function OpenSourceFragment:onDestroy()

@@ -7,8 +7,7 @@ import "com.google.android.material.textview.MaterialTextView"
 import "com.google.android.material.shape.ShapeAppearanceModel"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
-local cardCornerSize = 16
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,
@@ -19,11 +18,10 @@ return {
     id = "card",
     layout_width = "fill",
     layout_height = "wrap",
-    cardElevation = "0dp",
+    cardElevation = 0,
     strokeWidth = 0,
     radius = 0,
     cardBackgroundColor = colors.surface,
-    shapeAppearanceModel = ShapeAppearanceModel.builder().setAllCornerSizes(cardCornerSize).build(),
     {
       LinearLayoutCompat,
       orientation = "vertical",
@@ -41,7 +39,7 @@ return {
         {
           LinearLayoutCompat,
           orientation = "vertical",
-          layout_width = "0dp",
+          layout_width = 0,
           layout_weight = 1,
           {
             MaterialTextView,

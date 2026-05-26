@@ -29,13 +29,6 @@ function CollectionRecommendModel:parseItem(rawItem)
 end
 
 function CollectionRecommendModel:createAdapter(dataList)
-  import "androidx.appcompat.widget.LinearLayoutCompat"
-  import "com.google.android.material.textview.MaterialTextView"
-  import "com.google.android.material.card.MaterialCardView"
-  import "android.view.View"
-  
-  local colors = AppTheme.getColors()
-
   return SimpleRecyclerAdapter.new({
     items = dataList,
     onCreateView = function()

@@ -10,11 +10,11 @@ import "com.google.android.material.shape.ShapeAppearanceModel"
 import "com.google.android.material.shape.RelativeCornerSize"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
-local circleShapeModel = ShapeAppearanceModel.builder()
-  .setAllCornerSizes(RelativeCornerSize(0.5))
-  .build()
+local circleShapeBuilder = ShapeAppearanceModel.builder()
+circleShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
+local circleShapeModel = circleShapeBuilder.build()
 
 return {
   LinearLayoutCompat,
@@ -92,7 +92,7 @@ return {
               AppCompatImageView,
               layout_width = "16dp",
               layout_height = "16dp",
-              ImageBitmap = Helpers.Static.materialIcon("twotone_thumb_up"),
+              imageBitmap = Helpers.Static.materialIcon("twotone_thumb_up"),
               colorFilter = colors.onSurfaceVariant,
             },
             {
@@ -114,7 +114,7 @@ return {
               AppCompatImageView,
               layout_width = "16dp",
               layout_height = "16dp",
-              ImageBitmap = Helpers.Static.materialIcon("twotone_message"),
+              imageBitmap = Helpers.Static.materialIcon("twotone_message"),
               colorFilter = colors.onSurfaceVariant,
             },
             {

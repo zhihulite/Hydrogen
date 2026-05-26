@@ -9,7 +9,7 @@ import "com.google.android.material.textview.MaterialTextView"
 import "androidx.appcompat.widget.AppCompatImageView"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,
@@ -49,7 +49,7 @@ return {
       layout_width = "80dp",
       layout_height = "80dp",
       layout_marginBottom = "16dp",
-      ImageBitmap = Helpers.Static.materialIcon("inbox"),
+      imageBitmap = Helpers.Static.materialIcon("inbox"),
       colorFilter = colors.onSurfaceVariant,
     },
     {

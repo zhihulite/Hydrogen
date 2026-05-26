@@ -10,11 +10,11 @@ import "com.google.android.material.shape.RelativeCornerSize"
 import "com.google.android.material.card.MaterialCardView"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
-local circleShape = ShapeAppearanceModel.builder()
-.setAllCornerSizes(RelativeCornerSize(0.5))
-.build()
+local circleShapeBuilder = ShapeAppearanceModel.builder()
+circleShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
+local circleShapeModel = circleShapeBuilder.build()
 
 return {
   LinearLayoutCompat,
@@ -44,11 +44,11 @@ return {
           id = "avatar",
           layout_width = "48dp",
           layout_height = "48dp",
-          shapeAppearanceModel = circleShape,
+          shapeAppearanceModel = circleShapeModel,
         },
         {
           LinearLayoutCompat,
-          layout_width = "0dp",
+          layout_width = 0,
           layout_weight = 1,
           layout_height = "wrap_content",
         },
@@ -58,7 +58,7 @@ return {
           layout_width = "24dp",
           layout_height = "24dp",
           layout_gravity = "end",
-          ImageBitmap = Helpers.Static.materialIcon("twotone_logout"),
+          imageBitmap = Helpers.Static.materialIcon("twotone_logout"),
           colorFilter = colors.onSurfaceVariant,
           visibility = View.GONE,
         }

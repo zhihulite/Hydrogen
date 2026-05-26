@@ -6,7 +6,7 @@ import "com.google.android.material.card.MaterialCardView"
 import "com.google.android.material.textview.MaterialTextView"
 import "com.google.android.material.slider.Slider"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,
@@ -23,8 +23,8 @@ return {
     layout_marginRight = "12dp",
     layout_marginTop = "2dp",
     layout_marginBottom = "2dp",
-    radius = "0dp",
-    cardElevation = "0dp",
+    radius = 0,
+    cardElevation = 0,
     {
       LinearLayoutCompat,
       orientation = "vertical",

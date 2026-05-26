@@ -52,21 +52,21 @@ function TopicFragment:initViews()
     callback = function(statusBarHeight, navBarHeight)
       for _, rv in ipairs(self.topicModel:getAllRecyclerViews()) do
         rv.setPadding(
-        rv.getPaddingLeft(),
-        rv.getPaddingTop(),
-        rv.getPaddingRight(),
-        rv.getPaddingBottom() + navBarHeight
+        rv.paddingLeft,
+        rv.paddingTop,
+        rv.paddingRight,
+        rv.paddingBottom + navBarHeight
         )
-        rv.setClipToPadding(false)
+        rv.clipToPadding = false
       end
       -- 前置页面处理
-      local root = self.topicModel:getDetailViews().root
-      root.setPadding(
-        root.getPaddingLeft(),
-        root.getPaddingTop(),
-        root.getPaddingRight(),
-        root.getPaddingBottom() + navBarHeight
-        )
+      local detail_container = self.topicModel:getDetailViews().detail_container
+      detail_container.setPadding(
+      detail_container.paddingLeft,
+      detail_container.paddingTop,
+      detail_container.PaddingRight,
+      detail_container.PaddingBottom + navBarHeight
+      )
     end
   })
 end
@@ -151,7 +151,7 @@ end
 
 function TopicFragment:updateTitle(title)
   local toolbar = self.views.toolbar
-  if toolbar then toolbar.setTitle(title) end
+  if toolbar then toolbar.title = title end
 end
 
 function TopicFragment:initViewPager()

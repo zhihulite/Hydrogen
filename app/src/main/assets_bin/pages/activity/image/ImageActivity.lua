@@ -83,8 +83,8 @@ function ImageActivity:setupViewPager()
     self.adapter.add(pageView)
   end
 
-  viewPager.setAdapter(self.adapter)
-  viewPager.setOffscreenPageLimit(1)
+  viewPager.adapter = self.adapter
+  viewPager.offscreenPageLimit = 1
   viewPager.registerOnPageChangeCallback(luajava.override(ViewPager2.OnPageChangeCallback, {
     onPageSelected = function(super, position)
       self.currentIndex = position
@@ -101,10 +101,10 @@ function ImageActivity:loadImage(index)
   if not self.imageUrls[imgidx] or not self.pageViews[index] then return end
 
   local views = self.pageViews[index].ids
-  if views.photo_view.getDrawable() ~= nil then return end
+  if views.photo_view.drawable ~= nil then return end
 
   local url = self:processImageUrl(self.imageUrls[imgidx])
-  views.loading_container.setVisibility(View.VISIBLE)
+  views.loading_container.visibility = View.VISIBLE
 
   Glide.with(activity)
   .load(url)
@@ -115,8 +115,8 @@ function ImageActivity:loadImage(index)
       if not self.pageViews or not self.pageViews[index] then return end
       local v = self.pageViews[index].ids
       if v then
-        v.loading_container.setVisibility(View.GONE)
-        v.photo_view.setVisibility(View.VISIBLE)
+        v.loading_container.visibility = View.GONE
+        v.photo_view.visibility = View.VISIBLE
       end
       return false
     end),
@@ -124,8 +124,8 @@ function ImageActivity:loadImage(index)
       if not self.pageViews or not self.pageViews[index] then return end
       local v = self.pageViews[index].ids
       if v then
-        v.loading_container.setVisibility(View.GONE)
-        v.photo_view.setVisibility(View.VISIBLE)
+        v.loading_container.visibility = View.GONE
+        v.photo_view.visibility = View.VISIBLE
       end
       tip("图片加载失败")
       return false
@@ -158,8 +158,8 @@ end
 
 function ImageActivity:toggleBottomBar()
   self.bottomBarVisible = not self.bottomBarVisible
-  self.views.bottom_bar.setVisibility(self.bottomBarVisible and View.VISIBLE or View.GONE)
-  self.views.download_btn.setVisibility(self.bottomBarVisible and View.VISIBLE or View.GONE)
+  self.views.bottom_bar.visibility = self.bottomBarVisible and View.VISIBLE or View.GONE
+  self.views.download_btn.visibility = self.bottomBarVisible and View.VISIBLE or View.GONE
 end
 
 
@@ -171,7 +171,7 @@ function ImageActivity:shareCurrentImage()
   end
 
   local photoView = self.pageViews[currentIndex].ids.photo_view
-  local drawable = photoView.getDrawable()
+  local drawable = photoView.drawable
   if not drawable then
     tip("图片尚未加载完成")
     return
@@ -185,8 +185,8 @@ function ImageActivity:shareCurrentImage()
 
   if luajava.instanceof(drawable, GifDrawableClass) then
     -- GIF：克隆后获取完整字节
-    local cloned = drawable.getConstantState().newDrawable().mutate()
-    local buffer = cloned.getBuffer()
+    local cloned = drawable.constantState.newDrawable().mutate()
+    local buffer = cloned.buffer
     local bytes = luajava.newArray(luajava.bindClass("java.lang.Byte").TYPE, buffer.capacity())
     local dup = buffer.duplicate()
     dup.clear()
@@ -195,7 +195,7 @@ function ImageActivity:shareCurrentImage()
     Helpers.UI.shareBytes(bytes, fileName, mimeType)
    else
     -- 静态图：直接获取 bitmap 分享
-    local bitmap = drawable.getBitmap()
+    local bitmap = drawable.bitmap
     if bitmap then
       Helpers.UI.shareBitmap(bitmap, fileName)
      else
@@ -214,12 +214,12 @@ end
 
 function ImageActivity:setFullScreen()
   if Build.VERSION.SDK_INT < 21 then return end
-  local window = activity.getWindow()
+  local window = activity.window
   window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-  window.setStatusBarColor(0)
-  window.setNavigationBarColor(0x00000000)
+  window.statusBarColor = 0
+  window.navigationBarColor = 0x00000000
 
-  local decorView = window.getDecorView()
+  local decorView = window.decorView
   decorView.setSystemUiVisibility(
   View.SYSTEM_UI_FLAG_LAYOUT_STABLE
   | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
@@ -237,7 +237,7 @@ function ImageActivity:onDestroy()
   if self.pageViews then
     for _, page in pairs(self.pageViews) do
       if page.ids and page.ids.photo_view then
-        page.ids.photo_view.setImageDrawable(nil)
+        page.ids.photo_view.imageDrawable = nil
       end
     end
   end

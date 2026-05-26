@@ -5,7 +5,7 @@ import "androidx.appcompat.widget.LinearLayoutCompat"
 import "androidx.recyclerview.widget.RecyclerView"
 import "com.google.android.material.appbar.MaterialToolbar"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,

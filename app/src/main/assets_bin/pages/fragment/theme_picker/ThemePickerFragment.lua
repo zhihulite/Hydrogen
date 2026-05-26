@@ -20,7 +20,7 @@ local allThemeIds = {
 }
 
 -- 动态获取主题 primary 颜色
-local appR = luajava.bindClass(activity.getPackageName() .. ".R")
+local appR = luajava.bindClass(activity.packageName .. ".R")
 local appRStyle = appR.style
 local colorPrimaryAttr = appR.attr.colorPrimary
 local function getThemePrimaryColor(themeId)
@@ -64,7 +64,7 @@ function ThemePickerFragment:initViews()
   })
 
   if views.toolbar then
-    Helpers.UI.setupToolbar(views.toolbar,{ title = "主题选择" })
+    Helpers.UI.setupToolbar(views.toolbar,{ title = "主题设置" })
   end
 
   self:initListView()
@@ -102,11 +102,11 @@ function ThemePickerFragment:initListView()
       end
 
       if views.color_preview then
-        views.color_preview.setcardBackgroundColor(item.primary)
+        views.color_preview.cardBackgroundColor = item.primary
       end
 
       if views.radio then
-        views.radio.setChecked(item.isCurrent or false)
+        views.radio.checked = item.isCurrent or false
       end
 
       if views.card then
@@ -117,8 +117,8 @@ function ThemePickerFragment:initListView()
     end
   })
 
-  views.recycler_view.setAdapter(self.adapter)
-  views.recycler_view.setLayoutManager(LinearLayoutManager(activity))
+  views.recycler_view.adapter = self.adapter
+  views.recycler_view.layoutManager = LinearLayoutManager(activity)
 end
 
 function ThemePickerFragment:onThemeSelect(item)

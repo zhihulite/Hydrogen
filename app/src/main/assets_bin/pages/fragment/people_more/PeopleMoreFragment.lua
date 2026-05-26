@@ -26,7 +26,7 @@ function PeopleMoreFragment:onCreate(params)
 end
 
 function PeopleMoreFragment:initLayout()
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
 
   if self.moreType:find("收藏") then
     self.root_view = loadlayout(Layouts.pages.people_more.collections, self.views)
@@ -57,12 +57,12 @@ function PeopleMoreFragment:initViews()
     callback = function(statusBarHeight, navBarHeight)
       for _, rv in ipairs(self.model:getAllRecyclerViews()) do
         rv.setPadding(
-        rv.getPaddingLeft(),
-        rv.getPaddingTop(),
-        rv.getPaddingRight(),
-        rv.getPaddingBottom() + navBarHeight
+        rv.paddingLeft,
+        rv.paddingTop,
+        rv.paddingRight,
+        rv.paddingBottom + navBarHeight
         )
-        rv.setClipToPadding(false)
+        rv.clipToPadding = false
       end
     end
   })

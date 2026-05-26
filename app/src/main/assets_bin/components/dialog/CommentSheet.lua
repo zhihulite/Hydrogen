@@ -12,7 +12,6 @@ import "android.view.View"
 import "androidx.appcompat.widget.PopupMenu"
 
 local CommentModel = require("models.content.CommentModel")
-local CommentEditorSheet = require("components/dialog/CommentEditorSheet")
 
 function M:initListView()
   local model = self.model
@@ -99,10 +98,10 @@ function M:postComment()
     return
   end
   local input = self.sheetViews.comment_input
-  local content = input and input.getText().toString() or ""
+  local content = input and input.text.toString() or ""
   if content == "" then tip("请输入内容") return end
   self.model:postComment(content, nil, function(success)
-    if success then input.setText("") self.model:refresh() end
+    if success then input.text = "" self.model:refresh() end
   end)
 end
 
@@ -171,11 +170,11 @@ end
 
 function M:showCommentMenuPopup(item, menuItems, anchorView)
   local popup = PopupMenu(activity, anchorView or self.sheetViews.toolbar)
-  for _, m in ipairs(menuItems) do popup.getMenu().add(m.title) end
+  for _, m in ipairs(menuItems) do popup.menu.add(m.title) end
   popup.setOnMenuItemClickListener({
     onMenuItemClick = function(menuItem)
       for _, m in ipairs(menuItems) do
-        if m.title == menuItem.getTitle() then m.onClick() return true end
+        if m.title == menuItem.title then m.onClick() return true end
       end
       return false
     end
@@ -228,10 +227,10 @@ function M.show(options)
   self:setupEvents()
 
   self.bottomSheet = BottomSheetDialog(activity)
-  self.bottomSheet.setContentView(sheetView)
+  self.bottomSheet.contentView = sheetView
 
   local behavior = self.bottomSheet.behavior
-  behavior.setSkipCollapsed(true)
+  behavior.skipCollapsed = true
 
   self.bottomSheet.show()
 

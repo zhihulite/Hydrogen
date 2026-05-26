@@ -11,7 +11,7 @@
 
         inject(bgColor) {
             // 核心背景覆盖: body, 根容器, AppMain, 评论区(CommentSection), 预加载骨架(skeleton), 
-            // 底部栏(Toolbar), 作者卡片(AuthorCard-wrapper), 文章底部(PostIndex-Footer)
+            // 底部栏(Toolbar), 作者卡片(AuthorCard), 文章底部(PostIndex-Footer)
             const mainSelectors = [
                 'body',
                 'body > div:not([class]):not([id]) *',
@@ -21,7 +21,7 @@
                 '.CommentSection',
                 '.skeleton',
                 '.Toolbar',
-                '.AuthorCard-wrapper > div',
+                '.UserLine.AuthorCard',
                 '.PostIndex-Footer *'
             ].join(', ');
 

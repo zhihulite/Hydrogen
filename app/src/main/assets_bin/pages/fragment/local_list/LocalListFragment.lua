@@ -51,7 +51,7 @@ function LocalListFragment:loadData()
   table.clear(self.items)
   for _, item in ipairs(items) do table.insert(self.items, item) end
   self.adapter.notifyDataSetChanged()
-  self.views.swipe_refresh.setRefreshing(false)
+  self.views.swipe_refresh.refreshing = false
   self:updateEmptyState()
 end
 
@@ -62,7 +62,7 @@ function LocalListFragment:scanTitles()
   local titleDirs = luajava.astable(dir.listFiles() or {})
   for _, titleDir in ipairs(titleDirs) do
     if titleDir.isDirectory() then
-      local titleName = titleDir.getName()
+      local titleName = titleDir.name
       local titlePath = tostring(titleDir)
       local authors = {}
       local authorDirs = luajava.astable(titleDir.listFiles() or {})
@@ -71,7 +71,7 @@ function LocalListFragment:scanTitles()
           local htmlPath = tostring(authorDir) .. "/html.html"
           if Extensions.File.exists(htmlPath) then
             table.insert(authors, {
-              name = authorDir.getName(),
+              name = authorDir.name,
               path = tostring(authorDir),
               timestamp = authorDir.lastModified(),
             })
@@ -122,8 +122,8 @@ function LocalListFragment:initListView()
       views.card.onLongClick = function() self:confirmDeleteTitle(item) return true end
     end,
   })
-  views.recycler_view.setLayoutManager(LinearLayoutManager(activity))
-  views.recycler_view.setAdapter(self.adapter)
+  views.recycler_view.layoutManager = LinearLayoutManager(activity)
+  views.recycler_view.adapter = self.adapter
 end
 
 function LocalListFragment:showAuthorsDialog(titleItem)
@@ -185,8 +185,8 @@ end
 function LocalListFragment:updateEmptyState()
   local views = self.views
   local isEmpty = #self.items == 0
-  views.recycler_view.setVisibility(isEmpty and View.GONE or View.VISIBLE)
-  views.empty_view.setVisibility(isEmpty and View.VISIBLE or View.GONE)
+  views.recycler_view.visibility = isEmpty and View.GONE or View.VISIBLE
+  views.empty_view.visibility = isEmpty and View.VISIBLE or View.GONE
 end
 
 function LocalListFragment:showSearchDialog()
@@ -198,7 +198,7 @@ function LocalListFragment:showSearchDialog()
     { AppCompatEditText, id = "edit", hint = "输入关键词", layout_width = "match_parent" }
   }, dv))
   .setPositiveButton("搜索", function()
-    local kw = dv.edit and dv.edit.getText().toString()
+    local kw = dv.edit and dv.edit.text
     if kw and kw ~= "" then
       local results = self:search(kw)
       table.clear(self.items)

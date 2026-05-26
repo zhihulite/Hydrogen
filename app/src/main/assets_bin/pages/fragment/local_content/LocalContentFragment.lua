@@ -2,8 +2,8 @@
 -- 本地网页保存与浏览页面（专门用于 answer）
 
 import "android.webkit.WebView"
-import "android.webkit.WebViewNetWork"
-import "android.webkit.WebChromeNetWork"
+import "android.webkit.WebViewClient"
+import "android.webkit.WebChromeClient"
 import "android.view.View"
 
 local BaseFragment = require("pages.base.BaseFragment")
@@ -144,34 +144,34 @@ function LocalContentFragment:initWebView()
     if self.webView then self.webView.reload() end
   end)
 
-  self.webViewHelper:setWebViewNetWork({
+  self.webViewHelper:setWebViewClient({
     shouldOverrideUrlLoading = function(view, url)
       view.loadUrl(url)
       return true
     end,
     onPageStarted = function(view, url)
-      views.swipe_refresh.setRefreshing(true)
-      views.webview.setVisibility(View.GONE)
+      views.swipe_refresh.refreshing = true
+      views.webview.visibility = View.GONE
     end,
     onPageFinished = function(view, url)
-      views.swipe_refresh.setRefreshing(false)
-      views.webview.setVisibility(View.VISIBLE)
+      views.swipe_refresh.refreshing = false
+      views.webview.visibility = View.VISIBLE
     end
   })
 
-  self.webViewHelper:setWebChromeNetWork({
+  self.webViewHelper:setWebChromeClient({
     onReceivedTitle = function(view, title)
       if not self.pageTitle and self.views.toolbar then
-        self.views.toolbar.setTitle(title)
+        self.views.toolbar.title = title
       end
     end,
     onProgressChanged = function(view, progress)
       local bar = self.views.progress_bar
       if progress == 100 then
-        bar.setVisibility(View.GONE) bar.setProgress(0)
+        bar.visibility = View.GONE bar.progress = 0
        else
-        if bar.getVisibility() ~= View.VISIBLE then bar.setVisibility(View.VISIBLE) end
-        bar.setProgress(progress)
+        if bar.visibility ~= View.VISIBLE then bar.visibility = View.VISIBLE end
+        bar.progress = progress
       end
     end
   })
@@ -191,13 +191,13 @@ end
 
 function LocalContentFragment:loadUrl()
   if not self.webView or not self.url then return end
-  self.views.webview.setVisibility(View.GONE)
+  self.views.webview.visibility = View.GONE
   self.webView.loadUrl(self.url)
 end
 
 function LocalContentFragment:loadLocalFile()
   if self.htmlPath and Extensions.File.exists(self.htmlPath) then
-    self.views.webview.setVisibility(View.GONE)
+    self.views.webview.visibility = View.GONE
     self.webView.loadUrl("file://" .. self.htmlPath)
    else
     tip("文件不存在")
@@ -283,7 +283,7 @@ function LocalContentFragment:shareContent()
     Helpers.UI.shareText(self.url, self.title)
    else
     -- 复制到临时目录再分享
-    local tempDir = Extensions.File.getCacheDir() .. "/share_html_temp"
+    local tempDir = Extensions.File.cacheDir .. "/share_html_temp"
     Extensions.File.mkdir(tempDir)
     self._tempDir = tempDir
 
@@ -303,7 +303,7 @@ function LocalContentFragment:saveAsPdf()
   import "android.print.PrintAttributes"
   import "android.content.Context"
 
-  local printManager = activity.getOriginalContext().getSystemService(Context.PRINT_SERVICE)
+  local printManager = activity.originalContext.getSystemService(Context.PRINT_SERVICE)
   if not printManager then
     tip("打印服务不可用")
     return

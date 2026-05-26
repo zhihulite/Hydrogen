@@ -34,7 +34,7 @@ function LoginActivity:initViews()
   self.webViewHelper = WebViewHelper.new(self.views.webview)
   :initSettings()
   :initDownloadListener()
-  :setWebViewNetWork({
+  :setWebViewClient({
     shouldOverrideUrlLoading = function(_, url)
       if url:find("utm_id") or url:match("zhihu.com/?$") then
         self:checkLogin()
@@ -49,14 +49,14 @@ function LoginActivity:initViews()
       return false
     end,
     onPageFinished = function(_, url)
-      self.views.progress.setVisibility(View.GONE)
-      self.views.webview.setVisibility(View.VISIBLE)
+      self.views.progress.visibility = View.GONE
+      self.views.webview.visibility = View.VISIBLE
     end,
   })
-  :setWebChromeNetWork({
+  :setWebChromeClient({
     onProgressChanged = function(_, p)
-      self.views.progress.setVisibility(p < 100 and View.VISIBLE or View.GONE)
-      self.views.webview.setVisibility(p < 100 and View.GONE or View.VISIBLE)
+      self.views.progress.visibility = p < 100 and View.VISIBLE or View.GONE
+      self.views.webview.visibility = p < 100 and View.GONE or View.VISIBLE
     end,
   })
   :setMessageListener(function(action, data)
@@ -84,12 +84,12 @@ function LoginActivity:checkLogin()
     return
   end
 
-  NetWork.get("https://www.zhihu.com/api/v4/me", { cookie = cookie }, self:runIfAlive(function(success, data)
-    if success and data then
-      local result = json.decode(data)
+  NetWork.get("https://www.zhihu.com/api/v4/me", { cookie = cookie }, self:runIfAlive(function(code, content)
+    if code == 200 and content then
+      local result = json.decode(content)
       if result and result.id then
         Extensions.Config.set(Constants.SharedDataKeys.USER_ID, result.id)
-        CookieManager.getInstance().flush()
+        CookieManager.instance.flush()
         tip("登录成功")
         task(500, self:runIfAlive(function()
           self:finish()
@@ -101,8 +101,8 @@ end
 
 function LoginActivity:clearCookie()
   Helpers.BottomDialog.confirm("确定清除 Cookie 吗？", self:runIfAlive(function()
-    CookieManager.getInstance().removeAllCookies(nil)
-    CookieManager.getInstance().flush()
+    CookieManager.instance.removeAllCookies(nil)
+    CookieManager.instance.flush()
     if self.webViewHelper then self.webViewHelper:reload() end
     tip("已清除 Cookie")
   end))

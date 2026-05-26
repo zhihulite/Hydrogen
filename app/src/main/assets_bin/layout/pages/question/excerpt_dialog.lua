@@ -3,7 +3,7 @@
 
 import "com.hydrogen.view.LuaWebView"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LuaWebView,

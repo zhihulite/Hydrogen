@@ -6,7 +6,7 @@ import "com.google.android.material.textview.MaterialTextView"
 import "com.google.android.material.card.MaterialCardView"
 import "androidx.appcompat.widget.AppCompatImageView"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,
@@ -22,7 +22,7 @@ return {
   backgroundColor = colors.surface,
   {
     LinearLayoutCompat,
-    layout_width = "0dp",
+    layout_width = 0,
     layout_weight = 1,
     layout_height = "wrap",
   },
@@ -63,7 +63,7 @@ return {
         layout_width = "18dp",
         layout_height = "18dp",
         layout_marginLeft = "2dp",
-        ImageBitmap = Helpers.Static.materialIcon("twotone_arrow_drop_down"),
+        imageBitmap = Helpers.Static.materialIcon("twotone_arrow_drop_down"),
         colorFilter = AppTextStyle.bodySmall.color,
       },
     }

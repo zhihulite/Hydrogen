@@ -36,8 +36,7 @@ function BasePage:runIfAlive(callback)
 end
 
 -- 初始化设置左右边距
-import "androidx.core.view.OnApplyWindowInsetsListener"
-ViewCompat.setOnApplyWindowInsetsListener(activity.getWindow().getDecorView(), OnApplyWindowInsetsListener({
+ViewCompat.setOnApplyWindowInsetsListener(activity.window.decorView, luajava.createProxy("androidx.core.view.OnApplyWindowInsetsListener", {
   onApplyWindowInsets = function(v, insets)
     local systemBars = WindowInsetsCompat.Type.systemBars()
     local cutout = WindowInsetsCompat.Type.displayCutout()
@@ -58,7 +57,7 @@ function BasePage:setupEdgeToEdge(options)
   EdgeToEdge.enable(activity)
 
   local function applyInsets()
-    local insets = ViewCompat.getRootWindowInsets(activity.getWindow().getDecorView())
+    local insets = ViewCompat.getRootWindowInsets(activity.window.decorView)
     if not insets then return false end
 
     local statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
@@ -70,7 +69,7 @@ function BasePage:setupEdgeToEdge(options)
         if luajava.instanceof(v, Toolbar) then
           error("不支持直接为 Toolbar 设置 top，请尝试改为 Toolbar 的父布局")
          else
-          v.setPadding(v.getPaddingLeft(), statusBarHeight, v.getPaddingRight(), v.getPaddingBottom())
+          v.setPadding(v.paddingLeft, statusBarHeight, v.paddingRight, v.paddingBottom)
         end
       end
     end
@@ -78,7 +77,7 @@ function BasePage:setupEdgeToEdge(options)
     if options.bottom then
       local list = type(options.bottom) == "table" and options.bottom or { options.bottom }
       for _, v in ipairs(list) do
-        v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), navBarHeight)
+        v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, navBarHeight)
       end
     end
 

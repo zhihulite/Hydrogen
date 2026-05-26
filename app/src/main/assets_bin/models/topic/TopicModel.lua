@@ -214,16 +214,16 @@ function TopicModel:createAdapter(dataList, key)
 
       local hasPreview = item.preview and item.preview ~= ""
       views.preview.text = item.preview or ""
-      views.preview.setVisibility(hasPreview and View.VISIBLE or View.GONE)
+      views.preview.visibility = hasPreview and View.VISIBLE or View.GONE
 
       local hasBottom = item.bottomText ~= nil
       views.bottom_text.text = item.bottomText or ""
-      views.bottom_text.setVisibility(hasBottom and View.VISIBLE or View.GONE)
+      views.bottom_text.visibility = hasBottom and View.VISIBLE or View.GONE
 
       if hasBottom then
-        views.stats_layout.setVisibility(View.GONE)
+        views.stats_layout.visibility = View.GONE
        else
-        views.stats_layout.setVisibility(View.VISIBLE)
+        views.stats_layout.visibility = View.VISIBLE
         views.voteup_count.text = tostring(item.voteupCount)
         views.comment_count.text = tostring(item.commentCount)
       end

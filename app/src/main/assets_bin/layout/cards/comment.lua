@@ -11,11 +11,11 @@ import "com.google.android.material.shape.RelativeCornerSize"
 import "androidx.recyclerview.widget.RecyclerView"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
-local circleShape = ShapeAppearanceModel.builder()
-.setAllCornerSizes(RelativeCornerSize(0.5))
-.build()
+local circleShapeBuilder = ShapeAppearanceModel.builder()
+circleShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
+local circleShapeModel = circleShapeBuilder.build()
 
 return {
   LinearLayoutCompat,
@@ -55,13 +55,13 @@ return {
             id = "avatar",
             layout_width = "36dp",
             layout_height = "36dp",
-            shapeAppearanceModel = circleShape,
+            shapeAppearanceModel = circleShapeModel,
           },
           {
             LinearLayoutCompat,
             orientation = "vertical",
             id = "content_container",
-            layout_width = "0dp",
+            layout_width = 0,
             layout_weight = 1,
             layout_height = "wrap_content",
             layout_marginLeft = "10dp",
@@ -115,7 +115,7 @@ return {
               },
               {
                 View,
-                layout_width = "0dp",
+                layout_width = 0,
                 layout_weight = 1,
                 layout_height = "1dp",
               },
@@ -130,7 +130,7 @@ return {
                   id = "like_icon",
                   layout_width = "16dp",
                   layout_height = "16dp",
-                  ImageBitmap = Helpers.Static.materialIcon("outline_favorite_border"),
+                  imageBitmap = Helpers.Static.materialIcon("outline_favorite_border"),
                   colorFilter = colors.onSurfaceVariant,
                 },
                 {
@@ -155,7 +155,7 @@ return {
                   id = "reply_icon",
                   layout_width = "16dp",
                   layout_height = "16dp",
-                  ImageBitmap = Helpers.Static.materialIcon("twotone_message"),
+                  imageBitmap = Helpers.Static.materialIcon("twotone_message"),
                   colorFilter = colors.onSurfaceVariant,
                 },
                 {

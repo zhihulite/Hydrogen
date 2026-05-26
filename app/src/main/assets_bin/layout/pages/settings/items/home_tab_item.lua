@@ -15,7 +15,7 @@ return {
   {
     MaterialTextView,
     id = "title",
-    layout_width = "0dp",
+    layout_width = 0,
     layout_weight = 1,
     layout_marginLeft = "16dp",
     textSize = AppTextStyle.titleSmall.size,

@@ -7,7 +7,7 @@ import "com.google.android.material.appbar.MaterialToolbar"
 import "android.widget.FrameLayout"
 import "com.google.android.material.navigation.NavigationView"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   DrawerLayout,
@@ -30,7 +30,7 @@ return {
       FrameLayout,
       id = "page_container",
       layout_width = "fill",
-      layout_height = "0dp",
+      layout_height = 0,
       layout_weight = 1,
       backgroundColor = colors.background,
     }

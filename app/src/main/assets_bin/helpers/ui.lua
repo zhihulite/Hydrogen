@@ -15,31 +15,32 @@ import "android.net.Uri"
 import "android.view.MenuItem"
 import "com.google.android.material.dialog.MaterialAlertDialogBuilder"
 import "androidx.appcompat.widget.AppCompatEditText"
+import "java.io.FileOutputStream"
 
 local lastToast = nil
 
 function M.dp2px(dp)
-  return dp * activity.getResources().getDisplayMetrics().density + 0.5
+  return dp * activity.resources.displayMetrics.density + 0.5
 end
 
 function M.sp2px(sp)
-  return sp * activity.getResources().getDisplayMetrics().scaledDensity + 0.5
+  return sp * activity.resources.displayMetrics.scaledDensity + 0.5
 end
 
 function M.px2dp(px)
-  return px / activity.getResources().getDisplayMetrics().density
+  return px / activity.resources.displayMetrics.density
 end
 
 function M.px2sp(px)
-  return px / activity.getResources().getDisplayMetrics().scaledDensity
+  return px / activity.resources.displayMetrics.scaledDensity
 end
 
 function M.screenWidth()
-  return activity.getResources().getDisplayMetrics().widthPixels
+  return activity.resources.displayMetrics.widthPixels
 end
 
 function M.screenHeight()
-  return activity.getResources().getDisplayMetrics().heightPixels
+  return activity.resources.displayMetrics.heightPixels
 end
 
 
@@ -48,7 +49,7 @@ function M.tip(msg, long)
   if lastToast then lastToast.cancel() end
 
   local duration = long and Toast.LENGTH_LONG or Toast.LENGTH_SHORT
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
 
   local layout = {
     LinearLayoutCompat,
@@ -60,9 +61,9 @@ function M.tip(msg, long)
       layout_height = "wrap",
       layout_margin = "16dp",
       layout_marginBottom = "64dp",
-      CardElevation = "0dp",
+      cardElevation = 0,
       cardBackgroundColor = colors.surface,
-      StrokeWidth = 0,
+      strokeWidth = 0,
       radius = "8dp",
       {
         LinearLayoutCompat,
@@ -89,7 +90,7 @@ function M.tip(msg, long)
 
   lastToast = Toast.makeText(activity, msg, duration)
   lastToast.setGravity(Gravity.BOTTOM, 0, 0)
-  lastToast.setView(loadlayout(layout))
+  lastToast.view = loadlayout(layout)
   lastToast.show()
 end
 
@@ -97,14 +98,14 @@ end
 function M.copyText(text)
   local cm = activity.getSystemService(Context.CLIPBOARD_SERVICE)
   local clip = luajava.newInstance("android.content.ClipData", text, {"text/plain"}, luajava.newInstance("android.content.ClipData$Item", text))
-  cm.setPrimaryClip(clip)
+  cm.primaryClip = clip
   M.tip("已复制")
 end
 
 -- 分享文本
 function M.shareText(text, title)
   local intent = Intent(Intent.ACTION_SEND)
-  intent.setType("text/plain")
+  intent.type = "text/plain"
   intent.putExtra(Intent.EXTRA_TEXT, text)
   if title then intent.putExtra(Intent.EXTRA_SUBJECT, title) end
   activity.startActivity(Intent.createChooser(intent, title or "分享"))
@@ -136,12 +137,12 @@ function M.shareFile(filePath, text, mimeType, onError)
   end
 
   local file = File(filePath)
-  local uri = FileProvider.getUriForFile(activity, activity.getPackageName() .. ".FileProvider", file)
+  local uri = FileProvider.getUriForFile(activity, activity.packageName .. ".FileProvider", file)
 
   local intent = Intent(Intent.ACTION_SEND)
-  intent.setType(mimeType or "application/octet-stream")
+  intent.type = mimeType or "application/octet-stream"
   intent.putExtra(Intent.EXTRA_STREAM, uri)
-  intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+  intent.Flags = Intent.FLAG_GRANT_READ_URI_PERMISSION
 
   if text and text ~= "" then
     intent.putExtra(Intent.EXTRA_TEXT, text)
@@ -173,7 +174,7 @@ function M.shareBitmap(bitmap, fileName, text, onError)
   bitmap.compress(Bitmap.CompressFormat.JPEG, 95, fos)
   fos.flush()
   fos.close()
-  return M.shareFile(file.getAbsolutePath(), text, "image/jpeg", onError)
+  return M.shareFile(file.absolutePath, text, "image/jpeg", onError)
 end
 
 --- 分享字节数据（支持 gif/png/jpg 等）
@@ -201,13 +202,13 @@ function M.shareBytes(bytes, fileName, mimeType, text, onError)
   fos.flush()
   fos.close()
 
-  return M.shareFile(file.getAbsolutePath(), text, mimeType, onError)
+  return M.shareFile(file.absolutePath, text, mimeType, onError)
 end
 
 --- 准备分享临时目录（每次调用会先清理旧目录）
 --- @return string 临时目录路径
 function M.prepareShareTempDir()
-  local tempDir = activity.getExternalCacheDir().toString() .. "/share_temp"
+  local tempDir = activity.externalCacheDir.toString() .. "/share_temp"
   if Extensions.File.exists(tempDir) then
     Extensions.File.delete(tempDir)
   end
@@ -217,14 +218,12 @@ end
 
 function M.setupSwipeRefresh(sr, onRefresh)
   if not sr then return end
-  local colors = AppTheme.getColors()
-  sr.setProgressBackgroundColorSchemeColor(colors.background)
-  sr.setColorSchemeColors({colors.primary})
+  local colors = AppTheme.colors
+  sr.progressBackgroundColorSchemeColor = colors.background
+  sr.colorSchemeColors = {colors.primary}
 
   if onRefresh then
-    sr.setOnRefreshListener({
-      onRefresh = onRefresh
-    })
+    sr.onRefresh = onRefresh
   end
 end
 
@@ -232,22 +231,22 @@ function M.setupToolbar(toolbar, options)
   if not toolbar then return end
   options = options or {}
 
-  local colors = AppTheme.getColors()
-  toolbar.setTitleTextColor(colors.primary)
+  local colors = AppTheme.colors
+  toolbar.titleTextColor = colors.primary
 
   if options.title then
-    toolbar.setTitle(options.title)
+    toolbar.title = options.title
   end
 
   local navIcon = options.navIcon or Helpers.Static.materialDrawable("twotone_arrow_back", 24)
-  toolbar.setNavigationIcon(navIcon)
-  if navIcon then navIcon.setTint(colors.primary) end
+  toolbar.navigationIcon = navIcon
+  if navIcon then navIcon.tint = colors.primary end
 
   local navCallback = options.navCallback or function() Router.back() end
-  toolbar.setNavigationOnClickListener({ onClick = navCallback })
+  toolbar.navigationOnClickListener = { onClick = navCallback }
 
-  local overflowIcon = toolbar.getOverflowIcon()
-  if overflowIcon then overflowIcon.setTint(colors.primary) end
+  local overflowIcon = toolbar.overflowIcon
+  if overflowIcon then overflowIcon.tint = colors.primary end
 
   local menuItems = options.menu or {}
   local menuIdMap = {}
@@ -271,7 +270,7 @@ function M.setupToolbar(toolbar, options)
         local edit = views.edit
         dialog.getButton(dialog.BUTTON_POSITIVE).onClick = function()
           if not edit then return end
-          local code = edit.getText().toString()
+          local code = edit.text
           if code == "" then tip("请输入代码") return end
           pcall(load(code))
         end
@@ -280,8 +279,8 @@ function M.setupToolbar(toolbar, options)
   end
 
   if #menuItems > 0 then
-    toolbar.getMenu().clear()
-    menuIdMap = loadmenu(toolbar.getMenu(), menuItems)
+    toolbar.menu.clear()
+    menuIdMap = loadmenu(toolbar.menu, menuItems)
   end
 
   return menuIdMap
@@ -292,7 +291,7 @@ function M.clearAppCache()
   import "androidx.core.content.ContextCompat"
 
   local dataDir = tostring(ContextCompat.getDataDir(activity))
-  local imageTmp = tostring(activity.getExternalCacheDir()) .. "/images"
+  local imageTmp = tostring(activity.externalCacheDir) .. "/images"
   local totalSize = 0
 
   local function countAndDelete(path)

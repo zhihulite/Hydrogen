@@ -139,10 +139,10 @@ function FollowContentModel:createAdapter(dataList)
       views.title.text = item.title or ""
 
       views.preview.text = item.preview or ""
-      views.preview.setVisibility(item.preview and View.VISIBLE or View.GONE)
+      views.preview.visibility = item.preview and View.VISIBLE or View.GONE
 
       views.bottom_text.text = item.bottomText or ""
-      views.bottom_text.setVisibility(item.bottomText and View.VISIBLE or View.GONE)
+      views.bottom_text.visibility = item.bottomText and View.VISIBLE or View.GONE
 
       views.card.onClick = function()
         Helpers.ZhihuParser.go(item.type, { id = item.id }, { sharedElement = views.card })

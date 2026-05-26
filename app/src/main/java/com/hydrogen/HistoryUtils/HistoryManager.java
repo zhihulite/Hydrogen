@@ -6,11 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 import org.jspecify.annotations.NonNull;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @SuppressWarnings("unused")
@@ -21,7 +17,7 @@ public class HistoryManager {
     private static final long SAVE_DELAY = 500;
     private static final String PREFS_NAME = "history_prefs";
     private static final String KEY_ORDER = "history_order";
-    
+
     private static final String ORDER_DELIMITER = "||";  // 用于KEY_ORDER的分隔符
     private static final String DATA_DELIMITER = "¦¦";  // 用于条目数据的分隔符
 
@@ -34,7 +30,8 @@ public class HistoryManager {
     private final Runnable saveRunnable = this::saveToPreferences;
 
     // ========== 单例模式 ==========
-    private HistoryManager() {}
+    private HistoryManager() {
+    }
 
     public static synchronized HistoryManager getInstance() {
         if (instance == null) {
@@ -66,18 +63,18 @@ public class HistoryManager {
             // 更新现有项
             existingItem.title = title;
             existingItem.preview = preview;
-            
+
             // 移动到列表顶部
             historyList.remove(existingItem);
             historyList.add(0, existingItem);
         } else {
             // 创建新项
             HistoryItem newItem = new HistoryItem(id, title, preview, type);
-            
+
             // 添加到数据结构
             historyList.add(0, newItem);
             historyMap.put(compositeKey, newItem);
-            
+
             // 修剪大小
             if (historyList.size() > MAX_SIZE) {
                 HistoryItem removed = historyList.remove(historyList.size() - 1);
@@ -90,7 +87,7 @@ public class HistoryManager {
     public void remove(String id, String type) {
         String compositeKey = generateCompositeKey(type, id);
         HistoryItem item = historyMap.get(compositeKey);
-        
+
         if (item != null) {
             historyList.remove(item);
             historyMap.remove(compositeKey);
@@ -99,6 +96,7 @@ public class HistoryManager {
     }
 
     // ========== 获取有序列表 ==========
+
     /**
      * 获取按时间倒序排列的历史记录（新->旧）
      */
@@ -135,36 +133,36 @@ public class HistoryManager {
         // 1. 读取顺序记录
         String orderValue = sharedPreferences.getString(KEY_ORDER, "");
         if (orderValue.isEmpty()) return;
-        
+
         // 使用新的ORDER_DELIMITER分割
         String[] keys = orderValue.split(Pattern.quote(ORDER_DELIMITER));
-        
+
         // 2. 按顺序加载条目
         for (String key : keys) {
             if (key.isEmpty()) continue;
-            
+
             String value = sharedPreferences.getString(key, null);
             if (value == null) continue;
-            
+
             // 使用DATA_DELIMITER分割条目数据
             String[] valueParts = value.split(Pattern.quote(DATA_DELIMITER), 3);
             if (valueParts.length < 2) continue;
-            
+
             // 解析键
             String[] keyParts = key.split(Pattern.quote(DATA_DELIMITER), 2);
             if (keyParts.length < 2) continue;
-            
+
             String type = keyParts[0];
             String id = keyParts[1];
-            
+
             // 创建历史项
             String title = valueParts[0];
-            String preview = valueParts.length > 2 ? 
-                valueParts[1] + DATA_DELIMITER + valueParts[2] : // 处理包含分隔符的情况
-                valueParts[1];
-                
+            String preview = valueParts.length > 2 ?
+                    valueParts[1] + DATA_DELIMITER + valueParts[2] : // 处理包含分隔符的情况
+                    valueParts[1];
+
             HistoryItem item = new HistoryItem(id, title, preview, type);
-            
+
             // 添加到数据结构
             historyList.add(item);
             historyMap.put(generateCompositeKey(type, id), item);
@@ -174,24 +172,24 @@ public class HistoryManager {
     private void saveToPreferences() {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.clear();
-        
+
         // 保存顺序记录和键值对
         StringBuilder orderBuilder = new StringBuilder();
-        
+
         for (HistoryItem item : historyList) {
             String storageKey = generateStorageKey(item.type, item.id);
-            
+
             // 添加到顺序列表
             if (orderBuilder.length() > 0) {
                 orderBuilder.append(ORDER_DELIMITER); // 使用新的分隔符
             }
             orderBuilder.append(storageKey);
-            
+
             // 保存条目数据
             String value = item.title + DATA_DELIMITER + item.preview;
             editor.putString(storageKey, value);
         }
-        
+
         // 保存顺序记录
         editor.putString(KEY_ORDER, orderBuilder.toString());
         editor.apply();
@@ -215,7 +213,7 @@ public class HistoryManager {
             this.preview = preview;
             this.type = type;
         }
-        
+
         @Override
         public @NonNull String toString() {
             return type + ": " + title + " [" + preview + "] (" + id + ")";

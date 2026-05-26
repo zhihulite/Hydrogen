@@ -15,11 +15,11 @@ import "com.google.android.material.shape.RelativeCornerSize"
 import "android.view.View"
 import "androidx.coordinatorlayout.widget.CoordinatorLayout"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
-local circleShape = ShapeAppearanceModel.builder()
-.setAllCornerSizes(RelativeCornerSize(0.5))
-.build()
+local circleShapeBuilder = ShapeAppearanceModel.builder()
+circleShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
+local circleShapeModel = circleShapeBuilder.build()
 
 local userInfoCard = {
   MaterialCardView,
@@ -42,7 +42,7 @@ local userInfoCard = {
       layout_width = "64dp",
       layout_height = "64dp",
       layout_gravity = "center",
-      shapeAppearanceModel = circleShape,
+      shapeAppearanceModel = circleShapeModel,
     },
     {
       MaterialTextView,
@@ -81,8 +81,8 @@ local userInfoCard = {
         layout_height = "wrap_content",
         cardBackgroundColor = colors.surfaceVariant,
         radius = "8dp",
-        strokeWidth = "0dp",
-        elevation = "0dp",
+        strokeWidth = 0,
+        elevation = 0,
         {
           MaterialTextView,
           id = "voteup_count",
@@ -107,8 +107,8 @@ local userInfoCard = {
         layout_height = "wrap_content",
         cardBackgroundColor = colors.surfaceVariant,
         radius = "8dp",
-        strokeWidth = "0dp",
-        elevation = "0dp",
+        strokeWidth = 0,
+        elevation = 0,
         {
           MaterialTextView,
           id = "fans_count",
@@ -133,8 +133,8 @@ local userInfoCard = {
         layout_height = "wrap_content",
         cardBackgroundColor = colors.surfaceVariant,
         radius = "8dp",
-        strokeWidth = "0dp",
-        elevation = "0dp",
+        strokeWidth = 0,
+        elevation = 0,
         {
           MaterialTextView,
           id = "follow_count",

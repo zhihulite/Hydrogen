@@ -10,10 +10,11 @@ import "com.google.android.material.shape.ShapeAppearanceModel"
 import "com.google.android.material.shape.RelativeCornerSize"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
-local avatarShape = ShapeAppearanceModel.builder()
-.setAllCornerSizes(RelativeCornerSize(0.5))
-.build()
+local colors = AppTheme.colors
+
+local avatarShapeBuilder = ShapeAppearanceModel.builder()
+avatarShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
+local avatarShapeModel = avatarShapeBuilder.build()
 
 return {
   LinearLayoutCompat,
@@ -24,7 +25,7 @@ return {
     id = "card",
     layout_width = "fill",
     layout_height = "wrap",
-    cardElevation = "0dp",
+    cardElevation = 0,
     strokeWidth = 0,
     radius = 0,
     cardBackgroundColor = colors.surface,
@@ -44,13 +45,13 @@ return {
         id = "avatar",
         layout_width = "44dp",
         layout_height = "44dp",
-        shapeAppearanceModel = avatarShape,
+        shapeAppearanceModel = avatarShapeModel,
         strokeWidth = "1dp",
       },
       {
         LinearLayoutCompat,
         orientation = "vertical",
-        layout_width = "0dp",
+        layout_width = 0,
         layout_weight = 1,
         layout_marginLeft = "12dp",
         {
@@ -75,7 +76,7 @@ return {
         layout_width = "20dp",
         layout_height = "20dp",
         layout_marginRight = "16dp",
-        ImageBitmap = Helpers.Static.materialIcon("twotone_open_in_new"),
+        imageBitmap = Helpers.Static.materialIcon("twotone_open_in_new"),
         colorFilter = colors.onSurfaceVariant,
         visibility = View.GONE,
       }

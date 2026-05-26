@@ -23,8 +23,8 @@ local function showTip(msg)
 end
 
 local function clearLoginState()
-  CookieManager.getInstance().removeAllCookies(nil)
-  CookieManager.getInstance().flush()
+  CookieManager.instance.removeAllCookies(nil)
+  CookieManager.instance.flush()
   Extensions.Config.delete(Constants.SharedDataKeys.SIGN_IN_DATA)
   Extensions.Config.delete(Constants.SharedDataKeys.USER_ID)
   Extensions.Config.delete(Constants.SharedDataKeys.UDID)
@@ -171,19 +171,19 @@ end
 
 -- 获取Cookie
 function M.getCookie(url)
-  return CookieManager.getInstance().getCookie(url)
+  return CookieManager.instance.getCookie(url)
 end
 
 -- 设置Cookie
 function M.setCookie(url, cookie)
-  CookieManager.getInstance().setCookie(url, cookie)
-  CookieManager.getInstance().flush()
+  CookieManager.instance.Cookie = url, cookie
+  CookieManager.instance.flush()
 end
 
 -- 清除所有Cookie
 function M.clearCookies()
-  CookieManager.getInstance().removeAllCookies(nil)
-  CookieManager.getInstance().flush()
+  CookieManager.instance.removeAllCookies(nil)
+  CookieManager.instance.flush()
 end
 
 -- URL编码

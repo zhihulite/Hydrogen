@@ -56,9 +56,9 @@ function PageModel:init(recyclerView, swipeRefresh)
   self.recyclerView = recyclerView
   self.swipeRefresh = swipeRefresh
 
-  self.recyclerView.setLayoutManager(LinearLayoutManager(activity))
+  self.recyclerView.layoutManager = LinearLayoutManager(activity)
   self.adapter = self:createAdapter()
-  self.recyclerView.setAdapter(self.adapter)
+  self.recyclerView.adapter = self.adapter
 
   if self.swipeRefresh then
     Helpers.UI.setupSwipeRefresh(self.swipeRefresh, function()
@@ -70,8 +70,8 @@ function PageModel:init(recyclerView, swipeRefresh)
     self.recyclerView.addOnScrollListener(RecyclerView.OnScrollListener{
       onScrolled = function(rv, dx, dy)
         if dy > 0 and not self.isLoading and self.hasNextPage then
-          local lm = rv.getLayoutManager()
-          if lm.findLastVisibleItemPosition() >= self.adapter.getItemCount() - 5 then
+          local lm = rv.layoutManager
+          if lm.findLastVisibleItemPosition() >= self.adapter.itemCount - 5 then
             self:loadMore()
           end
         end
@@ -114,7 +114,7 @@ function PageModel:load(params)
 
   self.isLoading = true
   if self.swipeRefresh and isRefresh then
-    self.swipeRefresh.setRefreshing(true)
+    self.swipeRefresh.refreshing = true
   end
 
   self:fetch(url, params, function(success, data)
@@ -122,7 +122,7 @@ function PageModel:load(params)
     self.hasLoaded = true
 
     if self.swipeRefresh then
-      self.swipeRefresh.setRefreshing(false)
+      self.swipeRefresh.refreshing = false
     end
 
     if success and data then
@@ -180,10 +180,10 @@ end
 
 -- 检查最后一项是否在屏幕上可见
 function PageModel:isLastItemVisible()
-  local lm = self.recyclerView.getLayoutManager()
+  local lm = self.recyclerView.layoutManager
   if not lm then return false end
   local lastVisible = lm.findLastVisibleItemPosition()
-  local totalCount = self.adapter and self.adapter.getItemCount() or 0
+  local totalCount = self.adapter and self.adapter.itemCount or 0
   return lastVisible >= totalCount - 1
 end
 

@@ -84,7 +84,7 @@ function CollectionsFragment:updateToolbarMenu(info)
 end
 
 function CollectionsFragment:createHeaderCard()
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
 
   self.headerViews = {}
   self.headerView = loadlayout(Layouts.pages.collections.header, self.headerViews)
@@ -105,20 +105,20 @@ function CollectionsFragment:updateHeaderCard(info)
   local desc = info.description or ""
   if desc ~= "" then
     views.header_description.text = desc
-    views.header_description.setVisibility(View.VISIBLE)
+    views.header_description.visibility = View.VISIBLE
    else
-    views.header_description.setVisibility(View.GONE)
+    views.header_description.visibility = View.GONE
   end
 
   views.header_item_count.text = tostring(info.itemCount or 0)
   views.header_follower_count.text = tostring(info.followerCount or 0)
 
   if info.creator then
-    views.creator_layout.setVisibility(View.VISIBLE)
+    views.creator_layout.visibility = View.VISIBLE
     views.creator_name.text = info.creator.name or ""
     Helpers.Image.load(views.creator_avatar, info.creator.avatarUrl)
    else
-    views.creator_layout.setVisibility(View.GONE)
+    views.creator_layout.visibility = View.GONE
   end
 
   self:updateFollowButtonVisiblity(info)
@@ -129,11 +129,11 @@ function CollectionsFragment:updateFollowButtonVisiblity(info)
   local creatorId = info and info.creator and info.creator.id
 
   if userId and creatorId and userId == creatorId then
-    self.headerViews.follow_btn_container.setVisibility(View.GONE)
+    self.headerViews.follow_btn_container.visibility = View.GONE
     return
   end
 
-  self.headerViews.follow_btn_container.setVisibility(View.VISIBLE)
+  self.headerViews.follow_btn_container.visibility = View.VISIBLE
   self.headerViews.follow_btn.text = info.isFollowing and "已关注" or "关注"
 end
 
@@ -146,9 +146,9 @@ function CollectionsFragment:initContentList()
 
   self.model:setupSingle(views.recycler_view, views.swipe_refresh)
 
-  self.helper = RecyclerViewHelper.new(views.recycler_view.getAdapter())
+  self.helper = RecyclerViewHelper.new(views.recycler_view.adapter)
   self.helper:addHeader(self.headerView)
-  views.recycler_view.setAdapter(self.helper:getAdapter())
+  views.recycler_view.adapter = self.helper:getAdapter()
 end
 
 function CollectionsFragment:loadData()
@@ -222,11 +222,11 @@ end
 function CollectionsFragment:showItemMenu(data)
   local popup = PopupMenu(activity, data.anchorView)
   for _, menuItem in ipairs(data.menuItems) do
-    popup.getMenu().add(menuItem.title)
+    popup.menu.add(menuItem.title)
   end
   popup.setOnMenuItemClickListener({
     onMenuItemClick = function(menuItem)
-      local title = menuItem.getTitle()
+      local title = menuItem.title
       for _, m in ipairs(data.menuItems) do
         if m.title == title then
           -- 处理移动收藏

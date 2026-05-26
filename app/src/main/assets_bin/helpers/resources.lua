@@ -10,8 +10,8 @@
 import "androidx.core.content.ContextCompat"
 import "android.util.TypedValue"
 
-local resources = activity.getResources() -- 获取资源管理器
-local theme = activity.getTheme() -- 获取当前主题
+local resources = activity.resources -- 获取资源管理器
+local theme = activity.theme -- 获取当前主题
 
 -- 静态资源类型的获取方法映射表
 local staticGetters = {
@@ -46,9 +46,9 @@ local function getThemeAttr(rClass, attrName, styleId)
   if not success then return nil end
   -- 根据类型自动转换
   if tv.type == TypedValue.TYPE_DIMENSION then
-    return tv.getDimension(resources.getDisplayMetrics())
+    return tv.getDimension(resources.displayMetrics)
    elseif tv.type == TypedValue.TYPE_FLOAT then
-    return tv.getFloat()
+    return tv.float
    elseif tv.type >= TypedValue.TYPE_FIRST_COLOR_INT and tv.type <= TypedValue.TYPE_LAST_COLOR_INT then
     return tv.data
    elseif tv.type == TypedValue.TYPE_STRING then
@@ -87,7 +87,7 @@ local function buildAccessor(rClass)
 end
 
 -- 获取应用自己的 R 类
-local appR = luajava.bindClass(activity.getPackageName() .. ".R")
+local appR = luajava.bindClass(activity.packageName .. ".R")
 -- 获取 Android 系统的 R 类
 local androidR = luajava.bindClass("android.R")
 

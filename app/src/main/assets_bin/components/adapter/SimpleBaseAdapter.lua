@@ -52,7 +52,7 @@ function SimpleBaseAdapter.new(config)
       local item = items[position + 1]
       if item == nil then
         local emptyView = MaterialTextView(activity)
-        emptyView.setText("View 为空")
+        emptyView.text = "View 为空"
         return emptyView
       end
 
@@ -68,10 +68,10 @@ function SimpleBaseAdapter.new(config)
         -- 新视图
         views = {}
         view = loadlayout(layout, views)
-        view.setTag(views) -- 存储绑定信息以便复用
+        view.tag = views-- 存储绑定信息以便复用
        else
         view = convertView
-        views = view.getTag()
+        views = view.tag
       end
 
       if onBind then

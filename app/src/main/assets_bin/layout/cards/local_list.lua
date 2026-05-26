@@ -30,7 +30,7 @@ return {
         {
           MaterialTextView,
           id = "title",
-          layout_width = "0dp",
+          layout_width = 0,
           layout_weight = 1,
           textSize = AppTextStyle.titleSmall.size,
           textColor = AppTextStyle.titleSmall.color,
@@ -57,7 +57,7 @@ return {
           textSize = AppTextStyle.bodySmall.size,
           textColor = AppTextStyle.bodySmall.color,
           typeface = AppTextStyle.bodySmall.font,
-          layout_width = "0dp",
+          layout_width = 0,
           layout_weight = 1,
         }
       }

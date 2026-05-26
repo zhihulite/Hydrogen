@@ -16,12 +16,6 @@ import "com.google.android.material.bottomsheet.BottomSheetDragHandleView"
 import "android.util.TypedValue"
 import "com.google.android.material.divider.MaterialDivider"
 
-local function getRoundShape(radiusDp)
-  local shape = ShapeAppearanceModel.builder()
-  shape.setAllCornerSizes(RelativeCornerSize(radiusDp / 100))
-  return shape.build()
-end
-
 --- 构建列表项的辅助函数
 ---@param container LinearLayoutCompat
 ---@param items table
@@ -32,7 +26,7 @@ end
 local function buildListItems(container, items, onItemClick, onItemLongClick, autoDismiss, dialog)
   if not container then return end
   container.removeAllViews()
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
   for i, item in ipairs(items) do
     -- 构建单个项布局
     local itemLayout = {
@@ -53,7 +47,7 @@ local function buildListItems(container, items, onItemClick, onItemLongClick, au
         {
           MaterialTextView,
           id = "text",
-          layout_width = "0dp",
+          layout_width = 0,
           layout_weight = 1,
           text = item.title or item,
           textSize = AppTextStyle.bodyMedium.size,
@@ -98,7 +92,7 @@ end
 ---@return table { dialog, updateItems, dismiss }
 function M.show(opts)
   opts = opts or {}
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
 
   local btns = {}
   if opts.neutralText then table.insert(btns, { text = opts.neutralText, type = "outline", cb = opts.onNeutral }) end
@@ -143,7 +137,7 @@ function M.show(opts)
 
   local layoutItems = {
     {
-      NestedScrollView, layout_width = "match_parent", layout_height = "0dp", layout_weight = 1,
+      NestedScrollView, layout_width = "match_parent", layout_height = 0, layout_weight = 1,
       { LinearLayoutCompat, orientation = "vertical", layout_width = "match_parent", layout_height = "wrap_content", unpack(scrollContentItems) }
     },
     #btns > 0 and {
@@ -160,22 +154,22 @@ function M.show(opts)
   if #btns > 0 and views.button_container then
     for i, btn in ipairs(btns) do
       local btnView = btn.type == "outline" and Helpers.MaterialWidgets.Button_Outlined(activity) or Helpers.MaterialWidgets.Button_Text(activity)
-      btnView.setText(btn.text)
+      btnView.text = btn.text
       btnView.setPadding(dp2px(20), dp2px(10), dp2px(20), dp2px(10))
       local params = LinearLayoutCompat.LayoutParams(LinearLayoutCompat.LayoutParams.WRAP_CONTENT, LinearLayoutCompat.LayoutParams.WRAP_CONTENT)
       if i > 1 then params.leftMargin = dp2px(8) end
-      btnView.setLayoutParams(params)
+      btnView.layoutParams = params
       views.button_container.addView(btnView)
     end
   end
 
   local sheet = BottomSheetDialog(activity)
-  sheet.setContentView(root)
+  sheet.contentView = root
   local dialog = sheet.show()
-  sheet.setCancelable(opts.cancelable ~= false)
+  sheet.cancelable = opts.cancelable ~= false
 
   if #btns > 0 and views.button_container then
-    local children = views.button_container.getChildCount()
+    local children = views.button_container.childCount
     for i = 0, children - 1 do
       local btnView = views.button_container.getChildAt(i)
       local btn = btns[i + 1]
@@ -224,7 +218,7 @@ end
 ---@param msg string
 ---@param onYes function
 function M.delete(msg, onYes)
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
   return M.show({ title = "删除", content = msg or "确定删除吗？", positiveText = "删除", negativeText = "取消", buttonColor = colors.error, onPositive = onYes })
 end
 

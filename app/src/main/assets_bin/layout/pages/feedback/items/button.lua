@@ -4,7 +4,7 @@
 import "androidx.appcompat.widget.LinearLayoutCompat"
 import "com.google.android.material.button.MaterialButton"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
 return {
   LinearLayoutCompat,

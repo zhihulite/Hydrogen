@@ -83,9 +83,9 @@ function CollectionTabModel:createAdapter(dataList)
       end
       local previewText = item.preview or ""
       if previewText == "" then
-        views.preview.setVisibility(View.GONE)
+        views.preview.visibility = View.GONE
        else
-        views.preview.setVisibility(View.VISIBLE)
+        views.preview.visibility = View.VISIBLE
         views.preview.text = previewText
       end
 
@@ -94,7 +94,7 @@ function CollectionTabModel:createAdapter(dataList)
         views.follower_count.text = string.format("%d人关注", item.followerCount)
       end
 
-      views.lock_icon.setVisibility(item.isPublic == false and View.VISIBLE or View.GONE)
+      views.lock_icon.visibility = item.isPublic == false and View.VISIBLE or View.GONE
       if item.creator and item.creator.name then
         views.creator_name.text = item.creator.name .. " 创建"
       end
@@ -138,7 +138,9 @@ function CollectionTabModel:showRecommendDialog()
 
   local dialogView = loadlayout(layout, dialogViews)
   local toolbar = dialogViews.toolbar
-  toolbar.getParent().removeView(toolbar)
+  toolbar.parent.removeView(toolbar)
+  -- 背景透明
+  dialogViews.main_container.backgroundColor = 0
   local dialog = MaterialAlertDialogBuilder(activity)
   .setTitle("推荐收藏夹")
   .setView(dialogView)

@@ -9,11 +9,11 @@ import "com.google.android.material.shape.ShapeAppearanceModel"
 import "com.google.android.material.shape.RelativeCornerSize"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
+local colors = AppTheme.colors
 
-local circleShape = ShapeAppearanceModel.builder()
-.setAllCornerSizes(RelativeCornerSize(0.5))
-.build()
+local circleShapeBuilder = ShapeAppearanceModel.builder()
+circleShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
+local circleShapeModel = circleShapeBuilder.build()
 
 return {
   LinearLayoutCompat,
@@ -28,7 +28,7 @@ return {
     id = "avatar",
     layout_width = "28dp",
     layout_height = "28dp",
-    shapeAppearanceModel = circleShape,
+    shapeAppearanceModel = circleShapeModel,
     layout_marginTop = "2dp",
   },
   {
@@ -87,7 +87,7 @@ return {
       },
       {
         View,
-        layout_width = "0dp",
+        layout_width = 0,
         layout_weight = 1,
         layout_height = "1dp",
       },
@@ -102,7 +102,7 @@ return {
           id = "like_icon",
           layout_width = "14dp",
           layout_height = "14dp",
-          ImageBitmap = Helpers.Static.materialIcon("outline_favorite_border"),
+          imageBitmap = Helpers.Static.materialIcon("outline_favorite_border"),
           colorFilter = colors.onSurfaceVariant,
         },
         {

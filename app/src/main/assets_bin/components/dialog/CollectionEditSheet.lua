@@ -11,8 +11,6 @@ import "com.google.android.material.textview.MaterialTextView"
 import "com.google.android.material.materialswitch.MaterialSwitch"
 import "android.view.View"
 
-local MaterialWidgets = Helpers.MaterialWidgets
-
 --- 显示收藏夹弹窗（自动判断创建/编辑）
 --- @param opts table
 --- @param opts.collectionId string|nil 收藏夹ID（有则为编辑，无则为创建）
@@ -31,7 +29,7 @@ function M.show(opts)
   self.isSaving = false
   local isEdit = opts.collectionId ~= nil and opts.collectionId ~= ""
 
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
 
   local layout = {
     LinearLayoutCompat,
@@ -100,7 +98,7 @@ function M.show(opts)
         layout_marginBottom = "16dp",
         {
           MaterialTextView,
-          layout_width = "0dp",
+          layout_width = 0,
           layout_weight = 1,
           text = "仅自己可见",
           textSize = AppTextStyle.bodyMedium.size,
@@ -122,7 +120,7 @@ function M.show(opts)
         layout_marginBottom = "16dp",
         {
           MaterialTextView,
-          layout_width = "0dp",
+          layout_width = 0,
           layout_weight = 1,
           text = "设为默认收藏夹",
           textSize = AppTextStyle.bodyMedium.size,
@@ -141,7 +139,7 @@ function M.show(opts)
         layout_height = "wrap_content",
         gravity = "end",
         {
-          MaterialWidgets.Button_Text,
+          Helpers.MaterialWidgets.Button_Text,
           id = "cancel_btn",
           layout_width = "wrap_content",
           layout_height = "wrap_content",
@@ -149,7 +147,7 @@ function M.show(opts)
           layout_marginRight = "8dp",
         },
         {
-          MaterialWidgets.Button_Text,
+          Helpers.MaterialWidgets.Button_Text,
           id = "save_btn",
           layout_width = "wrap_content",
           layout_height = "wrap_content",
@@ -162,11 +160,11 @@ function M.show(opts)
   self.root = loadlayout(layout, self.views)
 
   self.bottomSheet = BottomSheetDialog(activity)
-  self.bottomSheet.setContentView(self.root)
+  self.bottomSheet.contentView = self.root
 
-  local behavior = self.bottomSheet.getBehavior()
-  behavior.setSkipCollapsed(true)
-  behavior.setPeekHeight(-1)
+  local behavior = self.bottomSheet.behavior
+  behavior.skipCollapsed = true
+  behavior.peekHeight = -1
 
   self.views.cancel_btn.onClick = function()
     self.bottomSheet.dismiss()
@@ -175,23 +173,23 @@ function M.show(opts)
   self.views.save_btn.onClick = function()
     if self.isSaving then return end
 
-    local name = self.views.name_input and self.views.name_input.getText().toString() or ""
+    local name = self.views.name_input and self.views.name_input.text or ""
     if name == "" then
       tip("请输入收藏夹名称")
       return
     end
-    local description = self.views.desc_input and self.views.desc_input.getText().toString() or ""
+    local description = self.views.desc_input and self.views.desc_input.text or ""
     local isPublic = self.views.public_switch and self.views.public_switch.isChecked() or true
     local isDefault = self.views.default_switch and self.views.default_switch.isChecked() or false
 
     self.isSaving = true
-    self.views.save_btn.setEnabled(false)
+    self.views.save_btn.enabled = false
 
     local function doRequest(url, postData)
       if isEdit then
         NetWork.put(url, postData, Headers.defaultHead, function(code)
           self.isSaving = false
-          self.views.save_btn.setEnabled(true)
+          self.views.save_btn.enabled = true
           if code == 200 then
             tip("保存成功")
             if opts.onSuccess then opts.onSuccess(opts.collectionId, name) end
@@ -205,7 +203,7 @@ function M.show(opts)
 
         NetWork.post(url, postData, Headers.post, function(code, content)
           self.isSaving = false
-          self.views.save_btn.setEnabled(true)
+          self.views.save_btn.enabled = true
           if code == 200 then
             local data = json.decode(content)
             local newId = tostring(data.collection and data.collection.id or "")

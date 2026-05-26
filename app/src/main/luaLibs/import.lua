@@ -22,8 +22,8 @@ local bindClass = luajava.bindClass
 local _M = {}
 local luacontext = activity or service
 
-local dexes = luajava.astable(luacontext.getClassLoaders())
-local libs = luacontext.getLibrarys()
+local dexes = luajava.astable(luacontext.classLoaders)
+local libs = luacontext.librarys
 
 --- 加载原生库
 ---@param path string 库路径

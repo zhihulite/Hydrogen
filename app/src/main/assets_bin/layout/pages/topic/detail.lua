@@ -10,16 +10,17 @@ import "com.google.android.material.shape.ShapeAppearanceModel"
 import "com.google.android.material.shape.RelativeCornerSize"
 import "android.view.View"
 
-local colors = AppTheme.getColors()
-local avatarShape = ShapeAppearanceModel.builder()
-.setAllCornerSizes(RelativeCornerSize(0.5))
-.build()
+local colors = AppTheme.colors
+
+local avatarShapeBuilder = ShapeAppearanceModel.builder()
+avatarShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
+local avatarShapeModel = avatarShapeBuilder.build()
 
 return {
   NestedScrollView,
   layout_width = "fill",
   layout_height = "fill",
-  id = "root",
+  id = "detail_container",
   fillViewport = true,
   {
     LinearLayoutCompat,
@@ -35,7 +36,7 @@ return {
       cardBackgroundColor = colors.surfaceVariant,
       strokeWidth = "1dp",
       strokeColor = colors.outline,
-      cardElevation = "0dp",
+      cardElevation = 0,
       {
         LinearLayoutCompat,
         layout_width = "fill",
@@ -48,7 +49,7 @@ return {
           id = "detail_avatar",
           layout_width = "80dp",
           layout_height = "80dp",
-          shapeAppearanceModel = avatarShape,
+          shapeAppearanceModel = avatarShapeModel,
         },
         {
           MaterialTextView,
@@ -63,10 +64,10 @@ return {
           MaterialTextView,
           id = "detail_intro",
           layout_marginTop = "8dp",
+          gravity = "center",
           textSize = AppTextStyle.bodyMedium.size,
           textColor = AppTextStyle.bodyMedium.color,
           typeface = AppTextStyle.bodyMedium.font,
-          gravity = "center",
           maxLines = 10,
           ellipsize = "end",
         },

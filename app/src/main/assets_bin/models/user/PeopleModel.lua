@@ -412,15 +412,15 @@ function PeopleModel:createAdapter(dataList)
 
       local hasPreview = item.preview and item.preview ~= ""
       views.preview.text = item.preview or ""
-      views.preview.setVisibility(hasPreview and View.VISIBLE or View.GONE)
+      views.preview.visibility = hasPreview and View.VISIBLE or View.GONE
 
       local hasVoteup = item.voteupCount ~= nil
       views.like_count.text = tostring(item.voteupCount or 0)
-      views.like_layout.setVisibility(hasVoteup and View.VISIBLE or View.GONE)
+      views.like_layout.visibility = hasVoteup and View.VISIBLE or View.GONE
 
       local hasComment = item.commentCount ~= nil
       views.comment_count.text = tostring(item.commentCount or 0)
-      views.comment_layout.setVisibility(hasComment and View.VISIBLE or View.GONE)
+      views.comment_layout.visibility = hasComment and View.VISIBLE or View.GONE
 
       Helpers.Image.load(views.avatar, item.avatarUrl)
 

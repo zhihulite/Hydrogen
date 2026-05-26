@@ -56,7 +56,7 @@ function M.launch(permission, callback)
   pendingCallback = callback
   if not launcher then
     error("必须在 onCreate 或 onStart 前调用一次 permission 的 init 方法")
-    end
+  end
   launcher.launch(permission)
 end
 

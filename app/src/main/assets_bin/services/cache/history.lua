@@ -78,7 +78,7 @@ function M.init()
   if initialized then return end
 
   local HistoryManagerClass = luajava.bindClass("com.hydrogen.HistoryUtils.HistoryManager")
-  HistoryManager = HistoryManagerClass.getInstance()
+  HistoryManager = HistoryManagerClass.instance
   HistoryManager.init(activity)
   initialized = true
 end
@@ -162,7 +162,7 @@ end
 -- 获取所有历史记录（过滤并转换类型为英文，预览截取100字符）
 function M.getAll()
   M.init()
-  local rawData = luajava.astable(HistoryManager.getRecentFirst())
+  local rawData = luajava.astable(HistoryManager.recentFirst)
   local results = {}
 
   for _, item in ipairs(rawData) do

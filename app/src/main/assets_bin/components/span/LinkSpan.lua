@@ -40,23 +40,23 @@ function M.new(url, title, iconName)
     draw = function(super, canvas, cs, start, end_, x, top, y, bottom, paint)
       if start >= end_ then return end
 
-      local colors = AppTheme.getColors()
-      local originalColor = paint.getColor()
+      local colors = AppTheme.colors
+      local originalColor = paint.color
       local currentX = x
 
       if iconDrawable then
         local iconTop = top + (bottom - top - iconSize) / 2
         canvas.save()
         canvas.translate(currentX, iconTop)
-        iconDrawable.setTint(colors.primary)
+        iconDrawable.tint = colors.primary
         iconDrawable.draw(canvas)
         canvas.restore()
         currentX = currentX + iconSize + iconSpacing
       end
 
-      paint.setColor(colors.primary)
+      paint.color = colors.primary
       canvas.drawText(displayText, currentX, y, paint)
-      paint.setColor(originalColor)
+      paint.color = originalColor
     end,
     toString = function(super)
       return htmlTag
@@ -70,9 +70,9 @@ function M.new(url, title, iconName)
     end,
     updateDrawState = function(super, ds)
       super.updateDrawState(ds)
-      local colors = AppTheme.getColors()
-      ds.setColor(colors.primary)
-      ds.setUnderlineText(false)
+      local colors = AppTheme.colors
+      ds.color = colors.primary
+      ds.underlineText = false
     end
   })
 

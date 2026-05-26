@@ -39,7 +39,7 @@ function M.show(options)
   local nextUrl = nil
 
   local headers = Headers["app"] or {}
-  local colors = AppTheme.getColors()
+  local colors = AppTheme.colors
 
   -- 弹窗布局（对齐 CollectionMoveSheet 风格）
   local dialogViews = {}
@@ -59,7 +59,7 @@ function M.show(options)
       paddingRight = "16dp",
       {
         MaterialTextView,
-        layout_width = "0dp",
+        layout_width = 0,
         layout_weight = 1,
         text = "选择专栏",
         textSize = AppTextStyle.titleSmall.size,
@@ -177,8 +177,8 @@ function M.show(options)
     end,
   })
 
-  recyclerView.setLayoutManager(LinearLayoutManager(activity))
-  recyclerView.setAdapter(adapter)
+  recyclerView.layoutManager = LinearLayoutManager(activity)
+  recyclerView.adapter = adapter
 
   -- 加载专栏列表（分页）
   local function loadColumns()
@@ -214,7 +214,7 @@ function M.show(options)
 
   -- BottomSheet 对话框
   local bottomSheet = BottomSheetDialog(activity)
-  bottomSheet.setContentView(root)
+  bottomSheet.contentView = root
 
   -- 确认按钮
   dialogViews.confirm_btn.onClick = function()

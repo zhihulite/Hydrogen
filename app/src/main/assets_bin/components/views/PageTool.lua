@@ -35,19 +35,19 @@ local function hasBlockWord(text)
 end
 
 local function setupSwipeRefresh(sr, onRefresh)
-  local colors = AppTheme.getColors()
-  sr.setProgressBackgroundColorSchemeColor(colors.background)
-  sr.setColorSchemeColors({colors.primary})
-  sr.setOnRefreshListener({ onRefresh = onRefresh })
+  local colors = AppTheme.colors
+  sr.progressBackgroundColorSchemeColor = colors.background
+  sr.colorSchemeColors = {colors.primary}
+  sr.onRefresh = onRefresh
 end
 
 local function setupRecyclerView(rv, adapter, onLoadMore)
-  if not rv.getLayoutManager() then
-    rv.setLayoutManager(LinearLayoutManager(activity, RecyclerView.VERTICAL, false))
+  if not rv.layoutManager then
+    rv.layoutManager = LinearLayoutManager(activity, RecyclerView.VERTICAL, false)
   end
-  rv.setAdapter(adapter)
+  rv.adapter = adapter
 
-  local lm = rv.getLayoutManager()
+  local lm = rv.layoutManager
   rv.addOnScrollListener(RecyclerView.OnScrollListener{
     onScrollStateChanged = function(_, state)
       if state == RecyclerView.SCROLL_STATE_IDLE then
@@ -59,7 +59,7 @@ local function setupRecyclerView(rv, adapter, onLoadMore)
     onScrolled = function(_, _, dy)
       if dy > 0 then
         local lastVisible = lm.findLastVisibleItemPosition()
-        local totalCount = adapter.getItemCount()
+        local totalCount = adapter.itemCount
         if lastVisible >= totalCount - 5 then
           onLoadMore()
         end
@@ -70,19 +70,21 @@ end
 
 local function finishRefresh(rv, sr, withAnimation)
   if withAnimation and rv and rv.animate then
-    rv.animate().alpha(1).setDuration(100).withEndAction({
+    local animate = rv.animate().alpha(1)
+    animate.duration = 100
+    animate.withEndAction({
       run = function()
-        if sr then sr.setRefreshing(false) end
+        if sr then sr.refreshing = false end
       end
     }).start()
    else
-    if sr then sr.setRefreshing(false) end
+    if sr then sr.refreshing = false end
   end
 end
 
 local function isLastItemVisible(rv)
-  local lm = rv.getLayoutManager()
-  return lm.findLastVisibleItemPosition() >= rv.getAdapter().getItemCount() - 1
+  local lm = rv.layoutManager
+  return lm.findLastVisibleItemPosition() >= rv.adapter.itemCount - 1
 end
 
 local function needLoginCheck()
@@ -181,10 +183,10 @@ function M.new(config)
   end
 
   if luajava.instanceof(self.contentView, ViewPager) then
-    if self.contentView.getAdapter() then
+    if self.contentView.adapter then
       error("ViewPager 已有 adapter，PageTool 需要自己管理 adapter")
     end
-    self.contentView.setAdapter(LuaPagerAdapter())
+    self.contentView.adapter = LuaPagerAdapter()
   end
   if luajava.instanceof(self.contentView, ViewPager2) then
     error("PageTool 不支持 ViewPager2，请更改为ViewPager")
@@ -421,13 +423,15 @@ function M:setupLoadFunction()
             adapter.notifyDataSetChanged()
           end
           if sr then
-            sr.setRefreshing(false)
+            sr.refreshing = false
           end
         end
       end
 
       if isRefresh and rv.animate then
-        rv.animate().alpha(0).setDuration(100).withEndAction({
+        local animate = rv.animate().alpha(0)
+        animate.duration = 100
+        animate.withEndAction({
           run = update
         }).start()
        else
@@ -437,7 +441,7 @@ function M:setupLoadFunction()
 
     if isRefresh or state.isFirstLoad then
       if sr then
-        sr.setRefreshing(true)
+        sr.refreshing = true
       end
     end
     state.canLoad = false
@@ -487,7 +491,7 @@ function M:addPages(config)
   local pageType = config.pageType or 2
   local tabConfigs = config.tabConfigs
   local defaultKey = config.defaultTab
-  local adapter = self.contentView.getAdapter()
+  local adapter = self.contentView.adapter
 
   -- 收集所有页面的 key（按顺序）
   self.pageKeys = {}
@@ -560,7 +564,7 @@ function M:addSinglePage(key, pageType, tabName)
     }
   }
 
-  self.contentView.getAdapter().add(loadlayout(layout, self.viewIds), tabName or "")
+  self.contentView.adapter.add(loadlayout(layout, self.viewIds), tabName or "")
   self:initPage(key, pageType, tabName)
   return self
 end
@@ -575,7 +579,7 @@ function M:setOnTabListener(callback)
 
   self.tabLayout.addOnTabSelectedListener({
     onTabSelected = function(tab)
-      local pos = tab.getPosition()
+      local pos = tab.position
       local key = self.pageKeys[pos + 1]
       callback(self, key)
       -- 跳过前置页面
@@ -587,7 +591,7 @@ function M:setOnTabListener(callback)
       end)
     end,
     onTabReselected = function(tab)
-      local pos = tab.getPosition()
+      local pos = tab.position
       local key = self.pageKeys[pos + 1]
       callback(self, key)
       -- 跳过前置页面
@@ -667,7 +671,7 @@ function M:getCurrentPageKey()
   if self.isSingle then
     return self.singleKey
   end
-  local pos = self.contentView.getCurrentItem()
+  local pos = self.contentView.currentItem
   return self.pageKeys[pos + 1]
 end
 
@@ -676,7 +680,7 @@ function M:isCurrentPagePrePage()
   if self.isSingle then
     return false
   end
-  local pos = self.contentView.getCurrentItem()
+  local pos = self.contentView.currentItem
   return pos < self.prePageCount
 end
 
@@ -698,7 +702,7 @@ function M:getCurrentPageIndex()
   if self.isSingle then
     return 0
   end
-  return self.contentView.getCurrentItem()
+  return self.contentView.currentItem
 end
 
 --- 获取管理索引（排除前置页面）
