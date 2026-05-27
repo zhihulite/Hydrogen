@@ -2,11 +2,10 @@ name: Android Build & Send to Telegram
 
 on:
   push:
-    branches: [ "main" ]
-  workflow_dispatch:
+    branches: [ "Reset" ]
 
 jobs:
-  build:
+  build-and-notify:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,22 +24,14 @@ jobs:
           chmod +x gradlew
           ./gradlew app:assembleRelease
 
-      - name: Upload Release APK (Artifact)
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-apk
-          path: |
-            app/build/outputs/apk/release/*.apk
-            app/build/outputs/mapping/release/mapping.txt
-
       - name: Send APK to Telegram
         run: |
           APK_PATH=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
           COMMIT_MSG=$(echo "${{ github.event.head_commit.message }}" | head -c 200)
-          CAPTION="📦 *新构建完成* \n\n💬 提交: ${COMMIT_MSG} \n\n🔢 SHA: \`${{ github.sha }}\`"
-          
+          CAPTION=$(printf "📦 <b>新构建完成</b>\n\n🔖 分支: <code>${{ github.ref_name }}</code>\n💬 提交: %s\n🔢 SHA: <code>${{ github.sha }}</code>" "$COMMIT_MSG")
+
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendDocument" \
             -F chat_id="${{ secrets.TG_CHAT_ID }}" \
             -F document=@"${APK_PATH}" \
             -F caption="${CAPTION}" \
-            -F parse_mode="Markdown"
+            -F parse_mode="HTML"
