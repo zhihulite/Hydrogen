@@ -2,7 +2,6 @@ name: Android Build & Send to Telegram
 
 on:
   push:
-    branches: [ "main" ]
 
 jobs:
   build-and-notify:
