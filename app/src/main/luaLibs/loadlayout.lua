@@ -924,11 +924,15 @@ local function createView(layout, views)
         if theme ~= nil then
             if type(theme) == "string" then
                 theme = context.resources.getIdentifier(theme, "style", packageName)
-                assert(theme ~= 0, "Unknown theme " .. layout.theme)
+                if theme == 0 then
+                    theme = nil
+                end
             else
                 theme = parseValue(theme)
             end
-            assert(type(theme) == "number", "Invalid theme " .. tostring(layout.theme))
+            if type(theme) ~= "number" then
+                theme = nil
+            end
         end
         local viewContext = theme and
                             ContextThemeWrapper(context, theme) or
