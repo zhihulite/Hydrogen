@@ -17,9 +17,10 @@ return {
     id = "card",
     layout_width = "match_parent",
     layout_height = "wrap_content",
-    layout_margin = "16dp",
-    layout_marginTop = "8dp",
-    layout_marginBottom = "8dp",
+    layout_marginLeft = AppCardStyle.basic.marginLeft,
+    layout_marginRight = AppCardStyle.basic.marginRight,
+    layout_marginTop = AppCardStyle.basic.marginTop,
+    layout_marginBottom = AppCardStyle.basic.marginBottom,
     clickable = true,
     {
       LinearLayoutCompat,

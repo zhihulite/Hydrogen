@@ -5,7 +5,6 @@ local PageToolModel = require("models.base.PageToolModel")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local QuestionModel = Extensions.Class(PageToolModel)
-QuestionModel:chainUp("destroy")
 
 function QuestionModel:ctor(questionId)
   self.questionId = tostring(questionId)

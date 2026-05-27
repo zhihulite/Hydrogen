@@ -21,7 +21,6 @@ local AnswerModel = require("models.content.AnswerModel")
 local WebViewHelper = require("components.views.WebViewHelper")
 
 local AnswerFragment = Extensions.Class(BaseFragment, {"AnswerFragment"})
-AnswerFragment:chainUp("onDestroy")
 
 function AnswerFragment:ctor()
   self.model = nil
@@ -30,6 +29,7 @@ function AnswerFragment:ctor()
   self.pageOrder = {}
   self.currentAnswerId = nil
   self.currentPageIds = nil
+  self.currentHelper = nil
   self.isFirstLoad = true
   self.isAdding = false
 end
@@ -52,9 +52,14 @@ function AnswerFragment:setupToolbar()
     title = self.title,
     menu = {
       { id = "refresh", title = "刷新", click = function()
-          if self.currentPageIds and self.currentPageIds.webview then
-            self.currentPageIds.webview.reload()
+          if self.currentHelper then
+            self.currentHelper:reload()
           end
+      end },
+      { id = "find", title = "查找", click = function()
+          local helper = self:getCurrentHelper()
+          if not helper then return end
+          helper:showSearchDialog()
       end },
       { id = "share", title = "分享", click = function()
           Helpers.UI.shareText("https://www.zhihu.com/answer/" .. (self.currentAnswerId or self.answerId))
@@ -63,11 +68,17 @@ function AnswerFragment:setupToolbar()
           Router.go("browser", { url = "https://www.zhihu.com/report?id=" .. (self.currentAnswerId or self.answerId) .. "&type=answer&source=android" })
       end },
       { id = "saveAsPic", title = "以图片形式保存", click = function()
-          if self.currentPageIds and self.currentPageIds.webview then
-            self.currentPageIds.webview.evaluateJavascript("captureScreen()", nil)
-          end
+          local helper = self:getCurrentHelper()
+          if not helper then return end
+          helper:evaluateJavascript("captureScreen()", nil)
+          tip("正在截图...")
       end },
-      { id = "copyMd", title = "复制Markdown", click = function() self:copyAsMarkdown() end },
+      { id = "copyMd", title = "复制Markdown", click = function()
+          local helper = self:getCurrentHelper()
+          if not helper then return end
+          helper:evaluateJavascript("MarkdownCopy.copy()", nil)
+          tip("正在复制...")
+      end },
       { id = "saveLocal", title = "保存到本地", click = function() self:saveToLocal() end },
     }
   })
@@ -270,16 +281,12 @@ function AnswerFragment:saveToLocal()
   })
 end
 
--- 复制为 Markdown 格式
-function AnswerFragment:copyAsMarkdown()
-  local webView = self.currentPageIds and self.currentPageIds.webview
-  if not webView then
+function AnswerFragment:getCurrentHelper()
+  if not self.currentHelper then
     tip("无法获取当前页面")
-    return
+    return nil
   end
-
-  webView.evaluateJavascript("MarkdownCopy.copy()", nil)
-  tip("正在复制...")
+  return self.currentHelper
 end
 
 function AnswerFragment:updateToolbar(title, answerCount)
@@ -408,6 +415,10 @@ function AnswerFragment:setupWebView(webview, answerId, pageIds)
       end
     end,
   })
+  -- 存入 pageData
+  if self.pageData[answerId] then
+    self.pageData[answerId].helper = helper
+  end
 end
 
 -- ViewPager2
@@ -497,7 +508,7 @@ function AnswerFragment:createPageView(answerId)
     })
 
     -- 超时保护：1秒后还没加载就直接加载
-    task(1000, self:runIfAlive(function()
+    Helpers.UI.runDelayed(1000, self:runIfAlive(function()
       if self.pageData[answerId] and not self.pageData[answerId].loading then
         self:loadWebView(answerId, pageIds)
       end
@@ -610,6 +621,7 @@ function AnswerFragment:onPageSelected(pos)
   local page = self.pageData[answerId]
   if page then
     self.currentPageIds = page.ids
+    self.currentHelper = page.helper
     if page.data then
       self:updateBottomBar(page.data)
     end
@@ -713,42 +725,25 @@ function AnswerFragment:setupFloatButtons()
 end
 
 function AnswerFragment:initViews()
+  local views = self.views
   self:setupEdgeToEdge({
-    top = {self.views.appbar},
-    callback = function(statusBarHeight, navBarHeight)
-      -- 浮动工具栏避让导航栏
-      -- floating_toolbar 是 FloatingToolbarLayout，会自动处理 EdgeToEdge ，无需设置 bottomMargin。
-
+    top = {views.appbar},
+    bottom = {
       -- 浮动滚动按钮避让导航栏
-      if self.views.float_scroll_container then
-        local params = self.views.float_scroll_container.layoutParams
-        if params and luajava.instanceof(params, CoordinatorLayout.LayoutParams) then
-          params.bottomMargin = params.bottomMargin + navBarHeight
-          self.views.float_scroll_container.layoutParams = params
-        end
-      end
-
-      --[[
-      -- ViewPager2 底部留出导航栏间距
-      self.views.view_pager.setPadding(
-      self.views.view_pager.paddingLeft,
-      self.views.view_pager.paddingTop,
-      self.views.view_pager.paddingRight,
-      navBarHeight
-      )
-      ]]
-      self.views.view_pager.clipToPadding = false
-    end
+      { view = views.float_scroll_container, useMargin = true }
+      -- 浮动工具栏 floating_toolbar 是 FloatingToolbarLayout，会自动处理 EdgeToEdge ，无需设置 bottomMargin。
+      -- ViewPager2 底部暂不留出导航栏间距
+    },
   })
 
   self:setupToolbar()
   self:setupBottomBar()
   self:setupViewPager2()
   self:setupFloatButtons()
-  self.views.floating_toolbar.onGenericMotion = function()
+  views.floating_toolbar.onGenericMotion = function()
     return false
   end
-  self.views.float_scroll_container.onGenericMotion = function()
+  views.float_scroll_container.onGenericMotion = function()
     return false
   end
 
@@ -777,7 +772,7 @@ function AnswerFragment:onVolumeDown()
   end
 
   local viewPager = self.views.view_pager
-    viewPager.setCurrentItem(current + 1, true)
+  viewPager.setCurrentItem(current + 1, true)
   local current = viewPager.currentItem
   local adapter = viewPager.adapter
   if adapter and current < adapter.itemCount - 1 then

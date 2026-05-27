@@ -133,7 +133,7 @@ function M.applyNightMode()
   local isAutoNight = Extensions.Config.getBool(Constants.SharedDataKeys.AUTO_NIGHT_MODE)
 
   -- 获取当前模式
-  local currentMode = AppCompatDelegate.getDefaultNightMode()
+  local currentMode = AppCompatDelegate.defaultNightMode
   -- 确定目标模式
   local targetMode
   if isManualNight then

@@ -5,7 +5,6 @@ local PageToolModel = require("models.base.PageToolModel")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local CollectionTabModel = Extensions.Class(PageToolModel)
-CollectionTabModel:chainUp("destroy")
 
 local TAB_CONFIGS = {
   { name = "收藏", key = "created" },

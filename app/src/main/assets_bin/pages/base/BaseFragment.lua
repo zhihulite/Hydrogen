@@ -56,6 +56,10 @@ function BaseFragment:createFragment(params)
     onDestroy = function()
       self:onDestroy()
     end,
+
+    onConfigurationChanged = function(newConfig)
+      self:onConfigurationChanged(newConfig)
+    end
   })
 
   self.fragment = luajava.newInstance("com.hydrogen.LuaFragment", creator)
@@ -132,6 +136,7 @@ end
 
 -- 生命周期方法（子类覆盖）
 function BaseFragment:onCreate(params) end
+function BaseFragment:onConfigurationChanged(newConfig) end
 function BaseFragment:onViewCreated(view, savedState) end
 function BaseFragment:onResume() end
 function BaseFragment:onPause() end

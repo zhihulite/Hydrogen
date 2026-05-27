@@ -11,8 +11,6 @@ local BaseFragment = require("pages.base.BaseFragment")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local SettingsFragment = Extensions.Class(BaseFragment, { "SettingsFragment" })
-SettingsFragment:chainUp("onDestroy")
-
 local SharedDataKeys = Constants.SharedDataKeys
 
 -- 卡片圆角模型（用于 item/switch/slider 的连续圆角效果）
@@ -120,8 +118,8 @@ end
 function SettingsFragment:initViews()
   local views = self.views
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
-    bottom = { self.views.recycler_view },
+    top = { views.main_container },
+    bottom = { views.recycler_view },
   })
 
   Helpers.UI.setupToolbar(views.toolbar, { title = "设置" })

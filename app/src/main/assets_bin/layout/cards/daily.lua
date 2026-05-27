@@ -16,9 +16,10 @@ return {
     id = "card",
     layout_width = "fill",
     layout_height = "wrap_content",
-    layout_margin = "8dp",
-    layout_marginLeft = "16dp",
-    layout_marginRight = "16dp",
+    layout_marginLeft = AppCardStyle.basic.marginLeft,
+    layout_marginRight = AppCardStyle.basic.marginRight,
+    layout_marginTop = AppCardStyle.basic.marginTop,
+    layout_marginBottom = AppCardStyle.basic.marginBottom,
     strokeColor = colors.outline,
     clickable = true,
     {

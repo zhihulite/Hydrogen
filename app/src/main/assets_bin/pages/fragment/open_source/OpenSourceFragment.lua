@@ -9,7 +9,6 @@ local BaseFragment = require("pages.base.BaseFragment")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local OpenSourceFragment = Extensions.Class(BaseFragment)
-OpenSourceFragment:chainUp("onDestroy")
 
 local licenses = {
   { name = "AndroidX AppCompat", license = "Apache 2.0", message = "Android 兼容库", url = "https://developer.android.com/jetpack/androidx" },
@@ -46,11 +45,11 @@ end
 
 function OpenSourceFragment:initViews()
   local views = self.views
-
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
-    bottom = { self.views.recycler_view },
+    top = { views.main_container },
+    bottom = { views.recycler_view },
   })
+  
   Helpers.UI.setupToolbar(views.toolbar,{ title = "开源许可" })
 
   self:initListView()

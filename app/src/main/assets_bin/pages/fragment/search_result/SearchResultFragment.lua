@@ -4,7 +4,6 @@ local SimpleListFragment = require("pages.fragment.base.SimpleListFragment")
 local SearchResultModel = require("models.search.SearchResultModel")
 
 local SearchResultFragment = Extensions.Class(SimpleListFragment)
-SearchResultFragment:chainUp("onDestroy")
 
 function SearchResultFragment:ctor()
   self.model = nil

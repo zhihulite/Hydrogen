@@ -6,7 +6,6 @@ local WebViewHelper = require("components.views.WebViewHelper")
 local CollectionMoveSheet = require("components.dialog.CollectionMoveSheet")
 
 local ContentFragment = Extensions.Class(BaseFragment, {"content"})
-ContentFragment:chainUp("onDestroy")
 
 function ContentFragment:ctor()
   self.contentId = nil
@@ -38,12 +37,20 @@ function ContentFragment:initLayout()
   self.root_view = loadlayout(Layouts.pages.content.main, self.views)
 end
 
+function ContentFragment:getHelper()
+  if not self.webViewHelper then
+    tip("无法获取当前页面")
+    return nil
+  end
+  return self.webViewHelper
+end
+
 function ContentFragment:initViews()
   local views = self.views
   -- TODO paddingbottom 注入应该可以 https://developer.chrome.com/docs/css-ui/edge-to-edge?hl=zh-cn
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
-    bottom = { self.views.main_container },
+    top = { views.main_container },
+    bottom = { views.main_container },
   })
   self:setupToolbar()
   self:initWebView()
@@ -57,10 +64,11 @@ function ContentFragment:setupToolbar()
 
   -- 构建菜单项
   local menuItems = {
+    { id = "find", title = "查找", click = function() if self:getHelper() then self:getHelper():showSearchDialog() end end },
     { id = "share", title = "分享", click = function() self:shareContent() end },
     { id = "copy", title = "复制链接", click = function() self:copyContent() end },
     { id = "open", title = "浏览器打开", click = function() self:openInBrowser() end },
-    { id = "refresh", title = "刷新", click = function() self.webViewHelper:reload() end },
+    { id = "refresh", title = "刷新", click = function() if self:getHelper() then self:getHelper():reload() end end },
   }
 
   -- 如果允许收藏，添加收藏菜单项
@@ -90,7 +98,9 @@ function ContentFragment:onBridgeMessage(action, data)
         onSuccess = function(stillInAnyCollection, addCount)
           local collected = tostring(stillInAnyCollection)
           local sendobj = '{"id":"'..callbackId..'","type":"success","params":{"contentType":"'..contentType..'","contentId":"'..contentId..'","collected":'..collected..'}}'
-          self.webViewHelper:evaluateJavascript('window.zhihuWebApp && window.zhihuWebApp.callback('..sendobj..')')
+          if self:getHelper() then
+            self:getHelper():evaluateJavascript('window.zhihuWebApp && window.zhihuWebApp.callback('..sendobj..')')
+          end
         end,
         onError = function(err)
           tip(err or "操作失败")
@@ -98,7 +108,6 @@ function ContentFragment:onBridgeMessage(action, data)
       })
     end)
   end
-
 end
 
 -- WebView
@@ -155,16 +164,17 @@ function ContentFragment:initWebView()
     end
   })
 
-
   Helpers.UI.setupSwipeRefresh(views.swipe_refresh, self:runIfAlive(function()
-    self.webViewHelper:reload()
+    if self:getHelper() then self:getHelper():reload() end
   end))
 end
 
 function ContentFragment:loadContent()
   self.model:load(nil, self:runIfAlive(function(success, data)
     if success and data and data.webUrl then
-      self.webViewHelper.webView.loadUrl(data.webUrl)
+      if self:getHelper() then
+        self:getHelper().webView.loadUrl(data.webUrl)
+      end
       self.views.toolbar.title = data.title
     end
   end))

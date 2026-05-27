@@ -124,12 +124,11 @@ function M.show(opts)
     layout_width = "match_parent",
     layout_height = "match_parent",
     {
-      NestedScrollView,
-      id = "scroll_view",
+      LinearLayoutCompat,
+      id = "input_lay",
       layout_width = "match_parent",
       layout_height = 0,
       layout_weight = 1,
-      fillViewport = true,
       {
         AppCompatEditText,
         id = "input",
@@ -143,7 +142,6 @@ function M.show(opts)
         typeface = AppTextStyle.bodyMedium.font,
         gravity = Gravity.TOP,
         inputType = 0x00020001,
-        background = null,
       },
     },
     {
@@ -241,7 +239,6 @@ function M.show(opts)
 
   local root = loadlayout(layout, views)
   local inputView = views.input
-  local scrollView = views.scroll_view
   local isAtSheetOpen = false
   local isProcessingUrl = false
   local emojiVisible = false
@@ -251,7 +248,6 @@ function M.show(opts)
   local uploadedImageWidth = nil
   local uploadedImageHeight = nil
   local uploadedImageIsGif = nil
-  local imageUri = nil
 
   local function checkAndConvertUrl(editable)
     if isProcessingUrl then return end
@@ -363,7 +359,7 @@ function M.show(opts)
             end
           })
 
-          task(500, function()
+          Helpers.UI.runDelayed(500, function()
             isAtSheetOpen = false
           end)
           return
@@ -382,6 +378,7 @@ function M.show(opts)
     local AtUserSheet = require("components.dialog.AtUserSheet")
     AtUserSheet.show({
       onSelected = function(userId, userName)
+        -- 必须为 getEditableText() 不能是 editableText，否则会转换为 string。
         local editable = inputView.getEditableText()
         local insertPos = inputView.selectionStart
         if insertPos < 0 then insertPos = editable.length() end
@@ -397,7 +394,7 @@ function M.show(opts)
       end
     })
 
-    task(500, function()
+    Helpers.UI.runDelayed(500, function()
       isAtSheetOpen = false
     end)
   end
@@ -425,13 +422,13 @@ function M.show(opts)
         v.emoji_img.imageDrawable = drawable
       end
       holder.itemView.onClick = function()
+        -- 必须为 getEditableText() 不能是 editableText，否则会转换为 string。
         local editable = inputView.getEditableText()
         local insertPos = inputView.selectionStart
         if insertPos < 0 then insertPos = editable.length() end
         local emojiTag = "[" .. item .. "]"
         local insertEndPos = insertPos + utf8.len(emojiTag)
         editable.insert(insertPos, emojiTag)
-        local span = EmojiSpan.new(item, 20)
 
         local emoji = EmojiSpan.new(item, 20)
         emoji.setSpan(editable, insertPos, insertEndPos, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -443,6 +440,10 @@ function M.show(opts)
   views.emoji_grid.layoutManager = GridLayoutManager(activity, 8)
   views.emoji_grid.adapter = emojiAdapter
 
+  -- 边缘渐变效果
+  views.emoji_grid.verticalFadingEdgeEnabled = true
+  views.emoji_grid.fadingEdgeLength = 80
+
   views.emoji_panel_btn.onClick = function()
     emojiVisible = not emojiVisible
     views.emoji_grid.visibility = emojiVisible and View.VISIBLE or View.GONE
@@ -450,6 +451,7 @@ function M.show(opts)
 
   local bottomSheet
   views.send_btn.onClick = function()
+    -- 必须为 getEditableText() 不能是 editableText，否则会转换为 string。
     local sendText = getSendText(inputView.getEditableText(), uploadedImageUrl, uploadedImageWidth, uploadedImageHeight, uploadedImageIsGif)
     if sendText == "" then
       tip("请输入内容或选择图片")
@@ -485,8 +487,7 @@ function M.show(opts)
   bottomSheet.contentView = root
   bottomSheet.show()
 
-  local InputMethodManager = luajava.bindClass("android.view.inputmethod.InputMethodManager")
-  task(100, function()
+  Helpers.UI.runDelayed(100, function()
     inputView.requestFocus()
     local imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE)
     imm.showSoftInput(inputView, 0)

@@ -5,7 +5,6 @@ local PageToolModel = require("models.base.PageToolModel")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local ThinkModel = Extensions.Class(PageToolModel)
-ThinkModel:chainUp("destroy")
 
 function ThinkModel:ctor()
   self.requestHeadKey = "defaultHead"

@@ -5,7 +5,6 @@ local BaseActivity = require("pages.base.BaseActivity")
 local WebViewHelper = require("components.views.WebViewHelper")
 
 local LoginActivity = Extensions.Class(BaseActivity, {"login"})
-LoginActivity:chainUp("onDestroy")
 
 function LoginActivity:onCreate(params)
   self.url = (params and params.url) or "https://www.zhihu.com/signin"
@@ -16,7 +15,8 @@ function LoginActivity:initLayout()
 end
 
 function LoginActivity:initViews()
-  local toolbar = self.views.toolbar
+  local views = self.views
+  local toolbar = views.toolbar
   Helpers.UI.setupToolbar(toolbar, {
     title = "登录至 Hydrogen",
     menu = {
@@ -28,10 +28,10 @@ function LoginActivity:initViews()
   })
 
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
+    top = { views.main_container },
   })
 
-  self.webViewHelper = WebViewHelper.new(self.views.webview)
+  self.webViewHelper = WebViewHelper.new(views.webview)
   :initSettings()
   :initDownloadListener()
   :setWebViewClient({
@@ -49,14 +49,14 @@ function LoginActivity:initViews()
       return false
     end,
     onPageFinished = function(_, url)
-      self.views.progress.visibility = View.GONE
-      self.views.webview.visibility = View.VISIBLE
+      views.progress.visibility = View.GONE
+      views.webview.visibility = View.VISIBLE
     end,
   })
   :setWebChromeClient({
     onProgressChanged = function(_, p)
-      self.views.progress.visibility = p < 100 and View.VISIBLE or View.GONE
-      self.views.webview.visibility = p < 100 and View.GONE or View.VISIBLE
+      views.progress.visibility = p < 100 and View.VISIBLE or View.GONE
+      views.webview.visibility = p < 100 and View.GONE or View.VISIBLE
     end,
   })
   :setMessageListener(function(action, data)
@@ -91,7 +91,7 @@ function LoginActivity:checkLogin()
         Extensions.Config.set(Constants.SharedDataKeys.USER_ID, result.id)
         CookieManager.instance.flush()
         tip("登录成功")
-        task(500, self:runIfAlive(function()
+        Helpers.UI.runDelayed(500, self:runIfAlive(function()
           self:finish()
         end))
       end

@@ -614,7 +614,7 @@ function M:throttleTabClick(key, action)
 
   if self.tabThrottleFlags[key] then
     self.tabThrottleFlags[key] = false
-    task(1050, self:runIfAlive(function()
+    Helpers.UI.runDelayed(1050, self:runIfAlive(function()
       self.tabThrottleFlags[key] = true
     end))
     action()

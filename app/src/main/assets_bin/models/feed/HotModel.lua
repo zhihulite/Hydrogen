@@ -5,7 +5,6 @@ local PageModel = require("models.base.PageModel")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local HotModel = Extensions.Class(PageModel)
-HotModel:chainUp("destroy")
 
 function HotModel:ctor()
   self.requestHeadKey = "defaultHead"

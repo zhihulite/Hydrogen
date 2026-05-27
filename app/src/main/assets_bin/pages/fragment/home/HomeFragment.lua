@@ -15,8 +15,6 @@ local FollowContentModel = require("models.feed.FollowContentModel")
 local UserModel = require("models.user.UserModel")
 
 local HomeFragment = Extensions.Class(BaseFragment, {"home"})
-HomeFragment:chainUp("onDestroy")
-
 
 local homeTabs = {
   { name = "推荐", modelClass = RecommendModel, needLogin = false, icon = "twotone_home" },
@@ -108,29 +106,31 @@ function HomeFragment:_scrollCurrentPageToTop()
   end
 end
 
--- 给所有 Model 的 RecyclerView 添加底部导航栏 padding
-function HomeFragment:applyNavBarPaddingToAllModels(navBarHeight)
-  local function applyPadding(rv)
-    if not rv then return end
-    rv.setPadding(rv.paddingLeft, rv.paddingTop, rv.paddingRight, navBarHeight)
-    rv.clipToPadding = false
-  end
+-- 收集所有需要底部导航栏避让的视图并设置 clipToPadding
+function HomeFragment:collectAllBottomViews()
+  local rvList = {}
 
-  local function processModel(model)
+  local function collectFromModel(model)
     if not model or not model.getAllRecyclerViews then return end
-    for _, rv in ipairs(model:getAllRecyclerViews()) do applyPadding(rv) end
+    for _, rv in ipairs(model:getAllRecyclerViews()) do
+      rv.clipToPadding = false
+      table.insert(rvList, rv)
+    end
   end
 
   -- 处理所有独立页面 Model
   for key, model in pairs(self.pageModels) do
-    if key ~= "home" then processModel(model) end
+    if key ~= "home" then collectFromModel(model) end
   end
 
   -- 处理主页下的子 Model
   if self.pageModels.home then
-    for _, model in pairs(self.pageModels.home) do processModel(model) end
+    for _, model in pairs(self.pageModels.home) do collectFromModel(model) end
   end
+
+  return rvList
 end
+
 
 function HomeFragment:initViews()
   self:initAllPages()
@@ -139,13 +139,21 @@ function HomeFragment:initViews()
 
   local views = self.views
 
+  -- 移除 BottomNavigationView 默认的窗口 insets 适配
+  -- 原因：BasePage 已统一处理左右刘海适配，此控件自动叠加会导致双重 padding
+  import "androidx.core.view.ViewCompat"
+  local bottomNav = self.homePageViews.bottom_nav
+  ViewCompat.setOnApplyWindowInsetsListener(bottomNav, nil)
+
+  -- 使用 EdgeToEdge
+  local bottomViews = self:collectAllBottomViews()
+  table.insert(bottomViews, bottomNav)
+
   self:setupEdgeToEdge({
     top = { views.main_container, views.nav_view },
-    callback = function(statusBarHeight, navBarHeight)
-      -- 统一给所有 RecyclerView 添加底部导航栏 padding
-      self:applyNavBarPaddingToAllModels(navBarHeight)
-    end
+    bottom = bottomViews
   })
+
   -- 双击标题栏返回顶部
   import "android.view.GestureDetector"
   local detector = GestureDetector(activity, {
@@ -157,11 +165,9 @@ function HomeFragment:initViews()
       return true
     end
   })
-  self.views.toolbar.setOnTouchListener({
-    onTouch = function(v, event)
+  views.toolbar.onTouch = function(v, event)
       return detector.onTouchEvent(event)
-    end
-  })
+  end
 end
 
 function HomeFragment:initConfig()
@@ -643,6 +649,26 @@ function HomeFragment:updateToolbarMenu(pageName)
       end
     end
   })
+end
+
+--- 更新底部导航栏布局方向（响应横竖屏/宽屏切换）
+--- 依赖 style: Widget.Material3Expressive.BottomNavigationView
+--- 内部读取 m3expressive_bottom_nav_icon_gravity 和 m3expressive_bottom_nav_item_gravity
+--- 注意：这些资源 ID 可能在 Material Components 版本更新后变化
+function HomeFragment:updateBottomNavLayout()
+  local bottomNav = self.homePageViews and self.homePageViews.bottom_nav
+  if not bottomNav then return end
+
+  bottomNav.setItemIconGravity(Helpers.Resources.app.integer.m3expressive_bottom_nav_icon_gravity)
+  bottomNav.setItemGravity(Helpers.Resources.app.integer.m3expressive_bottom_nav_item_gravity)
+end
+
+function HomeFragment:onConfigurationChanged(newConfig)
+  -- 延迟执行，等布局完成
+  local decorView = activity.window.decorView
+  decorView.postDelayed(function()
+    self:updateBottomNavLayout()
+  end, 50)
 end
 
 function HomeFragment:showCreateCollectionDialog()

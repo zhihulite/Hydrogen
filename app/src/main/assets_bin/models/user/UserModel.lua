@@ -4,7 +4,6 @@
 local BaseModel = require("models.base.BaseModel")
 
 local UserModel = Extensions.Class(BaseModel)
-UserModel:chainUp("destroy")
 
 function UserModel:ctor(userId)
   self:setUserId(userId or "")

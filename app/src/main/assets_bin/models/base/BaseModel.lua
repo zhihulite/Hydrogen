@@ -2,6 +2,8 @@
 -- 纯数据层基类，提供网络请求、数据缓存、事件监听能力
 
 local BaseModel = Extensions.Class()
+-- 标记链式方法（标记会被子类自动继承，子类无需重复调用）
+BaseModel:chainUp("destroy")
 
 function BaseModel:ctor()
   self.data = nil -- 解析后的数据

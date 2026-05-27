@@ -8,7 +8,6 @@ import "com.journeyapps.barcodescanner.DefaultDecoderFactory"
 local BaseFragment = require("pages.base.BaseFragment")
 
 local ScanFragment = Extensions.Class(BaseFragment, {"scan"})
-ScanFragment:chainUp("onDestroy")
 
 function ScanFragment:ctor()
   self.hasHandledResult = false
@@ -28,7 +27,7 @@ function ScanFragment:initViews()
   self.barcodeView = views.barcode_scanner_view
 
   -- TODO
-  self:setupEdgeToEdge({callback = function()end})
+  self:setupEdgeToEdge({})
 
   Helpers.UI.setupToolbar(views.toolbar, { title = "扫一扫" })
 
@@ -82,7 +81,7 @@ end
 
 function ScanFragment:handleUrl(url)
   Router.back()
-  task(120, function()
+  Helpers.UI.runDelayed(120, function()
     Helpers.ZhihuParser.goUrl(url)
   end)
 end

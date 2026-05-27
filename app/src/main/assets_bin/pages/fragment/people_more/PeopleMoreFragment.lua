@@ -4,7 +4,6 @@
 local BaseFragment = require("pages.base.BaseFragment")
 
 local PeopleMoreFragment = Extensions.Class(BaseFragment)
-PeopleMoreFragment:chainUp("onDestroy")
 
 function PeopleMoreFragment:ctor()
   self.userId = nil
@@ -35,6 +34,21 @@ function PeopleMoreFragment:initLayout()
   end
 end
 
+-- 收集所有需要底部导航栏避让的页面并设置 clipToPadding
+function PeopleMoreFragment:collectAllBottomViews()
+  local bottomViews = {}
+
+  if not self.model then return bottomViews end
+
+  -- 收集 model 中的所有 RecyclerView
+  for _, rv in ipairs(self.model:getAllRecyclerViews()) do
+    rv.clipToPadding = false
+    table.insert(bottomViews, rv)
+  end
+
+  return bottomViews
+end
+
 function PeopleMoreFragment:initViews()
   local views = self.views
 
@@ -52,21 +66,12 @@ function PeopleMoreFragment:initViews()
     end
   end
 
+  -- 收集所有需要底部避让的视图
+  local bottomViews = self:collectAllBottomViews()
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
-    callback = function(statusBarHeight, navBarHeight)
-      for _, rv in ipairs(self.model:getAllRecyclerViews()) do
-        rv.setPadding(
-        rv.paddingLeft,
-        rv.paddingTop,
-        rv.paddingRight,
-        rv.paddingBottom + navBarHeight
-        )
-        rv.clipToPadding = false
-      end
-    end
+    top = { views.main_container },
+    bottom = bottomViews
   })
-
 end
 
 function PeopleMoreFragment:onDestroy()

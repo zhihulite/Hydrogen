@@ -7,7 +7,6 @@ local BaseModel = require("models.base.BaseModel")
 import "androidx.recyclerview.widget.LinearLayoutManager"
 
 local PageModel = Extensions.Class(BaseModel)
-PageModel:chainUp("destroy")
 
 function PageModel:ctor()
   self.items = {} -- 列表数据

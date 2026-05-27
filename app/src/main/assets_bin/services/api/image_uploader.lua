@@ -95,7 +95,7 @@ local function waitForImageSrc(imageId, callback)
       if code ~= 200 then
         retryCount = retryCount + 1
         if retryCount < maxRetries then
-          task(1000, checkStatus)
+          Helpers.UI.runDelayed(1000, checkStatus)
          else
           callback(false, nil)
         end
@@ -110,7 +110,7 @@ local function waitForImageSrc(imageId, callback)
        else
         retryCount = retryCount + 1
         if retryCount < maxRetries then
-          task(1000, checkStatus)
+          Helpers.UI.runDelayed(1000, checkStatus)
          else
           callback(false, nil)
         end

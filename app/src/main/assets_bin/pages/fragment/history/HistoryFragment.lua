@@ -161,7 +161,7 @@ function HistoryFragment:showSearchDialog()
   .setTitle("搜索历史记录")
   .setView(loadlayout(Layouts.common.search_input, views))
   .setPositiveButton("搜索", function()
-    local keyword = views.edit.getText().toString()
+    local keyword = views.edit.text
     if keyword ~= "" then
       local results = HistoryService.search(keyword)
       table.clear(self.items)

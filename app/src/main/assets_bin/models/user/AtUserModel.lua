@@ -5,7 +5,6 @@ local PageToolModel = require("models.base.PageToolModel")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local AtUserModel = Extensions.Class(PageToolModel)
-AtUserModel:chainUp("destroy")
 
 function AtUserModel:ctor(scene)
   self.scene = scene or "comment_editor"

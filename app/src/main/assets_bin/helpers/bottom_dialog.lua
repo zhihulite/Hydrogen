@@ -69,7 +69,7 @@ local function buildListItems(container, items, onItemClick, onItemLongClick, au
 
     local views = {}
     local itemView = loadlayout(itemLayout, views)
-    
+
     -- 绑定点击事件
     itemView.onClick = function()
       if onItemClick then onItemClick(i, item) end
@@ -82,7 +82,7 @@ local function buildListItems(container, items, onItemClick, onItemLongClick, au
       end
       return false
     end
-    
+
     container.addView(itemView)
   end
 end
@@ -102,7 +102,7 @@ function M.show(opts)
   local contentView
   if opts.contentView then
     contentView = opts.contentView
-  else
+   else
     contentView = {
       MaterialTextView,
       layout_width = "match_parent",

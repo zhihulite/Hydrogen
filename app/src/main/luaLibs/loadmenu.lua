@@ -59,7 +59,7 @@ end
 --- @param menu Menu 目标菜单对象
 --- @param items table 菜单配置列表
 --- @return table idMap，键为配置中的 id（字符串），值为对应的 MenuItem
---- 
+---
 --- 配置项字段说明：
 --- @field id string|nil 菜单项标识，用作返回映射的键（可选）
 --- @field itemId number|nil 菜单项数字 ID，传给 add() 方法（可选，不设置则使用 NONE）
@@ -73,18 +73,18 @@ end
 --- @field checkable boolean|nil 是否可勾选（可选）
 --- @field checked boolean|nil 是否已勾选（可选）
 --- @field click function|nil 点击回调，参数为 menuItem（可选）
---- 
+---
 --- 子菜单：如果配置项的第一个元素是子表，则视为子菜单，子菜单配置同该表
---- 
+---
 --- @error 当 items 不是表或菜单项配置不是表时抛出错误
---- 
+---
 --- @usage
 --- -- 普通菜单
 --- local ids = loadmenu(menu, {
 ---   { id = "home", title = "主页", icon = "ic_home.png", asAction = "always", click = function(item) print("主页") end },
 ---   { id = "settings", title = "设置", asAction = "never", click = function() print("设置") end }
 --- })
---- 
+---
 --- -- 子菜单
 --- local ids = loadmenu(menu, {
 ---   { id = "more", title = "更多", {
@@ -147,12 +147,10 @@ local function loadmenu(menu, items)
 
     -- 设置点击事件
     if cfg.click then
-      menuItem.setOnMenuItemClickListener({
-        onMenuItemClick = function()
-          cfg.click(menuItem)
-          return true
-        end
-      })
+      menuItem.onMenuItemClick = function()
+        cfg.click(menuItem)
+        return true
+      end
     end
 
     -- 存储 id 映射

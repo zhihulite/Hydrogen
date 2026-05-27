@@ -5,7 +5,6 @@ local PageToolModel = require("models.base.PageToolModel")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local FollowContentModel = Extensions.Class(PageToolModel)
-FollowContentModel:chainUp("destroy")
 
 function FollowContentModel:ctor(userId)
   self.requestHeadKey = "app"

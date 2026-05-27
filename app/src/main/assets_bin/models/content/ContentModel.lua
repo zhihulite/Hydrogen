@@ -4,7 +4,6 @@
 local BaseModel = require("models.base.BaseModel")
 
 local ContentModel = Extensions.Class(BaseModel)
-ContentModel:chainUp("destroy")
 
 local contentTypes = {
   ["article"] = {

@@ -23,11 +23,12 @@ return {
   {
     MaterialCardView,
     id = "card",
-    layout_margin = "8dp",
-    layout_marginLeft = "16dp",
-    layout_marginRight = "16dp",
     layout_width = "match_parent",
     layout_height = "wrap_content",
+    layout_marginLeft = AppCardStyle.basic.marginLeft,
+    layout_marginRight = AppCardStyle.basic.marginRight,
+    layout_marginTop = AppCardStyle.basic.marginTop,
+    layout_marginBottom = AppCardStyle.basic.marginBottom,
     clickable = true,
     {
       LinearLayoutCompat,

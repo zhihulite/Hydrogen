@@ -8,7 +8,6 @@ local BaseFragment = require("pages.base.BaseFragment")
 local TopicModel = require("models.topic.TopicModel")
 
 local TopicFragment = Extensions.Class(BaseFragment, {"topic"})
-TopicFragment:chainUp("onDestroy")
 
 function TopicFragment:ctor()
   self.topicId = nil
@@ -41,33 +40,38 @@ function TopicFragment:initLayout()
   self.root_view = loadlayout(Layouts.pages.topic.main, self.views)
 end
 
+-- 收集所有需要底部导航栏避让的页面并设置 clipToPadding
+function TopicFragment:collectAllBottomViews()
+  local rvList = {}
+
+  -- 收集 topicModel 中的所有 RecyclerView
+  for _, rv in ipairs(self.topicModel:getAllRecyclerViews()) do
+    rv.clipToPadding = false
+    table.insert(rvList, rv)
+  end
+
+  -- 收集详情页的 detail_container
+  local detail_container = self.topicModel:getDetailViews().detail_container
+  if detail_container then
+    detail_container.clipToPadding = false
+    table.insert(rvList, detail_container)
+  end
+
+  return rvList
+end
+
 function TopicFragment:initViews()
   local views = self.views
   self.topicModel:loadTopicInfo()
   self:initViewPager()
   self:updateSortMenuVisibility(nil) -- 默认初始化工具栏
 
+  -- 收集所有需要底部导航栏避让的视图
+  local bottomViews = self:collectAllBottomViews()
+
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
-    callback = function(statusBarHeight, navBarHeight)
-      for _, rv in ipairs(self.topicModel:getAllRecyclerViews()) do
-        rv.setPadding(
-        rv.paddingLeft,
-        rv.paddingTop,
-        rv.paddingRight,
-        rv.paddingBottom + navBarHeight
-        )
-        rv.clipToPadding = false
-      end
-      -- 前置页面处理
-      local detail_container = self.topicModel:getDetailViews().detail_container
-      detail_container.setPadding(
-      detail_container.paddingLeft,
-      detail_container.paddingTop,
-      detail_container.PaddingRight,
-      detail_container.PaddingBottom + navBarHeight
-      )
-    end
+    top = { views.main_container },
+    bottom = bottomViews
   })
 end
 

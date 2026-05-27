@@ -20,7 +20,6 @@ import "android.webkit.URLUtil"
 local BaseActivity = require("pages.base.BaseActivity")
 
 local ImageActivity = Extensions.Class(BaseActivity)
-ImageActivity:chainUp("onDestroy")
 
 function ImageActivity:ctor()
   self.imageUrls = {}
@@ -49,6 +48,7 @@ function ImageActivity:onCreate(params)
     return
   end
 
+  self:setupEdgeToEdge({})
   self:setFullScreen()
 end
 
@@ -65,10 +65,6 @@ function ImageActivity:initViews()
     self:shareCurrentImage()
     return true
   end
-
-  -- TODO fix 点击切换底栏
-  -- 点击根布局切换底栏显示/隐藏
-  self.views.main_container.onClick = function() self:toggleBottomBar() end
 end
 
 function ImageActivity:setupViewPager()
@@ -105,6 +101,13 @@ function ImageActivity:loadImage(index)
 
   local url = self:processImageUrl(self.imageUrls[imgidx])
   views.loading_container.visibility = View.VISIBLE
+
+  -- 设置 PhotoView 点击事件
+  views.photo_view.setOnClickListener({
+    onClick = function()
+      self:toggleBottomBar()
+    end
+  })
 
   Glide.with(activity)
   .load(url)
@@ -214,13 +217,9 @@ end
 
 function ImageActivity:setFullScreen()
   if Build.VERSION.SDK_INT < 21 then return end
-  local window = activity.window
-  window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-  window.statusBarColor = 0
-  window.navigationBarColor = 0x00000000
 
-  local decorView = window.decorView
-  decorView.setSystemUiVisibility(
+  local window = activity.window
+  window.decorView.setSystemUiVisibility(
   View.SYSTEM_UI_FLAG_LAYOUT_STABLE
   | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
   | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION

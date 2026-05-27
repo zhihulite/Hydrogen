@@ -5,7 +5,6 @@ local BaseModel = require("models.base.BaseModel")
 local PageTool = require("components.views.PageTool")
 
 local PageToolModel = Extensions.Class(BaseModel)
-PageToolModel:chainUp("destroy")
 
 function PageToolModel:ctor()
   self.pageTool = nil -- PageTool 实例

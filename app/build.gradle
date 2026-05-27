@@ -2,22 +2,26 @@ plugins {
     id 'com.android.application'
 }
 
+tasks.withType(JavaCompile) {
+    options.compilerArgs << '-Xlint:deprecation'
+}
+
 android {
     namespace 'com.zhihu.hydrogen.x'
     compileSdk = 36
 
     defaultConfig {
-        applicationId "com.zhihu.hydrogen.x"
+        applicationId = "com.zhihu.hydrogen.x"
         minSdk = 24
         targetSdk = 36
-        versionCode 1
-        versionName "new"
+        versionCode = 1
+        versionName = "new"
         resourceConfigurations += ['zh']
     }
 
     signingConfigs {
         release {
-            storeFile file("${project.rootDir}/hydrogen.jks")
+            storeFile file("${rootDir}/hydrogen.jks")
             storePassword "zhihu"
             keyAlias "hydrogen"
             keyPassword "android"
@@ -27,7 +31,7 @@ android {
             enableV4Signing true
         }
         debug {
-            storeFile file("${project.rootDir}/hydrogen.jks")
+            storeFile file("${rootDir}/hydrogen.jks")
             storePassword "zhihu"
             keyAlias "hydrogen"
             keyPassword "android"
@@ -44,7 +48,7 @@ android {
             // 必须要禁用 R8
             minifyEnabled false
             shrinkResources false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {
             signingConfig = signingConfigs.debug
@@ -80,7 +84,6 @@ dependencies {
     implementation libs.androidx.swiperefresh
     implementation libs.glide
     annotationProcessor libs.glide.compiler
-    implementation libs.zip4j
     implementation libs.photoview
     implementation libs.webviewup.core
     implementation libs.androidx.activity

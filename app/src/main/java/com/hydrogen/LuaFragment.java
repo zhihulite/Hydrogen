@@ -1,6 +1,7 @@
 package com.hydrogen;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -87,12 +88,11 @@ public class LuaFragment extends Fragment {
         }
     }
 
-    @Deprecated
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
         if (creator != null) {
-            creator.onActivityCreated(savedInstanceState);
+            creator.onConfigurationChanged(newConfig);
         }
     }
 
@@ -209,7 +209,7 @@ public class LuaFragment extends Fragment {
         @Nullable
         View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState);
         void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState);
-        void onActivityCreated(@Nullable Bundle savedInstanceState);
+        void onConfigurationChanged(@NonNull Configuration newConfig);
         void onStart();
         void onResume();
         void onPause();

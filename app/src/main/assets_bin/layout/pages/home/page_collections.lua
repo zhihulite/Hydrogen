@@ -3,7 +3,6 @@
 
 import "androidx.appcompat.widget.LinearLayoutCompat"
 import "com.google.android.material.tabs.TabLayout"
-import "android.animation.LayoutTransition"
 import "com.hydrogen.view.CustomViewPager"
 
 return {
@@ -19,7 +18,6 @@ return {
     elevation = "4dp",
     tabMode = TabLayout.MODE_FIXED,
     tabGravity = TabLayout.GRAVITY_FILL,
-    layoutTransition = LayoutTransition().enableTransitionType(LayoutTransition.CHANGING),
   },
   {
     CustomViewPager,

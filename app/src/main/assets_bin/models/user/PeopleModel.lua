@@ -6,7 +6,6 @@ local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter"
 local UserModel = require("models.user.UserModel")
 
 local PeopleModel = Extensions.Class(PageToolModel)
-PeopleModel:chainUp("destroy")
 
 -- 回答排序选项
 local ANSWER_SORT_OPTIONS = {
@@ -208,7 +207,7 @@ end
 function PeopleModel:loadTabs(callback)
   local url = "https://api.zhihu.com/people/" .. self.userId .. "/profile/tab"
 
-  self:fetch(url, nil, function(success, response)
+  self:fetch(url, { requestHeadKey = "app" }, function(success, response)
     local result = {}
     if success and response and response.tabs_v3 then
       for _, tab in ipairs(response.tabs_v3) do

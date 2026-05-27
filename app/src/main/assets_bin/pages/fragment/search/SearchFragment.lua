@@ -12,7 +12,6 @@ local SearchModel = require("models.search.SearchModel")
 local SearchHistoryService = require("services.cache.search")
 
 local SearchFragment = Extensions.Class(BaseFragment, {"search"})
-SearchFragment:chainUp("onDestroy")
 
 function SearchFragment:ctor()
   self.searchUrlTemplate = nil
@@ -55,12 +54,13 @@ function SearchFragment:initLayout()
 end
 
 function SearchFragment:initViews()
-  self.searchView = self.views.search_view
+  local views = self.views
+  self.searchView = views.search_view
 
   -- 懒得搞了，偷懒做法qaq
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
-    bottom = { self.views.main_container },
+    top = { views.main_container },
+    bottom = { views.main_container },
   })
 
   self:setupToolbar()
@@ -70,13 +70,13 @@ function SearchFragment:initViews()
   self.searchView.focusable = true
   self.searchView.requestFocus()
   local InputMethodManager = luajava.bindClass("android.view.inputmethod.InputMethodManager")
-  task(100, function()
+  Helpers.UI.runDelayed(100, function()
     local imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE)
     imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, InputMethodManager.HIDE_NOT_ALWAYS);
   end)
 
-  self:setupAdapter("hot", self.views.hot_grid)
-  self:setupAdapter("suggest", self.views.suggest_list)
+  self:setupAdapter("hot", views.hot_grid)
+  self:setupAdapter("suggest", views.suggest_list)
   self:setupHistory()
   self.model:loadHotSearch()
 end

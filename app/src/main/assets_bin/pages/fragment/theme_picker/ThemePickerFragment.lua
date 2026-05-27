@@ -7,7 +7,6 @@ local BaseFragment = require("pages.base.BaseFragment")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local ThemePickerFragment = Extensions.Class(BaseFragment)
-ThemePickerFragment:chainUp("onDestroy")
 
 -- 所有主题 ID 列表
 local allThemeIds = {
@@ -59,8 +58,8 @@ function ThemePickerFragment:initViews()
   local views = self.views
 
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
-    bottom = { self.views.recycler_view },
+    top = { views.main_container },
+    bottom = { views.recycler_view },
   })
 
   if views.toolbar then
@@ -133,7 +132,7 @@ function ThemePickerFragment:onThemeSelect(item)
   tip("主题已切换，重启生效，即将重启")
 
   -- 延迟重启
-  task(1000, function()
+  Helpers.UI.runDelayed(1000, function()
     activity.recreate()
   end)
 end

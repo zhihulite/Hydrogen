@@ -8,7 +8,6 @@ local Storage = require("services.cache.storage")
 import "androidx.appcompat.widget.PopupMenu"
 
 local RecommendModel = Extensions.Class(PageToolModel)
-RecommendModel:chainUp("destroy")
 
 function RecommendModel:ctor()
   self.requestHeadKey = "defaultHead"
@@ -193,15 +192,13 @@ function RecommendModel:showDislikeMenu(item, anchor)
       menu.add(0, i, 0, menuItem.title)
     end
 
-    popup.setOnMenuItemClickListener({
-      onMenuItemClick = function(menuItem)
-        local callback = menuItems[menuItem.itemId]
-        if callback and callback.action then
-          callback.action()
-        end
-        return true
+    popup.onMenuItemClick = function(menuItem)
+      local callback = menuItems[menuItem.itemId]
+      if callback and callback.action then
+        callback.action()
       end
-    })
+      return true
+    end
 
     popup.show()
   end)

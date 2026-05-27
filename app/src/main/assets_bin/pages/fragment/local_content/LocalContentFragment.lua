@@ -11,7 +11,6 @@ local WebViewHelper = require("components.views.WebViewHelper")
 local MenuItem = luajava.bindClass("android.view.MenuItem")
 
 local LocalContentFragment = Extensions.Class(BaseFragment, {"local_content"})
-LocalContentFragment:chainUp("onDestroy")
 
 function LocalContentFragment:ctor()
   self.mode = nil
@@ -63,22 +62,30 @@ function LocalContentFragment:onDestroy()
     Extensions.File.delete(self._tempDir)
   end
 
-  if self.webView then
-    self.webView.destroy()
-    self.webView = nil
+  if self.webViewHelper then
+    self.webViewHelper:destroy()
+    self.webViewHelper = nil
   end
-  self.webViewHelper = nil
+  self.webView = nil
 end
 
 function LocalContentFragment:initLayout()
   self.root_view = loadlayout(Layouts.pages.local_content.main, self.views)
 end
 
+function LocalContentFragment:getHelper()
+  if not self.webViewHelper then
+    tip("无法获取当前页面")
+    return nil
+  end
+  return self.webViewHelper
+end
+
 function LocalContentFragment:initViews()
   local views = self.views
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
-    bottom = { self.views.webview },
+    top = { views.main_container },
+    bottom = { views.webview },
   })
 
   self:setupToolbar()
@@ -95,7 +102,9 @@ function LocalContentFragment:setupToolbar()
   local toolbar = self.views.toolbar
   if not toolbar then return end
 
-  local menuItems = {}
+  local menuItems = {
+    { id = "find", title = "查找", click = function() if self:getHelper() then self:getHelper():showSearchDialog() end end },
+  }
 
   if self.mode == "save" then
     table.insert(menuItems, { id = "save", title = "保存", click = function() self:savePage() end })
@@ -105,7 +114,7 @@ function LocalContentFragment:setupToolbar()
 
   table.insert(menuItems, { id = "pdf", title = "另存为PDF", click = function() self:saveAsPdf() end })
   table.insert(menuItems, { id = "share", title = "分享", click = function() self:shareContent() end })
-  table.insert(menuItems, { id = "refresh", title = "刷新", click = function() self.webView.reload() end })
+  table.insert(menuItems, { id = "refresh", title = "刷新", click = function() if self:getHelper() then self:getHelper():reload() end end })
 
   Helpers.UI.setupToolbar(toolbar, {
     title = self.title or "本地内容",
@@ -116,6 +125,11 @@ end
 function LocalContentFragment:initWebView()
   local views = self.views
   self.webView = views.webview
+  
+  -- 首先设置允许文件访问
+  self.webView.settings
+  .setAllowFileAccess(true)
+  
   self.webViewHelper = WebViewHelper.new(self.webView)
   :initSettings()
   :initNoImageMode()
@@ -141,7 +155,7 @@ function LocalContentFragment:initWebView()
   end
 
   Helpers.UI.setupSwipeRefresh(views.swipe_refresh, function()
-    if self.webView then self.webView.reload() end
+    if self:getHelper() then self:getHelper():reload() end
   end)
 
   self.webViewHelper:setWebViewClient({
@@ -161,14 +175,15 @@ function LocalContentFragment:initWebView()
 
   self.webViewHelper:setWebChromeClient({
     onReceivedTitle = function(view, title)
-      if not self.pageTitle and self.views.toolbar then
-        self.views.toolbar.title = title
+      if not self.pageTitle and views.toolbar then
+        views.toolbar.title = title
       end
     end,
     onProgressChanged = function(view, progress)
-      local bar = self.views.progress_bar
+      local bar = views.progress_bar
       if progress == 100 then
-        bar.visibility = View.GONE bar.progress = 0
+        bar.visibility = View.GONE
+        bar.progress = 0
        else
         if bar.visibility ~= View.VISIBLE then bar.visibility = View.VISIBLE end
         bar.progress = progress
@@ -190,7 +205,7 @@ function LocalContentFragment:onBridgeMessage(action, data)
 end
 
 function LocalContentFragment:loadUrl()
-  if not self.webView or not self.url then return end
+  if not self:getHelper() or not self.url then return end
   self.views.webview.visibility = View.GONE
   self.webView.loadUrl(self.url)
 end
@@ -227,10 +242,11 @@ function LocalContentFragment:savePage()
       self.isSaving = false
       return
     end
-    self.webView.evaluateJavascript(mhtml2htmlCode, nil)
-
-    local js = "setTimeout(function(){var mhtml=HydrogenCore.sendMessage('gethtml',null);var result=mhtml2html.convert(mhtml);var html=result.window.document.documentElement.outerHTML;HydrogenCore.sendMessage('sendhtml',html);},100);"
-    self.webView.evaluateJavascript(js, nil)
+    if self:getHelper() then
+      self:getHelper():evaluateJavascript(mhtml2htmlCode, nil)
+      local js = "setTimeout(function(){var mhtml=HydrogenCore.sendMessage('gethtml',null);var result=mhtml2html.convert(mhtml);var html=result.window.document.documentElement.outerHTML;HydrogenCore.sendMessage('sendhtml',html);},100);"
+      self:getHelper():evaluateJavascript(js, nil)
+    end
   end)
 end
 
@@ -317,6 +333,19 @@ function LocalContentFragment:saveAsPdf()
   .build()
 
   printManager.print(self.title .. ".pdf", printAdapter, attributes)
+end
+
+import "android.view.View"
+function LocalContentFragment:onPause()
+  if self.webView then
+    self.webView.setLayerType(View.LAYER_TYPE_SOFTWARE, nil)
+  end
+end
+
+function LocalContentFragment:onResume()
+  if self.webView then
+    self.webView.setLayerType(View.LAYER_TYPE_NONE, nil)
+  end
 end
 
 return LocalContentFragment

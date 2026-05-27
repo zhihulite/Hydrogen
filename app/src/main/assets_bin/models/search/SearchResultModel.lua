@@ -5,7 +5,6 @@ local PageToolModel = require("models.base.PageToolModel")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local SearchResultModel = Extensions.Class(PageToolModel)
-SearchResultModel:chainUp("destroy")
 
 function SearchResultModel:ctor(keyword, searchType, extraId)
   self.keyword = keyword

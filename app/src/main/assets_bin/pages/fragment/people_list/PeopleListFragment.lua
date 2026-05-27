@@ -4,7 +4,6 @@ local SimpleListFragment = require("pages.fragment.base.SimpleListFragment")
 local PeopleListModel = require("models.user.PeopleListModel")
 
 local PeopleListFragment = Extensions.Class(SimpleListFragment)
-PeopleListFragment:chainUp("onDestroy")
 
 function PeopleListFragment:ctor()
   self.title = nil

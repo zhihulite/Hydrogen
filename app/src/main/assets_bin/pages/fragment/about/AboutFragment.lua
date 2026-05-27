@@ -10,7 +10,6 @@ local BaseFragment = require("pages.base.BaseFragment")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local AboutFragment = Extensions.Class(BaseFragment)
-AboutFragment:chainUp("onDestroy")
 
 local appInfo = {
   name = AppInfo.name,
@@ -56,8 +55,8 @@ function AboutFragment:initViews()
   local views = self.views
 
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
-    bottom = { self.views.recycler_view },
+    top = { views.main_container },
+    bottom = { views.recycler_view },
   })
 
   Helpers.UI.setupToolbar(views.toolbar, {

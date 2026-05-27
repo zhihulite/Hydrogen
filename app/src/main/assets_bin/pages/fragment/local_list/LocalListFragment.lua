@@ -27,11 +27,12 @@ function LocalListFragment:initLayout()
 end
 
 function LocalListFragment:initViews()
-  self:setupEdgeToEdge({
-    top = { self.views.main_container },
-    bottom = { self.views.recycler_view },
-  })
   local views = self.views
+  self:setupEdgeToEdge({
+    top = { views.main_container },
+    bottom = { views.recycler_view },
+  })
+  
   Helpers.UI.setupToolbar(views.toolbar, {
     title = "本地内容",
     menu = {

@@ -5,7 +5,6 @@ local PageToolModel = require("models.base.PageToolModel")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local PeopleMoreModel = Extensions.Class(PageToolModel)
-PeopleMoreModel:chainUp("destroy")
 
 function PeopleMoreModel:ctor(userId, moreType)
   self.userId = tostring(userId)

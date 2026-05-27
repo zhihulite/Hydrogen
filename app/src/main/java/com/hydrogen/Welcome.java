@@ -1,11 +1,9 @@
 package com.hydrogen;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 
@@ -15,14 +13,17 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.splashscreen.SplashScreen;
 
 import com.androlua.LuaApplication;
-import com.androlua.LuaUtil;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.zhihu.hydrogen.x.R;
 
 import java.io.File;
-import java.lang.ref.WeakReference;
-
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 public class Welcome extends AppCompatActivity {
 
@@ -37,9 +38,9 @@ public class Welcome extends AppCompatActivity {
     private String versionName;
     private SharedPreferences info;
     private String oldVersionName;
-    private UpdateTask updateTask;
     private boolean isActivityStarted = false;
     private OnBackPressedCallback backCallback;
+    private ExecutorService executorService;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -62,7 +63,7 @@ public class Welcome extends AppCompatActivity {
         backCallback = new OnBackPressedCallback(true) {
             @Override
             public void handleOnBackPressed() {
-                Log.d(TAG, "Back button intercepted");
+                Log.d(TAG, "返回键被拦截");
             }
         };
         getOnBackPressedDispatcher().addCallback(this, backCallback);
@@ -77,11 +78,11 @@ public class Welcome extends AppCompatActivity {
             info = getSharedPreferences(PREF_NAME, MODE_PRIVATE);
             oldVersionName = info.getString(KEY_VERSION_NAME, "");
         } catch (PackageManager.NameNotFoundException e) {
-            Log.e(TAG, "Package not found", e);
-            finish();
+            Log.e(TAG, "未找到包信息", e);
+            showErrorAndExit("初始化失败", "无法获取应用信息");
         } catch (Exception e) {
-            Log.e(TAG, "Init failed", e);
-            finish();
+            Log.e(TAG, "初始化失败", e);
+            showErrorAndExit("初始化失败", e.getMessage());
         }
     }
 
@@ -98,8 +99,8 @@ public class Welcome extends AppCompatActivity {
         localDir = app.getLocalDir();
         setContentView(R.layout.layout_welcome);
 
-        updateTask = new UpdateTask(this);
-        updateTask.execute("");
+        executorService = Executors.newSingleThreadExecutor();
+        executorService.execute(new UpdateRunnable());
     }
 
     @Override
@@ -108,8 +109,8 @@ public class Welcome extends AppCompatActivity {
         if (backCallback != null) {
             backCallback.remove();
         }
-        if (updateTask != null && !updateTask.isCancelled()) {
-            updateTask.cancel(false);
+        if (executorService != null && !executorService.isShutdown()) {
+            executorService.shutdownNow();
         }
     }
 
@@ -130,7 +131,7 @@ public class Welcome extends AppCompatActivity {
         if (mIntent != null) {
             Bundle mBundle = mIntent.getExtras();
             if (mBundle != null) {
-                Intent intent = (Intent) mBundle.get("newIntent");
+                Intent intent = mBundle.getParcelable("newIntent");
                 if (intent != null) {
                     intent.putExtra("isVersionChanged", true);
                     intent.putExtra("newVersionName", versionName);
@@ -146,57 +147,87 @@ public class Welcome extends AppCompatActivity {
         return intent;
     }
 
-    // 异步更新任务
-    @SuppressLint("StaticFieldLeak")
-    private static class UpdateTask extends AsyncTask<String, String, String> {
-        private final WeakReference<Welcome> activityRef;
+    // 显示错误对话框并退出
+    private void showErrorAndExit(String title, String message) {
+        runOnUiThread(() -> new MaterialAlertDialogBuilder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("确定", (dialog, which) -> finish())
+                .setCancelable(false)
+                .show());
+    }
 
-        UpdateTask(Welcome activity) {
-            activityRef = new WeakReference<>(activity);
+    // 递归删除文件或目录（成功返回 true，失败返回 false）
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
+    private boolean deleteRecursive(File file) {
+        if (file == null) return true;
+        if (file.isDirectory()) {
+            File[] children = file.listFiles();
+            if (children != null) {
+                for (File child : children) {
+                    if (!deleteRecursive(child)) return false;
+                }
+            }
+        }
+        return file.delete();
+    }
+
+    // 从 APK 中解压指定目录
+    private void unzipFromApk(String sourceDir, File destDir) {
+        // 删除旧目录
+        if (destDir.exists() && !deleteRecursive(destDir)) {
+            showErrorAndExit("删除失败", "无法删除目录: " + destDir.getAbsolutePath());
+            return;
         }
 
-        @Override
-        protected String doInBackground(String... params) {
-            Welcome activity = activityRef.get();
-            if (activity == null || activity.isFinishing() || isCancelled()) {
-                return null;
-            }
-
-            try {
-                unzipAssets(activity);
-                setLibsReadOnly(activity);
-                unzipLua(activity);
-                saveAppInfo(activity);
-            } catch (ZipException e) {
-                Log.e(TAG, "Unzip failed", e);
-            } catch (Exception e) {
-                Log.e(TAG, "Update failed", e);
-            }
-            return null;
+        // 创建新目录
+        if (!destDir.mkdirs()) {
+            showErrorAndExit("创建失败", "无法创建目录: " + destDir.getAbsolutePath());
+            return;
         }
 
-        @Override
-        protected void onPostExecute(String result) {
-            Welcome activity = activityRef.get();
-            if (activity != null && !activity.isFinishing() && !isCancelled()) {
-                activity.jumpToMain();
+        // 解压文件
+        try (ZipInputStream zis = new ZipInputStream(new FileInputStream(getApplicationInfo().publicSourceDir))) {
+            byte[] buffer = new byte[8192];
+            ZipEntry entry;
+
+            while ((entry = zis.getNextEntry()) != null) {
+                String entryName = entry.getName();
+                if (entryName.startsWith(sourceDir) && !entry.isDirectory()) {
+                    String relativePath = entryName.substring(sourceDir.length());
+                    File targetFile = new File(destDir, relativePath);
+
+                    File parentDir = targetFile.getParentFile();
+                    if (parentDir != null && !parentDir.exists()) {
+                        if (!parentDir.mkdirs()) {
+                            showErrorAndExit("创建失败", "无法创建父目录: " + parentDir.getAbsolutePath());
+                            return;
+                        }
+                    }
+
+                    try (FileOutputStream fos = new FileOutputStream(targetFile)) {
+                        int len;
+                        while ((len = zis.read(buffer)) > 0) {
+                            fos.write(buffer, 0, len);
+                        }
+                    }
+                }
+                zis.closeEntry();
             }
+        } catch (IOException e) {
+            Log.e(TAG, "解压失败", e);
+            showErrorAndExit("解压失败", e.getMessage());
         }
     }
 
     // 解压 assets 目录
-    private static void unzipAssets(Welcome activity) throws ZipException {
-        File destDir = new File(activity.localDir);
-        String tempDir = activity.getCacheDir().getPath();
-        LuaUtil.rmDir(destDir);
-        ZipFile zipFile = new ZipFile(activity.getApplicationInfo().publicSourceDir);
-        zipFile.extractFile("assets/", tempDir);
-        new File(tempDir + "/assets/").renameTo(destDir);
+    private void unzipAssets() {
+        unzipFromApk("assets/", new File(localDir));
     }
 
     // 设置 libs 只读
-    private static void setLibsReadOnly(Welcome activity) {
-        File libsDir = new File(activity.localDir, "libs");
+    private void setLibsReadOnly() {
+        File libsDir = new File(localDir, "libs");
         if (!libsDir.isDirectory()) return;
 
         File[] files = libsDir.listFiles();
@@ -210,22 +241,32 @@ public class Welcome extends AppCompatActivity {
     }
 
     // 解压 lua 目录
-    private static void unzipLua(Welcome activity) throws ZipException {
-        File luaDest = new File(activity.luaMdDir);
-        String tempDir = activity.getCacheDir().getPath();
-        LuaUtil.rmDir(luaDest);
-        ZipFile zipFile = new ZipFile(activity.getApplicationInfo().publicSourceDir);
-        zipFile.extractFile("lua/", tempDir);
-        new File(tempDir + "/lua/").renameTo(luaDest);
+    private void unzipLua() {
+        unzipFromApk("lua/", new File(luaMdDir));
     }
 
     // 保存版本信息
-    private static void saveAppInfo(Welcome activity) {
-        SharedPreferences.Editor edit = activity.info.edit();
-        if (!activity.versionName.equals(activity.oldVersionName)) {
-            edit.putString(KEY_VERSION_NAME, activity.versionName);
+    private void saveAppInfo() {
+        SharedPreferences.Editor edit = info.edit();
+        if (!versionName.equals(oldVersionName)) {
+            edit.putString(KEY_VERSION_NAME, versionName);
         }
-        edit.putLong(KEY_LAST_UPDATE_TIME, activity.lastTime);
+        edit.putLong(KEY_LAST_UPDATE_TIME, lastTime);
         edit.apply();
+    }
+
+    // 更新任务
+    private class UpdateRunnable implements Runnable {
+        @Override
+        public void run() {
+            unzipAssets();
+            setLibsReadOnly();
+            unzipLua();
+
+            runOnUiThread(() -> {
+                saveAppInfo();
+                jumpToMain();
+            });
+        }
     }
 }

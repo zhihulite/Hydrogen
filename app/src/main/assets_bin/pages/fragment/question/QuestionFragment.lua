@@ -7,7 +7,6 @@ local WebViewHelper = require("components.views.WebViewHelper")
 local BottomDialog = require("helpers.bottom_dialog")
 
 local QuestionFragment = Extensions.Class(BaseFragment, {"question"})
-QuestionFragment:chainUp("onDestroy")
 
 function QuestionFragment:ctor()
   self.model = nil
@@ -38,8 +37,8 @@ function QuestionFragment:initViews()
   local views = self.views
 
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
-    bottom = { self.views.recycler_view },
+    top = { views.main_container },
+    bottom = { views.recycler_view },
   })
 
   -- 设置 toolbar，并捕获关注菜单项
@@ -97,11 +96,12 @@ function QuestionFragment:updateTopics(topics)
 
   container.visibility = View.VISIBLE
 
+  local Space = luajava.bindClass("android.widget.Space")
   for i, topic in ipairs(topics) do
     local chip = self:createTopicChip(topic)
     container.addView(chip)
     if i < #topics then
-      local spacer = luajava.bindClass("android.widget.Space")(activity)
+      local spacer = Space(activity)
       spacer.layoutParams = LinearLayoutCompat.LayoutParams(8, 0)
       container.addView(spacer)
     end

@@ -33,7 +33,6 @@ local LinkSpan = require("components.span.LinkSpan")
 local linkMovementMethodInstance = LinkMovementMethod.instance
 
 local CommentModel = Extensions.Class(PageToolModel)
-CommentModel:chainUp("destroy")
 
 local function calcImageSize(w, h)
   if not w or not h or w <= 0 or h <= 0 then return 0, 0 end

@@ -1,6 +1,8 @@
 -- layout/pages/image/main.lua
--- 图片浏览器主布局（CoordinatorLayout，点击根布局切换底栏，全屏沉浸）
+-- 图片浏览器主布局（CoordinatorLayout，点击切换底栏，全屏沉浸）
 
+import "android.animation.LayoutTransition"
+import "android.view.View"
 import "androidx.coordinatorlayout.widget.CoordinatorLayout"
 import "androidx.viewpager2.widget.ViewPager2"
 import "androidx.appcompat.widget.LinearLayoutCompat"
@@ -8,7 +10,6 @@ import "com.google.android.material.textview.MaterialTextView"
 import "com.google.android.material.imageview.ShapeableImageView"
 import "com.google.android.material.shape.ShapeAppearanceModel"
 import "com.google.android.material.shape.RelativeCornerSize"
-import "android.view.View"
 
 local colors = AppTheme.colors
 local circleShapeBuilder = ShapeAppearanceModel.builder()
@@ -21,6 +22,7 @@ return {
   layout_height = "fill",
   backgroundColor = "#FF000000",
   id = "main_container",
+  layoutTransition = LayoutTransition(),
   {
     ViewPager2,
     id = "view_pager",
@@ -69,7 +71,7 @@ return {
     imageDrawable = Helpers.Static.materialDrawable("twotone_download", 24, true),
     shapeAppearanceModel = circleShapeModel,
     scaleType = "center",
-    colorFilter=0xffffffff,
+    colorFilter = 0xffffffff,
     backgroundColor = colors.primary,
   },
 }

@@ -35,7 +35,6 @@ local function downloadFile(url, userAgent, contentDisposition, mimeType, conten
 
   local size = string.format("%.2f", (contentLength or 0) / 1024 / 1024) .. "MB"
 
-  local views = {}
   MaterialAlertDialogBuilder(activity)
   .setTitle("下载文件")
   .setMessage("文件类型：" .. (mimeType or "未知") .. "\n文件大小：" .. size.. "\n请手动复制链接下载")
@@ -110,6 +109,24 @@ function M:setPageType(pageType)
   return self
 end
 
+function M:initFindListener()
+  if not self:isAlive() then return self end
+
+  self.webView.setFindListener(luajava.createProxy("android.webkit.WebView$FindListener", {
+    onFindResultReceived = self:runIfAlive(function(activeMatchOrdinal, numberOfMatches, isDoneCounting)
+      if numberOfMatches == 0 then
+        tip("未查找到该关键词")
+        return
+      end
+
+      local status = isDoneCounting and "成功" or "失败"
+      local current = activeMatchOrdinal + 1
+      local remaining = numberOfMatches - current
+      tip(string.format("查找%s 当前第%d个 还剩%d个", status, current, remaining))
+    end)
+  }))
+end
+
 function M:initSettings()
   if not self:isAlive() then return self end
   local settings = self.webView.settings
@@ -121,6 +138,8 @@ function M:initSettings()
   settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
   self.webView.backgroundColor = 0
   self.webView.webContentsDebuggingEnabled = true
+  -- 初始化查找监听
+  self:initFindListener()
   return self
 end
 
@@ -267,7 +286,7 @@ function M:setWebChromeClient(callbacks)
       _G.webViewfullscreenMode = false
       self.webView.visibility = View.VISIBLE
       rootView.removeView(webVideoView)
-      task(200, self:runIfAlive(function()
+      Helpers.UI.runDelayed(200, self:runIfAlive(function()
         self.webView.scrollTo(0, savedScrollY or 0)
       end))
     end,
@@ -292,13 +311,13 @@ function M:setWebChromeClient(callbacks)
     end,
     onJsPrompt = function(view, url, message, defaultValue, result)
       local editText = AppCompatEditText(activity)
-      editText.setText(defaultValue)
+      editText.text = defaultValue
       MaterialAlertDialogBuilder(activity)
       .setTitle(url)
       .setView(editText)
       .setMessage(message)
       .setPositiveButton("确定", function()
-        result.confirm(editText.getText().toString())
+        result.confirm(editText.text)
       end)
       .setNegativeButton("取消", function() result.cancel() end)
       .setCancelable(false)
@@ -350,39 +369,42 @@ function M:findNext(forward)
   self.webView.findNext(forward)
 end
 
-function M:setFindListener(callback)
-  if not self:isAlive() then return end
-  self.webView.setFindListener({
-    onFindResultReceived = self:runIfAlive(function(activeMatchOrdinal, numberOfMatches, isDoneCounting)
-      if callback then callback(activeMatchOrdinal, numberOfMatches, isDoneCounting) end
-    end)
-  })
-end
-
 function M:showSearchDialog()
   if not self:isAlive() then return end
+
   local dialogViews = {}
-  MaterialAlertDialogBuilder(activity)
-  .setTitle("页面查找")
+  local dialog = MaterialAlertDialogBuilder(activity)
+  .setTitle("搜索")
   .setView(loadlayout({
     LinearLayoutCompat, orientation = "vertical", padding = "16dp",
-    { AppCompatEditText, id = "search_input", layout_width = "match_parent", hint = "输入查找内容" }
+    { MaterialTextView, text = "输入搜索内容", textIsSelectable = true, layout_marginBottom = "8dp" },
+    { AppCompatEditText, id = "search_input", layout_width = "match_parent", hint = "请输入搜索内容", singleLine = true }
   }, dialogViews))
-  .setPositiveButton("查找", self:runIfAlive(function()
-    local text = dialogViews.search_input and dialogViews.search_input.getText().toString() or ""
-    if text ~= "" then
-      self:findAllAsync(text)
-      self:setFindListener(function(activeMatch, numberOfMatches, isDoneCounting)
-        if isDoneCounting then
-          tip(string.format("找到 %d 个匹配", numberOfMatches))
-        end
-      end)
-    end
-  end))
-  .setNegativeButton("取消", self:runIfAlive(function()
-    self:clearMatches()
-  end))
+  .setPositiveButton("新搜索", nil)
+  .setNegativeButton("查找", nil)
+  .setNeutralButton("关闭", nil)
   .show()
+
+  -- 新搜索按钮
+  dialog.getButton(dialog.BUTTON_POSITIVE).onClick = function()
+    local text = dialogViews.search_input and dialogViews.search_input.text or ""
+    if text == "" then
+      tip("请输入搜索内容")
+      return
+    end
+    self:clearMatches()
+    self:findAllAsync(text)
+  end
+
+  -- 查找按钮（弹出菜单）
+  dialog.getButton(dialog.BUTTON_NEGATIVE).onClick = function(view)
+    local popup = PopupMenu(activity, view)
+    local menu = popup.Menu
+    menu.add("上一个").onMenuItemClick = function() self:findNext(false); return true end
+    menu.add("下一个").onMenuItemClick = function() self:findNext(true); return true end
+    menu.add("取消").onMenuItemClick = function() self:clearMatches(); tip("取消成功"); return true end
+    popup.show()
+  end
 end
 
 function M:getUrl()

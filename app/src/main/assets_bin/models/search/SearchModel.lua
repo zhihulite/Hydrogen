@@ -4,7 +4,6 @@
 local BaseModel = require("models.base.BaseModel")
 
 local SearchModel = Extensions.Class(BaseModel)
-SearchModel:chainUp("destroy")
 
 function SearchModel:ctor()
   self.hotItems = {}

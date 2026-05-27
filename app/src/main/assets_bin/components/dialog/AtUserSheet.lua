@@ -68,11 +68,9 @@ function M.show(opts)
   model:setBottomSheet(bottomSheet)
 
   -- 关闭时销毁 Model
-  bottomSheet.setOnDismissListener({
-    onDismiss = function()
+  bottomSheet.onDismiss = function()
       model:destroy()
-    end
-  })
+  end
 
   bottomSheet.show()
 end

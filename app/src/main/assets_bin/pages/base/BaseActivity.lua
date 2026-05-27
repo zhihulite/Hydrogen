@@ -4,7 +4,6 @@
 local BasePage = require("pages.base.BasePage")
 
 local BaseActivity = Extensions.Class(BasePage, {"BaseActivity"})
-BaseActivity:chainUp("onDestroy")
 
 --- 设置内容视图（final 方法，子类不应重写）
 --- @note 此方法为 final 方法，子类不应重写

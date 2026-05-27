@@ -5,7 +5,6 @@ local PageModel = require("models.base.PageModel")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local DailyModel = Extensions.Class(PageModel)
-DailyModel:chainUp("destroy")
 
 function DailyModel:ctor()
   self.currentDate = nil

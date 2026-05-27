@@ -663,56 +663,49 @@ local attributeSetterMap = {
         view.backgroundColor = parseColor(value)
     end,
     password = function(view, value)
-        view.setInputType(
+        view.inputType =
             (value == true or value == "true") and 
             0x81 or 0x00
-        )
     end,
     drawingCacheQuality = function(view, value)
-        view.setDrawingCacheQuality(
+        view.drawingCacheQuality =
             value == "auto" and 0 or
             value == "low"  and 1 or
             value == "high" and 2 or
             tonumber(value)
-        )
     end,
     orientation = function(view, value)
-        view.setOrientation(
+        view.orientation =
             value == "vertical"   and 1 or
             value == "horizontal" and 0 or
             tonumber(value)
-        )
     end,
     importantForAccessibility = function(view, value)
-        view.setImportantForAccessibility(
+        view.importantForAccessibility =
             value == "auto" and 0 or
             value == "yes"  and 1 or
             value == "no"   and 2 or
             tonumber(value)
-        )
     end,
     layerType = function(view, value)
-        view.setLayerType(
+        view.layerType =
             value == "none"     and 0 or
             value == "software" and 1 or
             value == "hardware" and 2 or
             tonumber(value)
-        )
     end,
     visibility = function(view, value)
-        view.setVisibility(
+        view.visibility =
             value == "visible"   and 0 or
             value == "invisible" and 4 or
             value == "gone"      and 8 or
             tonumber(value)
-        )
     end,
     layout_collapseMode = function(view, value, valueType, layoutParams)
-        layoutParams.setCollapseMode(
+        layoutParams.collapseMode =
             value == "pin"      and 1 or
             value == "parallax" and 2 or
             tonumber(value)
-        )
     end,
     layout_anchor = function(view, value, valueType, layoutParams, views)
         layoutParams.anchorId = views[value].id

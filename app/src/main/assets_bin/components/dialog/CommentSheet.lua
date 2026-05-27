@@ -171,14 +171,15 @@ end
 function M:showCommentMenuPopup(item, menuItems, anchorView)
   local popup = PopupMenu(activity, anchorView or self.sheetViews.toolbar)
   for _, m in ipairs(menuItems) do popup.menu.add(m.title) end
-  popup.setOnMenuItemClickListener({
-    onMenuItemClick = function(menuItem)
-      for _, m in ipairs(menuItems) do
-        if m.title == menuItem.title then m.onClick() return true end
+  popup.onMenuItemClick = function(menuItem)
+    for _, m in ipairs(menuItems) do
+      if m.title == menuItem.title then
+        m.onClick()
+        return true
       end
-      return false
     end
-  })
+    return false
+  end
   popup.show()
 end
 

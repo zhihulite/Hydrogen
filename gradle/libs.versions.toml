@@ -7,10 +7,9 @@ swiperefresh = "1.2.0"
 material = "1.14.0"
 glide = "5.0.7"
 photoview = "2.3.0"
-zip4j = "2.11.6"
 webviewup = "0.1.0"
 activity = "1.13.0"
-agp = "8.13.2"
+agp = "9.0.1"
 core = "1.18.0"
 splashscreen = "1.2.0"
 webkit = "1.16.0"
@@ -37,7 +36,6 @@ material = { group = "com.google.android.material", name = "material", version.r
 glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "glide" }
 glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", version.ref = "glide" }
 photoview = { module = "com.github.Baseflow:PhotoView", version.ref = "photoview" }
-zip4j = { module = "net.lingala.zip4j:zip4j", version.ref = "zip4j" }
 webviewup-core = { group = "io.github.jonanorman.android.webviewup", name = "core", version.ref = "webviewup" }
 zxing-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxing-embedded" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing-core" }

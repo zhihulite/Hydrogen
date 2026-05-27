@@ -5,7 +5,6 @@ local PageToolModel = require("models.base.PageToolModel")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local CollectionRecommendModel = Extensions.Class(PageToolModel)
-CollectionRecommendModel:chainUp("destroy")
 
 function CollectionRecommendModel:ctor()
   self.requestHeadKey = "defaultHead"

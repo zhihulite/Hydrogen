@@ -10,7 +10,6 @@ import "com.google.android.material.checkbox.MaterialCheckBox"
 local BaseActivity = require("pages.base.BaseActivity")
 
 local WelcomeActivity = Extensions.Class(BaseActivity)
-WelcomeActivity:chainUp("onDestroy")
 
 local agreements = {
   { title = "用户协议", name = "user_agreement" },
@@ -48,8 +47,8 @@ function WelcomeActivity:initViews()
 
   -- 懒得做了，过于复杂
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
-    bottom = { self.views.main_container },
+    top = { views.main_container },
+    bottom = { views.main_container },
   })
 end
 
@@ -126,7 +125,8 @@ function WelcomeActivity:updateUI()
   views.nextButton.enabled = self:canGoToNext()
 
   if self.currentPage == 0 then
-    views.toolbar.navigationIcon = nil
+    -- 必须这样，否则会匹配到 int 的方法
+    views.toolbar.setNavigationIcon(nil)
    else
     views.toolbar.navigationIcon = Helpers.Static.materialDrawable("twotone_arrow_back", 24)
   end

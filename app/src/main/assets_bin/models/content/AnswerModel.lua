@@ -4,7 +4,6 @@
 local BaseModel = require("models.base.BaseModel")
 
 local AnswerModel = Extensions.Class(BaseModel)
-AnswerModel:chainUp("destroy")
 
 function AnswerModel:ctor(answerId)
   self.answerId = tostring(answerId)

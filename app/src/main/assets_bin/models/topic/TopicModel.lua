@@ -5,7 +5,6 @@ local PageToolModel = require("models.base.PageToolModel")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local TopicModel = Extensions.Class(PageToolModel)
-TopicModel:chainUp("destroy")
 
 -- 排序映射表
 local SORT_MAP = {

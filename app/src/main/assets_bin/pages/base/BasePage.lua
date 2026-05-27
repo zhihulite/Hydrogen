@@ -7,12 +7,15 @@ import "androidx.core.view.WindowInsetsCompat"
 import "android.view.View"
 
 local BasePage = Extensions.Class()
+-- 标记链式方法（标记会被子类自动继承，子类无需重复调用）
+BasePage:chainUp("onDestroy")
 
 function BasePage:ctor(name)
   self.name = name or "BasePage"
   self.views = {}
   self.root_view = nil
   self.isDestroyed = false
+  self.edgeToEdgeViews = {} -- 保存 EdgeToEdge 添加的视图，用于销毁时移除
 end
 
 function BasePage:initLayout() end
@@ -20,7 +23,7 @@ function BasePage:initViews() end
 
 -- 检测是否存活
 function BasePage:isAlive()
-  return not self.isDestroyed and self.views ~= nil
+  return not self.isDestroyed
 end
 
 -- 安全执行回调
@@ -35,81 +38,19 @@ function BasePage:runIfAlive(callback)
   end
 end
 
--- 初始化设置左右边距
-ViewCompat.setOnApplyWindowInsetsListener(activity.window.decorView, luajava.createProxy("androidx.core.view.OnApplyWindowInsetsListener", {
-  onApplyWindowInsets = function(v, insets)
-    local systemBars = WindowInsetsCompat.Type.systemBars()
-    local cutout = WindowInsetsCompat.Type.displayCutout()
-    local insetValue = insets.getInsets(bit32.bor(systemBars, cutout))
-    v.setPadding(insetValue.left, 0, insetValue.right, 0)
-    return insets
-  end
-}))
-
--- 配置 EdgeToEdge（直接拿当前 insets 设置，不注册监听器）
--- https://github.com/material-components/material-components-android/blob/master/lib/java/com/google/android/material/appbar/CollapsingToolbarLayout.java
--- CollapsingToolbarLayout onWindowInsetChanged 返回 insets.consumeSystemWindowInsets() 会吞掉 insets 所以不注册回调了
-
-local Toolbar = luajava.bindClass("androidx.appcompat.widget.Toolbar")
+local EdgeToEdgeUtils = require("pages.base.EdgeToEdgeUtils")
 function BasePage:setupEdgeToEdge(options)
-  options = options or {}
-
-  EdgeToEdge.enable(activity)
-
-  local function applyInsets()
-    local insets = ViewCompat.getRootWindowInsets(activity.window.decorView)
-    if not insets then return false end
-
-    local statusBarHeight = insets.getInsets(WindowInsetsCompat.Type.statusBars()).top
-    local navBarHeight = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
-
-    if options.top then
-      local list = type(options.top) == "table" and options.top or { options.top }
-      for _, v in ipairs(list) do
-        if luajava.instanceof(v, Toolbar) then
-          error("不支持直接为 Toolbar 设置 top，请尝试改为 Toolbar 的父布局")
-         else
-          v.setPadding(v.paddingLeft, statusBarHeight, v.paddingRight, v.paddingBottom)
-        end
-      end
+  local addedViews = EdgeToEdgeUtils.setup(options)
+  if addedViews and #addedViews > 0 then
+    for _, view in ipairs(addedViews) do
+      table.insert(self.edgeToEdgeViews, view)
     end
-
-    if options.bottom then
-      local list = type(options.bottom) == "table" and options.bottom or { options.bottom }
-      for _, v in ipairs(list) do
-        v.setPadding(v.paddingLeft, v.paddingTop, v.paddingRight, navBarHeight)
-      end
-    end
-
-    if options.callback then
-      options.callback(statusBarHeight, navBarHeight)
-    end
-
-    return true
   end
+end
 
-  -- 先尝试一次
-  if applyInsets() then return end
-
-  -- insets 还没就绪，给传入的 View 注册一次性监听器
-  local targetView = nil
-  if options.top then
-    local list = type(options.top) == "table" and options.top or { options.top }
-    targetView = list[1]
-  end
-  if not targetView and options.bottom then
-    local list = type(options.bottom) == "table" and options.bottom or { options.bottom }
-    targetView = list[1]
-  end
-
-  if targetView then
-    targetView.addOnAttachStateChangeListener(View.OnAttachStateChangeListener({
-      onViewAttachedToWindow = function(v)
-        applyInsets()
-      end,
-      onViewDetachedFromWindow = function() end
-    }))
-  end
+function BasePage:addEdgeToEdgeView(view, direction, useMargin)
+  EdgeToEdgeUtils.add(view, direction, useMargin)
+  table.insert(self.edgeToEdgeViews, view)
 end
 
 function BasePage:onCreate(params) end
@@ -117,8 +58,13 @@ function BasePage:onResume() end
 function BasePage:onPause() end
 
 function BasePage:onDestroy()
+  -- 销毁时移除所有 EdgeToEdge 添加的视图
+  if #self.edgeToEdgeViews > 0 then
+    EdgeToEdgeUtils.remove(self.edgeToEdgeViews)
+    self.edgeToEdgeViews = nil
+  end
+  
   self.isDestroyed = true
-  self.views = nil
   self.root_view = nil
 end
 
@@ -139,7 +85,7 @@ function BasePage:build()
   return self.root_view
 end
 
-BasePage:final("build", "setupEdgeToEdge", "isAlive", "runIfAlive")
+BasePage:final("build", "isAlive", "runIfAlive", "setupEdgeToEdge", "addEdgeToEdgeView")
 BasePage:abstract("initLayout")
 
 return BasePage

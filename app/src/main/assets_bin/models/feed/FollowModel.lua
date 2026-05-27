@@ -5,7 +5,6 @@ local PageToolModel = require("models.base.PageToolModel")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local FollowModel = Extensions.Class(PageToolModel)
-FollowModel:chainUp("destroy")
 
 local VIEW_NORMAL = 0
 local VIEW_GROUP = 1

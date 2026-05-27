@@ -6,7 +6,6 @@ local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter"
 local UserModel = require("models.user.UserModel")
 
 local PeopleListModel = Extensions.Class(PageToolModel)
-PeopleListModel:chainUp("destroy")
 
 function PeopleListModel:ctor(userId, listType)
   self.needLogin = true

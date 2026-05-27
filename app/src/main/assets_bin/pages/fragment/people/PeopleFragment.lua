@@ -10,8 +10,7 @@ local BaseFragment = require("pages.base.BaseFragment")
 local PeopleModel = require("models.user.PeopleModel")
 local RecyclerViewHelper = require("components.views.RecyclerViewHelper")
 
-local PeopleFragment = Extensions.Class(BaseFragment, {"people"})
-PeopleFragment:chainUp("onDestroy")
+local PeopleFragment = Extensions.Class(BaseFragment, { "people" })
 
 function PeopleFragment:ctor()
   self.userId = nil
@@ -45,14 +44,30 @@ function PeopleFragment:initLayout()
   self.root_view = loadlayout(Layouts.pages.people.main, self.views)
 end
 
+-- 收集所有需要底部导航栏避让的页面并设置 clipToPadding
+function PeopleFragment:collectAllBottomViews()
+  local bottomViews = {}
+
+  -- 收集 peopleModel 中的所有 RecyclerView
+  if self.peopleModel then
+    for _, rv in ipairs(self.peopleModel:getAllRecyclerViews()) do
+      rv.clipToPadding = false
+      table.insert(bottomViews, rv)
+    end
+  end
+
+  return bottomViews
+end
+
 function PeopleFragment:initViews()
   local views = self.views
 
+  -- 收集所有需要底部避让的视图
+  local bottomViews = self:collectAllBottomViews()
+
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
-    callback = function(statusBarHeight, navBarHeight)
-      self.navBarHeight = navBarHeight
-    end
+    top = { views.main_container },
+    bottom = bottomViews
   })
 
   Helpers.UI.setupToolbar(views.toolbar, {
@@ -121,15 +136,13 @@ function PeopleFragment:loadTabsAndInitPager()
     self.peopleModel:setupTabs(viewPager, tabLayout)
     self.peopleModel:ensureLoaded()
 
-    -- 给所有 RecyclerView 加上导航栏底部间距
-    for _, rv in ipairs(self.peopleModel:getAllRecyclerViews()) do
-      rv.setPadding(
-      rv.paddingLeft,
-      rv.paddingTop,
-      rv.paddingRight,
-      rv.paddingBottom + (self.navBarHeight or 0)
-      )
-      rv.clipToPadding = false
+    -- 重新收集所有 RecyclerView（因为 tabs 加载完成后才会创建）
+    local bottomViews = self:collectAllBottomViews()
+    -- 重新设置 EdgeToEdge bottom
+    if bottomViews and #bottomViews > 0 then
+      self:setupEdgeToEdge({
+        bottom = bottomViews
+      })
     end
 
     self:addSortBarToAnswerTab()
@@ -178,20 +191,18 @@ function PeopleFragment:showSortMenu()
     popup.menu.add(0, i, i, option.name)
   end
 
-  popup.setOnMenuItemClickListener({
-    onMenuItemClick = function(menuItem)
-      local itemId = menuItem.itemId
-      if itemId ~= currentIndex then
-        self.sortViews.sort_name.text = options[itemId].name
-        self.peopleModel:setSort(itemId, function(success)
-          if success then
-            tip("已切换到: " .. options[itemId].name)
-          end
-        end)
-      end
-      return true
+  popup.onMenuItemClick = function(menuItem)
+    local itemId = menuItem.itemId
+    if itemId ~= currentIndex then
+      self.sortViews.sort_name.text = options[itemId].name
+      self.peopleModel:setSort(itemId, function(success)
+        if success then
+          tip("已切换到: " .. options[itemId].name)
+        end
+      end)
     end
-  })
+    return true
+  end
   popup.show()
 end
 
@@ -233,13 +244,19 @@ function PeopleFragment:onMessageClick()
 end
 
 function PeopleFragment:onFansClick()
-  Router.go("people_list", { id = self.userId, type = "followers",
-    title = (self.currentUserData and self.currentUserData.name or "用户") .. " 的粉丝" })
+  Router.go("people_list", {
+    id = self.userId,
+    type = "followers",
+    title = (self.currentUserData and self.currentUserData.name or "用户") .. " 的粉丝"
+  })
 end
 
 function PeopleFragment:onFollowListClick()
-  Router.go("people_list", { id = self.userId, type = "followees",
-    title = (self.currentUserData and self.currentUserData.name or "用户") .. " 的关注" })
+  Router.go("people_list", {
+    id = self.userId,
+    type = "followees",
+    title = (self.currentUserData and self.currentUserData.name or "用户") .. " 的关注"
+  })
 end
 
 function PeopleFragment:shareUser()

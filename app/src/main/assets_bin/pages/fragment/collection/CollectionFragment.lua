@@ -10,8 +10,7 @@ local RecyclerViewHelper = require("components.views.RecyclerViewHelper")
 local CollectionMoveSheet = require("components.dialog.CollectionMoveSheet")
 local CollectionEditSheet = require("components.dialog.CollectionEditSheet")
 
-local CollectionsFragment = Extensions.Class(BaseFragment, {"collections"})
-CollectionsFragment:chainUp("onDestroy")
+local CollectionsFragment = Extensions.Class(BaseFragment, { "collections" })
 
 function CollectionsFragment:ctor()
   self.collectionId = nil
@@ -49,8 +48,8 @@ end
 function CollectionsFragment:initViews()
   local views = self.views
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
-    bottom = { self.views.recycler_view },
+    top = { views.main_container },
+    bottom = { views.recycler_view },
   })
 
   self:createHeaderCard()
@@ -97,7 +96,10 @@ function CollectionsFragment:createHeaderCard()
 end
 
 function CollectionsFragment:updateHeaderCard(info)
-  if not info then error("updateHeaderCard info不存在") return end
+  if not info then
+    error("updateHeaderCard info不存在")
+    return
+  end
 
   local views = self.headerViews
   views.header_title.text = info.title or ""
@@ -171,7 +173,10 @@ end
 
 function CollectionsFragment:editCollection()
   local info = self.model:getCollectionInfo()
-  if not info then error("editCollection info不存在") return end
+  if not info then
+    error("editCollection info不存在")
+    return
+  end
 
   CollectionEditSheet.show({
     collectionId = self.collectionId,
@@ -224,30 +229,28 @@ function CollectionsFragment:showItemMenu(data)
   for _, menuItem in ipairs(data.menuItems) do
     popup.menu.add(menuItem.title)
   end
-  popup.setOnMenuItemClickListener({
-    onMenuItemClick = function(menuItem)
-      local title = menuItem.title
-      for _, m in ipairs(data.menuItems) do
-        if m.title == title then
-          -- 处理移动收藏
-          if title == "移动到其他收藏夹" then
-            CollectionMoveSheet.show({
-              contentId = data.item.id,
-              contentType = data.item.type,
-              autoToggle = false,
-              onResult = function(result)
-                self.model:refresh()
-              end
-            })
-           else
-            m.onClick()
-          end
-          return true
+  popup.onMenuItemClick = function(menuItem)
+    local title = menuItem.title
+    for _, m in ipairs(data.menuItems) do
+      if m.title == title then
+        -- 处理移动收藏
+        if title == "移动到其他收藏夹" then
+          CollectionMoveSheet.show({
+            contentId = data.item.id,
+            contentType = data.item.type,
+            autoToggle = false,
+            onResult = function(result)
+              self.model:refresh()
+            end
+          })
+         else
+          m.onClick()
         end
+        return true
       end
-      return false
     end
-  })
+    return false
+  end
   popup.show()
 end
 

@@ -6,7 +6,6 @@ local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter"
 local CollectionMoveSheet = require("components.dialog.CollectionMoveSheet")
 
 local CollectionContentModel = Extensions.Class(PageToolModel)
-CollectionContentModel:chainUp("destroy")
 
 function CollectionContentModel:ctor(collectionId)
   self.collectionId = tostring(collectionId)
@@ -176,28 +175,26 @@ function CollectionContentModel:showItemMenu(item, anchorView)
   popup.menu.add("取消收藏")
   popup.menu.add("移动到其他收藏夹")
 
-  popup.setOnMenuItemClickListener({
-    onMenuItemClick = function(menuItem)
-      local title = menuItem.title
-      if title == "取消收藏" then
-        self:removeFromCollection(item.id, item.type)
-       elseif title == "移动到其他收藏夹" then
-        CollectionMoveSheet.show({
-          contentId = item.id,
-          contentType = item.type,
-          autoToggle = false,
-          onSuccess = function(stillInAnyCollection, addedCount, removedCount)
-            self:refresh()
-            tip(string.format("已更新 %d 个收藏夹", addedCount + removedCount))
-          end,
-          onError = function(err)
-            tip(err or "操作失败")
-          end
-        })
-      end
-      return true
+  popup.onMenuItemClick = function(menuItem)
+    local title = menuItem.title
+    if title == "取消收藏" then
+      self:removeFromCollection(item.id, item.type)
+     elseif title == "移动到其他收藏夹" then
+      CollectionMoveSheet.show({
+        contentId = item.id,
+        contentType = item.type,
+        autoToggle = false,
+        onSuccess = function(stillInAnyCollection, addedCount, removedCount)
+          self:refresh()
+          tip(string.format("已更新 %d 个收藏夹", addedCount + removedCount))
+        end,
+        onError = function(err)
+          tip(err or "操作失败")
+        end
+      })
     end
-  })
+    return true
+  end
 
   popup.show()
 end

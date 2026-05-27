@@ -1,11 +1,11 @@
 -- pages/fragment/browser/BrowserFragment.lua
+-- 浏览页面
 
 local BaseFragment = require("pages.base.BaseFragment")
 local WebViewHelper = require("components.views.WebViewHelper")
 local MenuItem = luajava.bindClass("android.view.MenuItem")
 
 local BrowserFragment = Extensions.Class(BaseFragment, {"browser"})
-BrowserFragment:chainUp("onDestroy")
 
 function BrowserFragment:ctor()
   self.webView = nil
@@ -27,10 +27,18 @@ function BrowserFragment:initLayout()
   self.root_view = loadlayout(Layouts.pages.browser.main, self.views)
 end
 
+function BrowserFragment:getHelper()
+  if not self.webViewHelper then
+    tip("无法获取当前页面")
+    return nil
+  end
+  return self.webViewHelper
+end
+
 function BrowserFragment:initViews()
   local views = self.views
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
+    top = { views.main_container },
   })
 
   Helpers.UI.setupToolbar(views.toolbar, {
@@ -38,8 +46,9 @@ function BrowserFragment:initViews()
     menu = {
       { id = "back", title = "后退", click = function() self:goBack() end },
       { id = "forward", title = "前进", click = function() self:goForward() end },
-      { id = "refresh", title = "刷新", click = function() self.webView.reload() end },
-      { id = "stop", title = "停止", click = function() self.webView.stopLoading() end },
+      { id = "refresh", title = "刷新", click = function() if self:getHelper() then self:getHelper():reload() end end },
+      { id = "stop", title = "停止", click = function() if self:getHelper() then self:getHelper():reload() end end },
+      { id = "find", title = "查找", click = function() if self:getHelper() then self:getHelper():showSearchDialog() end end },
       { id = "share", title = "分享", click = function() self:shareUrl() end },
       { id = "copy", title = "复制链接", click = function() self:copyUrl() end },
       { id = "open", title = "浏览器打开", click = function() self:openInBrowser() end },
@@ -47,7 +56,7 @@ function BrowserFragment:initViews()
   })
 
   Helpers.UI.setupSwipeRefresh(views.swipe_refresh, function()
-    if self.webView then self.webView.reload() end
+    if self:getHelper() then self:getHelper():reload() end
   end)
 
   self:initWebView()
@@ -68,8 +77,8 @@ function BrowserFragment:registerBackHandler()
 end
 
 function BrowserFragment:updateBackButtonState()
-  if self.backCallback and self.webViewHelper then
-    local canGoBack = self.webViewHelper:canGoBack()
+  if self.backCallback and self:getHelper() then
+    local canGoBack = self:getHelper():canGoBack()
     self.backCallback.enabled = canGoBack
   end
 end
@@ -124,12 +133,12 @@ function BrowserFragment:initWebView()
       return false
     end,
     onPageStarted = function(view, url)
-      self.views.swipe_refresh.refreshing = true
-      self.views.webview.visibility = View.GONE
+      views.swipe_refresh.refreshing = true
+      views.webview.visibility = View.GONE
     end,
     onPageFinished = function(view, url)
-      self.views.swipe_refresh.refreshing = false
-      self.views.webview.visibility = View.VISIBLE
+      views.swipe_refresh.refreshing = false
+      views.webview.visibility = View.VISIBLE
       self:updateBackButtonState()
     end,
     doUpdateVisitedHistory = function(view, url, isReload)
@@ -139,12 +148,13 @@ function BrowserFragment:initWebView()
 
   self.webViewHelper:setWebChromeClient({
     onReceivedTitle = function(view, title)
-      self.views.toolbar.title = title
+      views.toolbar.title = title
     end,
     onProgressChanged = function(view, progress)
-      local bar = self.views.progress_bar
+      local bar = views.progress_bar
       if progress == 100 then
-        bar.visibility = View.GONE bar.progress = 0
+        bar.visibility = View.GONE
+        bar.progress = 0
        else
         if bar.visibility ~= View.VISIBLE then bar.visibility = View.VISIBLE end
         bar.progress = progress
@@ -155,30 +165,38 @@ end
 
 function BrowserFragment:loadUrl()
   self.views.webview.visibility = View.GONE
-  self.webView.loadUrl(self.startUrl)
+  if self:getHelper() then
+    self:getHelper().webView.loadUrl(self.startUrl)
+  end
 end
 
 function BrowserFragment:goForward()
-  if self.webView.canGoForward() then self.webView.goForward() end
+  if self:getHelper() then self:getHelper():goForward() end
 end
 
 function BrowserFragment:goBack()
-  if self.webView.canGoBack() then self.webView.goBack() end
+  if self:getHelper() then self:getHelper():goBack() end
 end
 
 function BrowserFragment:shareUrl()
-  local url = self.webView.url
-  if url then Helpers.UI.shareText(url) end
+  if self:getHelper() then
+    local url = self:getHelper():getUrl()
+    if url then Helpers.UI.shareText(url) end
+  end
 end
 
 function BrowserFragment:copyUrl()
-  local url = self.webView.url
-  if url then Helpers.UI.copyText(url) end
+  if self:getHelper() then
+    local url = self:getHelper():getUrl()
+    if url then Helpers.UI.copyText(url) end
+  end
 end
 
 function BrowserFragment:openInBrowser()
-  local url = self.webView.url
-  if url then Helpers.UI.openUrl(url) end
+  if self:getHelper() then
+    local url = self:getHelper():getUrl()
+    if url then Helpers.UI.openUrl(url) end
+  end
 end
 
 import "android.view.View"

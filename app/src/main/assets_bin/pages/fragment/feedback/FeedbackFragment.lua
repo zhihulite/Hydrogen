@@ -8,7 +8,6 @@ local BaseFragment = require("pages.base.BaseFragment")
 local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter")
 
 local FeedbackFragment = Extensions.Class(BaseFragment, {"feedback"})
-FeedbackFragment:chainUp("onDestroy")
 
 function FeedbackFragment:ctor()
   self.adapter = nil
@@ -26,8 +25,8 @@ end
 function FeedbackFragment:initViews()
   local views = self.views
   self:setupEdgeToEdge({
-    top = { self.views.main_container },
-    bottom = { self.views.recycler_view },
+    top = { views.main_container },
+    bottom = { views.recycler_view },
   })
   Helpers.UI.setupToolbar(views.toolbar, { title = "反馈" })
   self:initListView()

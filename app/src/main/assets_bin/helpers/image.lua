@@ -58,7 +58,7 @@ end
 
 -- 清除磁盘缓存（异步）
 function M.clearDisk()
-  task(function()
+  Helpers.UI.runDelayedOnBackground(function()
     Glide.get(activity).clearDiskCache()
   end)
 end

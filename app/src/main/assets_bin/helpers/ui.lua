@@ -354,7 +354,10 @@ end
 
 import "android.os.Handler"
 import "java.lang.Runnable"
-local handler=Handler()
+import "android.os.Looper"
+
+-- 防抖节流主 handle
+local mainHandler = Handler(Looper.getMainLooper());
 ---节流，delay 毫秒内只运行一次，若在 delay 毫秒内重复触发，只有一次生效
 ---@param func function 事件
 ---@param delay number 延迟
@@ -365,11 +368,11 @@ function M.throttle(func,delay)
       func(table.unpack(args,1,args.length))
   end})
   return function(...)
-    if handler.hasCallbacks(runnable) then
+    if mainHandler.hasCallbacks(runnable) then
       return
     end
     args=table.pack(...)
-    handler.postDelayed(runnable,delay)
+    mainHandler.postDelayed(runnable,delay)
   end
 end
 
@@ -383,11 +386,77 @@ function M.debounce(func,delay)
       func(table.unpack(args,1,args.length))
   end})
   return function(...)
-    if handler.hasCallbacks(runnable) then
-      handler.removeCallbacks(runnable)
+    if mainHandler.hasCallbacks(runnable) then
+      mainHandler.removeCallbacks(runnable)
     end
     args=table.pack(...)
-    handler.postDelayed(runnable,delay)
+    mainHandler.postDelayed(runnable,delay)
+  end
+end
+
+-- 通用主 handle
+local mainHandler = Handler(Looper.getMainLooper());
+---在 UI 线程延迟执行（替代繁重的 task 函数，避免创建线程和子状态机）
+---@param delay number 延迟时间（毫秒），可选，默认为 0
+---@param func function 需要执行的函数
+function M.runDelayed(delay, func)
+  if type(delay) == "function" then
+    func = delay
+    delay = 0
+  end
+  if delay == 0 then
+    mainHandler.post(Runnable{run=func})
+   else
+    mainHandler.postDelayed(Runnable{run=func}, delay)
+  end
+end
+
+-- 后台线程
+import "android.os.HandlerThread"
+import "android.os.Handler"
+
+local bgThread = nil
+local bgHandler = nil
+-- 后台线程回调主 handle
+local mainHandler = Handler(Looper.getMainLooper())
+
+local function ensureBgThread()
+  if not bgThread then
+    bgThread = HandlerThread("BgThread")
+    bgThread.start()
+    bgHandler = Handler(bgThread.getLooper())
+  end
+end
+
+--- 后台线程延迟执行，可选主线程回调
+--- @param delay number 延迟毫秒
+--- @param func function 后台执行的函数
+--- @param callback function|nil 主线程回调，接收 func 的返回值
+function M.runDelayedOnBackground(delay, func, callback)
+  if type(delay) == "function" then
+    callback = func
+    func = delay
+    delay = 0
+  end
+  ensureBgThread()
+
+  local runnable = Runnable {
+    run = function()
+      local result = func()
+      if callback then
+        mainHandler.post(Runnable {
+          run = function()
+            callback(result)
+          end
+        })
+      end
+    end
+  }
+
+  if delay == 0 then
+    bgHandler.post(runnable)
+   else
+    bgHandler.postDelayed(runnable, delay)
   end
 end
 

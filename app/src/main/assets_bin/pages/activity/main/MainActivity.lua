@@ -12,7 +12,6 @@ import "android.view.accessibility.AccessibilityEvent"
 local BaseActivity = require("pages.base.BaseActivity")
 
 local MainActivity = Extensions.Class(BaseActivity, {"main"})
-MainActivity:chainUp("onDestroy")
 
 local _transition_name = "shared_element"
 
@@ -340,7 +339,7 @@ function MainActivity:initViews()
 end
 
 function MainActivity:updateParallelWorld()
-  local parallelEnabled = Extensions.Config.getBool(Constants.SharedDataKeys.PREDICTIVE_BACK)
+  local parallelEnabled = Extensions.Config.getBool(Constants.SharedDataKeys.PARALLEL_WORLD)
   local newParallel = isTablet() and parallelEnabled
   if newParallel == self.isParallelWorld then
     return
@@ -348,9 +347,9 @@ function MainActivity:updateParallelWorld()
 
   self.isParallelWorld = newParallel
 
-    -- 延迟执行，等布局完成
-    local decorView = activity.window.decorView
-    decorView.postDelayed(function()
+  -- 延迟执行，等布局完成
+  local decorView = activity.window.decorView
+  decorView.postDelayed(function()
     local screenWidth = decorView.width
 
     -- 获取 DecorView 的左右 padding
@@ -368,8 +367,9 @@ function MainActivity:updateParallelWorld()
       self.rightContainer.visibility = View.VISIBLE
      else
       -- 普通模式：左边全屏，右边隐藏
-      leftLp.width = screenWidth - paddingLeft - paddingRight
-      self.rightContainer.visibility = View.GONE
+      leftLp.width = -1
+      rightLp.width = 0
+      self.rightContainer.setVisibility(View.GONE)
       if self.currentRightFragment then
         local transaction = activity.supportFragmentManager.beginTransaction()
         transaction.remove(self.currentRightFragment:getFragment())
