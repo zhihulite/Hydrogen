@@ -2,7 +2,7 @@ name: Android Build & Send to Telegram
 
 on:
   push:
-    branches: [ "Reset" ]
+    branches: [ "main" ]
 
 jobs:
   build-and-notify:
