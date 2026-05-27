@@ -921,6 +921,15 @@ local function createView(layout, views)
     if not instanceof(view, View) then
         local theme = layout.theme
         local style = layout.style
+        if theme ~= nil then
+            if type(theme) == "string" then
+                theme = context.resources.getIdentifier(theme, "style", packageName)
+                assert(theme ~= 0, "Unknown theme " .. layout.theme)
+            else
+                theme = parseValue(theme)
+            end
+            assert(type(theme) == "number", "Invalid theme " .. tostring(layout.theme))
+        end
         local viewContext = theme and
                             ContextThemeWrapper(context, theme) or
                             context
