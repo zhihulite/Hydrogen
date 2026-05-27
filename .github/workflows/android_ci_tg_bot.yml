@@ -37,7 +37,7 @@ jobs:
         run: |
           APK_PATH=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
           COMMIT_MSG=$(echo "${{ github.event.head_commit.message }}" | head -c 200)
-          CAPTION="📦 *新构建完成*%0A%0A🔖 分支: \`${{ github.ref_name }}\`%0A💬 提交: ${COMMIT_MSG}%0A🔢 SHA: \`${{ github.sha }}\`"
+          CAPTION="📦 *新构建完成* 💬 提交: ${COMMIT_MSG}%0A🔢 SHA: \`${{ github.sha }}\`"
           
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendDocument" \
             -F chat_id="${{ secrets.TG_CHAT_ID }}" \
