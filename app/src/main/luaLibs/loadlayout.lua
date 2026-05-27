@@ -945,9 +945,22 @@ local function createView(layout, views)
             assert(style ~= 0, "Unknown style " .. layout.style)
         end
   
-        view = style and 
-               view(viewContext, nil, style) or
-               view(viewContext)
+        local viewFactory = view
+        if style then
+            local ok, newView = pcall(viewFactory, viewContext, nil, style)
+            if ok then
+                view = newView
+            else
+                view = luajava.new(viewFactory, viewContext, nil, style)
+            end
+        else
+            local ok, newView = pcall(viewFactory, viewContext)
+            if ok then
+                view = newView
+            else
+                view = luajava.new(viewFactory, viewContext)
+            end
+        end
     end
     
     view.id = layout.viewId or View.generateViewId()
