@@ -916,9 +916,10 @@ end
 ---@param views: table
 ---@return View
 local function createView(layout, views)
-    local view = assert(layout[1], "missing first value in layout table")
-    
-    if not instanceof(view, View) then
+    local viewClass = assert(layout[1], "missing first value in layout table")
+    local view
+
+    if not instanceof(viewClass, View) then
         local theme = layout.theme
         local style = layout.style
         if theme ~= nil then
@@ -945,22 +946,24 @@ local function createView(layout, views)
             assert(style ~= 0, "Unknown style " .. layout.style)
         end
   
-        local viewFactory = view
+        local viewFactory = viewClass
+        local viewFactoryMetatable = getmetatable(viewFactory)
+        local isCallable = viewFactoryMetatable and viewFactoryMetatable.__call
         if style then
-            local ok, newView = pcall(viewFactory, viewContext, nil, style)
-            if ok then
-                view = newView
+            if isCallable then
+                view = viewFactory(viewContext, nil, style)
             else
                 view = luajava.new(viewFactory, viewContext, nil, style)
             end
         else
-            local ok, newView = pcall(viewFactory, viewContext)
-            if ok then
-                view = newView
+            if isCallable then
+                view = viewFactory(viewContext)
             else
                 view = luajava.new(viewFactory, viewContext)
             end
         end
+    else
+        view = viewClass
     end
     
     view.id = layout.viewId or View.generateViewId()
