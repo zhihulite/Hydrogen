@@ -1,13 +1,24 @@
 plugins {
-    id 'com.android.application'
+    alias(libs.plugins.android.application)
 }
 
-tasks.withType(JavaCompile) {
+// 使用 Sync 替代 Copy，Sync 会在每次拷贝前清空目标目录，自动同步变更并天然防残留
+abstract class MergeTask extends Sync {
+    @OutputDirectory
+    abstract DirectoryProperty getOutputDir()
+
+    MergeTask() {
+        into(outputDir)
+    }
+}
+
+// 为所有 Java 编译任务启用废弃 API 检测，编译时会在控制台输出使用了废弃 API 的具体位置
+tasks.withType(JavaCompile).configureEach {
     options.compilerArgs << '-Xlint:deprecation'
 }
 
 android {
-    namespace 'com.zhihu.hydrogen.x'
+    namespace = 'com.zhihu.hydrogen.x'
     compileSdk = 36
 
     defaultConfig {
@@ -21,24 +32,24 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("${rootDir}/hydrogen.jks")
-            storePassword "zhihu"
-            keyAlias "hydrogen"
-            keyPassword "android"
-            enableV1Signing true
-            enableV2Signing true
-            enableV3Signing true
-            enableV4Signing true
+            storeFile = file("${rootDir}/hydrogen.jks")
+            storePassword = "zhihu"
+            keyAlias = "hydrogen"
+            keyPassword = "android"
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+            enableV4Signing = true
         }
         debug {
-            storeFile file("${rootDir}/hydrogen.jks")
-            storePassword "zhihu"
-            keyAlias "hydrogen"
-            keyPassword "android"
-            enableV1Signing true
-            enableV2Signing true
-            enableV3Signing true
-            enableV4Signing true
+            storeFile = file("${rootDir}/hydrogen.jks")
+            storePassword = "zhihu"
+            keyAlias = "hydrogen"
+            keyPassword = "android"
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+            enableV4Signing = true
         }
     }
 
@@ -46,31 +57,31 @@ android {
         release {
             signingConfig = signingConfigs.release
             // 必须要禁用 R8
-            minifyEnabled false
-            shrinkResources false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            minifyEnabled = false
+            shrinkResources = false
+            proguardFiles(getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro')
         }
         debug {
             signingConfig = signingConfigs.debug
             // 必须要禁用 R8
-            minifyEnabled false
-            shrinkResources false
+            minifyEnabled = false
+            shrinkResources = false
         }
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_21
-        targetCompatibility JavaVersion.VERSION_21
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     lint {
-        abortOnError false       // 即使报错也不中断构建
-        checkReleaseBuilds true  // Release 时运行检查
-        textReport true          // 控制台显示报告
+        abortOnError = false       // 即使报错也不中断构建
+        checkReleaseBuilds = true  // Release 时运行检查
+        textReport = true          // 控制台显示报告
     }
 
     buildFeatures {
-        buildConfig true
+        buildConfig = true
     }
 }
 
@@ -92,15 +103,10 @@ dependencies {
     implementation libs.zxing.embedded
     implementation libs.zxing.core
 
-    // https://github.com/ZL114514/material-components-android
+    // M3 规范组件库支持：https://github.com/ZL114514/material-components-android
     implementation libs.material
     implementation fileTree("libs")
 }
-
-// 定义合并路径
-def mergedAssetsDir = layout.buildDirectory.dir("temp-assets")
-def mergedLuaParentDir = layout.buildDirectory.dir("temp-luaresources")
-def mergedLuaSubDir = layout.buildDirectory.dir("temp-luaresources/lua")
 
 // 从 core/app_info.lua 读取版本号
 def getAppVersion() {
@@ -123,118 +129,51 @@ def getAppVersion() {
     return coreVersion
 }
 
-// 注册合并任务
-def mergeAssetsBin = tasks.register("mergeAssetsBin", Copy) {
+// 将临时目录定义在独立的 intermediates 路径下，彻底由 Gradle 内部托管，享受 clean 自动清理
+def generatedAssetsDir = layout.buildDirectory.dir("intermediates/hydrogen_custom/assets_bin")
+def generatedLuaDir = layout.buildDirectory.dir("intermediates/hydrogen_custom/lua_root")
+
+// 合并 assets_bin：收集子模块资源并平铺放入临时目录
+def mergeAssetsBin = tasks.register("mergeAssetsBin", MergeTask) {
     group = "custom"
-
-    doFirst {
-        println ">>> [合并 assets_bin] 开始..."
-
-
-        rootProject.subprojects.each { sub ->
-            def assetsBinDir = sub.file("src/main/assets_bin")
-            if (assetsBinDir.exists()) {
-                println ">>> 找到: ${assetsBinDir.absolutePath}"
-            } else {
-                println ">>> 不存在: ${assetsBinDir.absolutePath}"
-            }
-        }
-    }
-
+    outputDir.set(generatedAssetsDir)
     from(rootProject.subprojects.collect { it.file("src/main/assets_bin") })
-    into(mergedAssetsDir)
+    includeEmptyDirs = false
     duplicatesStrategy = DuplicatesStrategy.WARN
-    outputs.upToDateWhen { false }
 }
 
-def mergeLuaLibs = tasks.register("mergeLuaLibs", Copy) {
+// 合并 luaLibs：包裹在 "lua" 文件夹下，后续以此结构直接送往 APK 绝对根目录
+def mergeLuaLibs = tasks.register("mergeLuaLibs", MergeTask) {
     group = "custom"
-
-    doFirst {
-        println ">>> [合并 luaLibs] 开始..."
-        rootProject.subprojects.each { sub ->
-            def luaLibsDir = sub.file("src/main/luaLibs")
-            if (luaLibsDir.exists()) {
-                println ">>> 找到: ${luaLibsDir.absolutePath}"
-            } else {
-                println ">>> 不存在: ${luaLibsDir.absolutePath}"
-            }
-        }
+    outputDir.set(generatedLuaDir)
+    into("lua") {
+        from(rootProject.subprojects.collect { it.file("src/main/luaLibs") })
     }
-
-    from(rootProject.subprojects.collect { it.file("src/main/luaLibs") })
-    into(mergedLuaSubDir)
+    includeEmptyDirs = false
     duplicatesStrategy = DuplicatesStrategy.WARN
-    outputs.upToDateWhen { false }
 }
 
-// 注入源集配置
-tasks.register("setupCustomSourceSets") {
-    dependsOn mergeAssetsBin, mergeLuaLibs
-    doFirst {
-        android.sourceSets.main.assets.srcDirs += mergedAssetsDir.get().asFile
-        android.sourceSets.main.resources.srcDirs += mergedLuaParentDir.get().asFile
-    }
-}
+// 采用 AGP 8+ 现代化变体源集注入，确保增量构建有效，完美规避构建时序冲突
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        // 自动建立 Task 依赖：合并后的 assets_bin 平铺打入 assets/ 根目录
+        variant.sources.assets?.addGeneratedSourceDirectory(
+                mergeAssetsBin,
+                MergeTask::getOutputDir
+        )
 
-// APK 重命名任务
-def setupApkRenaming(variantName) {
-    tasks.named("assemble${variantName.capitalize()}").configure {
-        doLast {
-            // 清理临时目录
-            delete layout.buildDirectory.dir("temp-assets").get().asFile
-            delete layout.buildDirectory.dir("temp-luaresources").get().asFile
+        // 核心跨界：将 /lua 文件夹挂载至 Java 资源管道，使其绕过 assets 限制直接直达 APK 根目录
+        variant.sources.resources?.addGeneratedSourceDirectory(
+                mergeLuaLibs,
+                MergeTask::getOutputDir
+        )
 
-            def isAS = providers.gradleProperty("android.injected.invoked.from.ide").isPresent()
-
-            // 根据环境选择 APK 目录
-            def apkDir
-            if (isAS) {
-                apkDir = file("${project.projectDir}/release")
-                println ">>> [AS 环境] APK 目录: ${apkDir.absolutePath}"
-            } else {
-                apkDir = file("${layout.buildDirectory.get()}/outputs/apk/${variantName}")
-                println ">>> [命令行环境] APK 目录: ${apkDir.absolutePath}"
-            }
-
-            def apkFile = apkDir.listFiles()?.find { it.name.endsWith(".apk") && !it.name.contains("unsigned") }
-            if (!apkFile) {
-                println ">>> [跳过重命名] 未找到签名 APK 文件"
-                return
-            }
-
-            // 检查 intermediates 中的 APK 是否更新
-            def intermediatesApk = file("${layout.buildDirectory.get()}/intermediates/apk/${variantName}")
-            def intermediatesApkFile = intermediatesApk.listFiles()?.find { it.name.endsWith(".apk") }
-
-            if (intermediatesApk.exists() && intermediatesApkFile && apkFile.lastModified() < intermediatesApkFile.lastModified()) {
-                println ">>> [跳过重命名] 非打包签名 APK (Run 执行)"
-                return
-            }
-
+        // 现代化的 APK 文件名修改方式（完全遵循 AGP 管道，避开非安全的 renameTo 操作）
+        variant.outputs.each { output ->
             def coreVer = getAppVersion()
             def appVersion = android.defaultConfig.versionName
             def newName = "Hydrogen_${appVersion}_${coreVer}.apk"
-            def newFile = new File(apkDir, newName)
-
-            if (newFile.exists()) newFile.delete()
-            if (apkFile.renameTo(newFile)) {
-                println ">>> [重命名] ${apkFile.absolutePath} -> ${newFile.absolutePath}"
-            } else {
-                println ">>> [重命名失败] ${apkFile.absolutePath}"
-            }
+            output.outputFileName.set(newName)
         }
     }
-}
-
-// 应用变体逻辑
-android.applicationVariants.configureEach { variant ->
-    def variantName = variant.name
-    tasks.named("merge${variantName.capitalize()}Assets").configure {
-        dependsOn "setupCustomSourceSets"
-    }
-    tasks.named("process${variantName.capitalize()}Resources").configure {
-        dependsOn "setupCustomSourceSets"
-    }
-    setupApkRenaming(variantName)
 }
