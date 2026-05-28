@@ -150,11 +150,9 @@ function CollectionTabModel:showRecommendDialog()
   model:setupSingle(dialogViews.recycler_view, dialogViews.swipe_refresh)
   model:refresh()
 
-  dialog.setOnDismissListener({
-    onDismiss = function()
-      model:destroy()
-    end
-  })
+  dialog.onDismiss = function()
+    model:destroy()
+  end
 end
 
 function CollectionTabModel:destroy()

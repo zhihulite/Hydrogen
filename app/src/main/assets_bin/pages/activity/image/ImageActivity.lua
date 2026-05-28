@@ -103,11 +103,9 @@ function ImageActivity:loadImage(index)
   views.loading_container.visibility = View.VISIBLE
 
   -- 设置 PhotoView 点击事件
-  views.photo_view.setOnClickListener({
-    onClick = function()
-      self:toggleBottomBar()
-    end
-  })
+  views.photo_view.onClick = function()
+    self:toggleBottomBar()
+  end
 
   Glide.with(activity)
   .load(url)

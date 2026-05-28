@@ -114,12 +114,10 @@ function QuestionFragment:createTopicChip(topic)
   chip.text = topic.name
   chip.textColor = colors.primary
 
-  chip.setOnClickListener({
-    onClick = function()
-      local topicId = topic.id or topic.topicId
-      if topicId then Router.go("topic", { id = topicId }) end
-    end
-  })
+  chip.onClick = function()
+    local topicId = topic.id or topic.topicId
+    if topicId then Router.go("topic", { id = topicId }) end
+  end
 
   return chip
 end

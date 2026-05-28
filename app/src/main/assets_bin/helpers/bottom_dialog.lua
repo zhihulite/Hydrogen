@@ -42,7 +42,7 @@ local function buildListItems(container, items, onItemClick, onItemLongClick, au
         paddingLeft = "24dp",
         paddingRight = "24dp",
         paddingTop = "6dp",
-        paddingBottom = "6dp",
+        paddingBottom = "0dp",
         gravity = "center_vertical",
         {
           MaterialTextView,
@@ -131,7 +131,7 @@ function M.show(opts)
     opts.listItems and {
       LinearLayoutCompat, id = "list_container", orientation = "vertical",
       layout_width = "match_parent", layout_height = "wrap_content",
-      layout_marginTop = "8dp",
+      layout_marginTop = "0dp",
     } or nil,
   }
 

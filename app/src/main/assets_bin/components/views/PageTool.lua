@@ -35,10 +35,7 @@ local function hasBlockWord(text)
 end
 
 local function setupSwipeRefresh(sr, onRefresh)
-  local colors = AppTheme.colors
-  sr.progressBackgroundColorSchemeColor = colors.background
-  sr.colorSchemeColors = {colors.primary}
-  sr.onRefresh = onRefresh
+  Helpers.UI.setupSwipeRefresh(sr, onRefresh)
 end
 
 local function setupRecyclerView(rv, adapter, onLoadMore)

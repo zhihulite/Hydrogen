@@ -159,14 +159,12 @@ function HomeFragment:initViews()
   local detector = GestureDetector(activity, {
     onDown = function(e) return true end
   })
-  detector.setOnDoubleTapListener({
-    onDoubleTap = function(e)
-      self:_scrollCurrentPageToTop()
-      return true
-    end
-  })
+  detector.onDoubleTap = function(e)
+    self:_scrollCurrentPageToTop()
+    return true
+  end
   views.toolbar.onTouch = function(v, event)
-      return detector.onTouchEvent(event)
+    return detector.onTouchEvent(event)
   end
 end
 

@@ -45,7 +45,8 @@ end
 function M:setupEvents()
   local views = self.sheetViews
 
-  views.toolbar.setNavigationOnClickListener({ onClick = function() self.bottomSheet.dismiss() end })
+  local navCallback = function() self.bottomSheet.dismiss() end
+  views.toolbar.navigationOnClickListener = luajava.createProxy("android.view.View$OnClickListener", { onClick = navCallback })
   views.chip_score.onClick = function() self:changeSortOrder("score") end
   views.chip_ts.onClick = function() self:changeSortOrder("ts") end
 

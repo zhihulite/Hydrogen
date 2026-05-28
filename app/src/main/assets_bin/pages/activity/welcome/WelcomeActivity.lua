@@ -36,7 +36,7 @@ function WelcomeActivity:initViews()
   local views = self.views
   views.nextButton.onClick = function() self:goToNext() end
   local navCallback = function() self:goToPrev() end
-  views.toolbar.navigationOnClickListener = { onClick = navCallback }
+  views.toolbar.navigationOnClickListener = luajava.createProxy("android.view.View$OnClickListener", { onClick = navCallback })
 
   local colors = AppTheme.colors
   views.toolbar.titleTextColor = colors.primary

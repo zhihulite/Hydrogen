@@ -243,7 +243,7 @@ function M.setupToolbar(toolbar, options)
   if navIcon then navIcon.tint = colors.primary end
 
   local navCallback = options.navCallback or function() Router.back() end
-  toolbar.navigationOnClickListener = { onClick = navCallback }
+  toolbar.navigationOnClickListener = luajava.createProxy("android.view.View$OnClickListener", { onClick = navCallback })
 
   local overflowIcon = toolbar.overflowIcon
   if overflowIcon then overflowIcon.tint = colors.primary end

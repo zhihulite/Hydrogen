@@ -89,31 +89,25 @@ function AnswerFragment:setupToolbar()
     onDown = function(e) return true end
   }))
 
-  detector.setOnDoubleTapListener({
-    onDoubleTap = function(e)
-      if self.currentPageIds and self.currentPageIds.webview then
-        local js = "var scroller = document.scrollingElement || document.documentElement || document.body; scroller.scrollTop = 0;"
-        self.currentPageIds.webview.evaluateJavascript(js, nil)
-        self.views.appbar.setExpanded(true, true)
-      end
-      return true
+  detector.onDoubleTap = function(e)
+    if self.currentPageIds and self.currentPageIds.webview then
+      local js = "var scroller = document.scrollingElement || document.documentElement || document.body; scroller.scrollTop = 0;"
+      self.currentPageIds.webview.evaluateJavascript(js, nil)
+      self.views.appbar.setExpanded(true, true)
     end
-  })
+    return true
+  end
 
-  toolbar.setOnTouchListener({
-    onTouch = function(v, event)
-      return detector.onTouchEvent(event)
-    end
-  })
+  toolbar.onTouch = function(v, event)
+    return detector.onTouchEvent(event)
+  end
 
   local collapsingToolbar = self.views.collapsing_toolbar
-  collapsingToolbar.setOnClickListener({
-    onClick = function()
-      if self.questionId then
-        Router.go("question", { id = self.questionId })
-      end
+  collapsingToolbar.onClick = function()
+    if self.questionId then
+      Router.go("question", { id = self.questionId })
     end
-  })
+  end
 end
 
 function AnswerFragment:onBridgeMessage(action, data)
@@ -370,11 +364,9 @@ function AnswerFragment:updateWebViewPadding(pageIds)
 end
 
 function AnswerFragment:setupWebView(webview, answerId, pageIds)
-  webview.setOnScrollChangeListener({
-    onScrollChange = function(view, sx, sy, osx, osy)
-      self:onWebViewScroll(pageIds, sx, sy, osx, osy)
-    end
-  })
+  webview.onScrollChange = function(view, sx, sy, osx, osy)
+    self:onWebViewScroll(pageIds, sx, sy, osx, osy)
+  end
 
   local helper = WebViewHelper.new(webview)
   helper:initSettings():setZhiHuUA():initNoImageMode():initDownloadListener()

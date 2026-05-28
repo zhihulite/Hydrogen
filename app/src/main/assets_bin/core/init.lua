@@ -306,4 +306,22 @@ _G.AppTextStyle = {
   }
 }
 
+_G.AppCardStyle = {
+  -- 基础卡片样式
+  basic = {
+    marginLeft = dp2px(12), -- 左边距12dp
+    marginRight = dp2px(12), -- 右边距12dp
+    marginTop = dp2px(6), -- 上边距6dp
+    marginBottom = dp2px(0) -- 下边距0dp
+  },
+  -- 子卡片样式（嵌套卡片）
+  child = {
+    marginLeft = dp2px(8), -- 左边距8dp
+    marginRight = dp2px(8), -- 右边距8dp
+    -- 增大marginTop，增加视觉差
+    marginTop = dp2px(8), -- 上边距8dp
+    marginBottom = dp2px(0) -- 下边距0dp
+  }
+}
+
 return M

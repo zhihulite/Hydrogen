@@ -69,7 +69,7 @@ function M.show(opts)
 
   -- 关闭时销毁 Model
   bottomSheet.onDismiss = function()
-      model:destroy()
+    model:destroy()
   end
 
   bottomSheet.show()

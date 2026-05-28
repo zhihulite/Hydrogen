@@ -157,14 +157,12 @@ local floatScrollButtons = {
   id = "float_scroll_container",
   layout_width = "wrap_content",
   layout_height = "wrap_content",
-  layout_gravity = "bottom|end",
+  layout_gravity = "end|bottom",
   layout_marginRight = "16dp",
-  layout_marginBottom = "80dp",
+  layout_marginBottom = "100dp",
   radius = "28dp",
-  cardElevation = 0,
-  cardBackgroundColor = colors.surface,
   alpha = 0.9,
-  visibility = 8,
+  cardBackgroundColor = colors.surfaceContainer,
   {
     LinearLayoutCompat,
     orientation = "vertical",
@@ -174,23 +172,24 @@ local floatScrollButtons = {
     {
       AppCompatImageView,
       id = "scroll_up",
-      layout_width = "40dp",
-      layout_height = "40dp",
-      imageBitmap = Helpers.Static.materialIcon("twotone_arrow_drop_up"),
+      layout_width = "36dp",
+      layout_height = "36dp",
+      imageBitmap = Helpers.Static.materialIcon("twotone_keyboard_arrow_up"),
       colorFilter = colors.primary,
-      padding = "8dp",
+      padding = "6dp",
     },
     {
       AppCompatImageView,
       id = "scroll_down",
-      layout_width = "40dp",
-      layout_height = "40dp",
-      imageBitmap = Helpers.Static.materialIcon("twotone_arrow_drop_down"),
+      layout_width = "36dp",
+      layout_height = "36dp",
+      imageBitmap = Helpers.Static.materialIcon("twotone_keyboard_arrow_down"),
       colorFilter = colors.primary,
-      padding = "8dp",
+      padding = "6dp",
     },
   }
 }
+
 
 return {
   CoordinatorLayout,

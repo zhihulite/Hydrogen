@@ -124,7 +124,7 @@ function SearchFragment:setupSearchView()
   end
 
   -- 搜索监听
-  self.searchView.setOnQueryTextListener({
+  self.searchView.setOnQueryTextListener(luajava.createProxy("androidx.appcompat.widget.SearchView$OnQueryTextListener", {
     onQueryTextSubmit = function(query)
       local q = tostring(query):gsub(" ", "")
       if q ~= "" then self:performSearch(q) end
@@ -142,7 +142,7 @@ function SearchFragment:setupSearchView()
       end
       return false
     end
-  })
+  }))
 end
 
 function SearchFragment:performSearch(query)
@@ -244,10 +244,10 @@ function SearchFragment:createChip(text, id)
   chip.onClick = function()
     self:performSearch(text)
   end
-  chip.setOnCloseIconClickListener({ onClick = function()
+  chip.setOnCloseIconClickListener(luajava.createProxy("android.view.View$OnClickListener", { onClick = function()
       SearchHistoryService.remove(id)
       self:loadHistory()
-  end })
+  end }))
   return chip
 end
 
