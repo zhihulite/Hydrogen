@@ -14,11 +14,15 @@ public class MainActivity extends LuaActivity {
             onVersionChanged(getIntent().getStringExtra("newVersionName"), getIntent().getStringExtra("oldVersionName"));
         }
         super.onCreate(savedInstanceState);
-
     }
 
     private void onVersionChanged(String newVersionName, String oldVersionName) {
         // TODO: Implement this method
         runFunc("onVersionChanged", newVersionName, oldVersionName);
+    }
+
+    @Override
+    public String getFallbackLuaPath() {
+        return getLocalDir() + "/main.lua";
     }
 }

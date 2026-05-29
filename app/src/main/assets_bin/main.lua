@@ -13,12 +13,10 @@ end
 
 local function launchMain()
   Router.go("main")
-  activity.finish()
 end
 
 local function launchWelcome()
   Router.go("welcome")
-  activity.finish()
 end
 
 if needWelcome() then

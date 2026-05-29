@@ -18,25 +18,29 @@ local allThemeIds = {
   "Red",
 }
 
+local resources = activity.resources
+local packageName = activity.packageName
 -- 动态获取主题 primary 颜色
-local appR = luajava.bindClass(activity.packageName .. ".R")
-local appRStyle = appR.style
-local colorPrimaryAttr = appR.attr.colorPrimary
 local function getThemePrimaryColor(themeId)
-  local themeName = "Theme_" .. themeId
-  local themeResId = appRStyle[themeName]
 
-  if themeResId and themeResId ~= 0 then
-    local typedArray = activity.obtainStyledAttributes(themeResId, { colorPrimaryAttr })
-    local color = typedArray.getColor(0, 0)
-    typedArray.recycle()
-
-    if color ~= 0 then
-      return color
-    end
+  -- 获取主题资源 ID
+  local themeResId = resources.getIdentifier("Theme." .. themeId, "style", packageName)
+  if themeResId == 0 then
+    return 0
   end
 
-  return 0
+  -- 获取 colorPrimary 属性 ID
+  local colorPrimaryAttrId = resources.getIdentifier("colorPrimary", "attr", packageName)
+  if colorPrimaryAttrId == 0 then
+    return 0
+  end
+
+  -- 通过主题资源 ID 获取该主题下的 colorPrimary 颜色值
+  local typedArray = activity.obtainStyledAttributes(themeResId, { colorPrimaryAttrId })
+  local color = typedArray.getColor(0, 0)
+  typedArray.recycle()
+
+  return color
 end
 
 function ThemePickerFragment:ctor()
@@ -63,7 +67,7 @@ function ThemePickerFragment:initViews()
   })
 
   if views.toolbar then
-    Helpers.UI.setupToolbar(views.toolbar,{ title = "主题设置" })
+    Helpers.UI.setupToolbar(views.toolbar, { title = "主题设置" })
   end
 
   self:initListView()

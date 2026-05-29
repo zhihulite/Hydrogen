@@ -461,10 +461,19 @@ function M:saveWebArchive(path)
   self.webView.saveWebArchive(path)
 end
 
+function M:clearCache()
+  if not self:isAlive() then return end
+  self.webView.clearCache(true)
+  self.webView.clearFormData()
+  self.webView.clearHistory()
+end
+
 function M:destroy()
   self.isDestroyed = true
   self.bridge = nil
   if self.webView then
+    -- 清理缓存
+    self:clearCache()
     self.webView.stopLoading()
     self.webView.destroy()
     self.webView = nil

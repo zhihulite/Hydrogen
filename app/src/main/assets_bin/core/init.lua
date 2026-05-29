@@ -56,9 +56,9 @@ local pages = require("pages.init")
 for name, info in pairs(pages) do
   if type(info) == "table" and info.path then
     if info.isActivity then
-      _G.Router.registerActivity(name, info.path)
+      _G.Router.registerActivity(name, info.path, info.replace)
      else
-      _G.Router.registerFragment(name, info.path)
+      _G.Router.registerFragment(name, info.path, info.replace)
     end
   end
 end

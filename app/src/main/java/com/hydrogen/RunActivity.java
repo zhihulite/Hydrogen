@@ -137,6 +137,8 @@ public class RunActivity extends Activity {
         newIntent.putExtra("arg", arg);
         newIntent.putExtra("name", name);
         newIntent.putExtra("luaPath", luaPath);
+        newIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+        newIntent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
         newIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(newIntent);
         finish();

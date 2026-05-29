@@ -166,10 +166,14 @@ end
 -- 应用主题
 function M.applyTheme()
   local themeName = M.getThemeConfig()
-  local R = luajava.bindClass(activity.packageName .. ".R")
-  local ok, themeResId = pcall(function() return R.style["Theme_" .. themeName] end)
-  if ok and themeResId then
+  -- 获取主题资源 ID
+  local resources = activity.resources
+  local packageName = activity.packageName
+  local themeResId = resources.getIdentifier("Theme." .. themeName, "style", packageName)
+  if themeResId ~= 0 then
     activity.theme = themeResId
+   else
+    tip("当前选择主题已失效")
   end
 end
 

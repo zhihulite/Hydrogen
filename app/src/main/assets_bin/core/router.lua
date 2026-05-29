@@ -12,21 +12,25 @@ local PageType = {
   FRAGMENT = 2,
 }
 
-function M.register(name, path, pageType, title)
+-- 注册路由
+-- @param name string 路由名称
+-- @param path string 路径
+-- @param pageType boolean Activity 模式 true / Fragment 模式 false
+-- @param replace boolean|nil 是否覆盖当前 Activity（仅 Activity 模式有效）
+function M.register(name, path, pageType, replace)
   routes[name] = {
     path = path,
-    title = title or name,
     pageType = pageType or PageType.FRAGMENT,
-    instance = nil,
+    replace = replace or false, -- 是否覆盖当前 Activity
   }
 end
 
-function M.registerActivity(name, path, title)
-  return M.register(name, path, PageType.ACTIVITY, title)
+function M.registerActivity(name, path, replace)
+  return M.register(name, path, PageType.ACTIVITY, replace)
 end
 
-function M.registerFragment(name, path, title)
-  return M.register(name, path, PageType.FRAGMENT, title)
+function M.registerFragment(name, path)
+  return M.register(name, path, PageType.FRAGMENT)
 end
 
 function M.setFragmentLoader(loader)
@@ -65,7 +69,14 @@ function M.go(name, params, options)
 
   if route.pageType == PageType.ACTIVITY then
     local blankActivityPath = getBlankActivityPath()
-    activity.newActivity(blankActivityPath, { name, params })
+    -- 根据 replace 标识决定使用哪种启动方式
+    if route.replace then
+      -- 覆盖当前 Activity
+      activity.replaceActivity(blankActivityPath, { name, params })
+     else
+      -- 正常启动
+      activity.startDocumentActivity(blankActivityPath, { name, params })
+    end
     return true
    else
     if not fragmentLoader then

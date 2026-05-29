@@ -212,12 +212,13 @@ local sizes = {
 
 -- 宽窄变种
 local variants = {
+  { Name = "Square", File = "square" },
   { Name = "Narrow", File = "narrow" },
   { Name = "Wide", File = "wide" }
 }
 
 -- ============================================
--- 基础 IconButton（IconButton_Filled)
+-- 基础 IconButton（IconButton)
 -- ============================================
 M.IconButton = create("iconbutton")
 
@@ -230,6 +231,23 @@ end
 for _, size in ipairs(sizes) do
   for _, variant in ipairs(variants) do
     M["IconButton_" .. size.Name .. "_" .. variant.Name] = create("iconbutton_" .. size.File .. "_" .. variant.File)
+  end
+end
+
+-- ============================================
+-- IconButton_Filled
+-- ============================================
+M.IconButton_Filled = create("iconbutton_filled")
+
+-- Filled + 尺寸
+for _, size in ipairs(sizes) do
+  M["IconButton_Filled_" .. size.Name] = create("iconbutton_filled_" .. size.File)
+end
+
+-- Tonal + 尺寸 + 宽窄
+for _, size in ipairs(sizes) do
+  for _, variant in ipairs(variants) do
+    M["IconButton_Filled_" .. size.Name .. "_" .. variant.Name] = create("iconbutton_filled_" .. size.File .. "_" .. variant.File)
   end
 end
 
@@ -251,19 +269,19 @@ for _, size in ipairs(sizes) do
 end
 
 -- ============================================
--- IconButton_Filled_Tonal
+-- IconButton_Tonal
 -- ============================================
-M.IconButton_Filled_Tonal = create("iconbutton_filled_tonal")
+M.IconButton_Tonal = create("iconbutton_tonal")
 
 -- Tonal + 尺寸
 for _, size in ipairs(sizes) do
-  M["IconButton_Filled_Tonal_" .. size.Name] = create("iconbutton_filled_tonal_" .. size.File)
+  M["IconButton_Tonal_" .. size.Name] = create("iconbutton_tonal_" .. size.File)
 end
 
 -- Tonal + 尺寸 + 宽窄
 for _, size in ipairs(sizes) do
   for _, variant in ipairs(variants) do
-    M["IconButton_Filled_Tonal_" .. size.Name .. "_" .. variant.Name] = create("iconbutton_filled_tonal_" .. size.File .. "_" .. variant.File)
+    M["IconButton_Tonal_" .. size.Name .. "_" .. variant.Name] = create("iconbutton_tonal_" .. size.File .. "_" .. variant.File)
   end
 end
 

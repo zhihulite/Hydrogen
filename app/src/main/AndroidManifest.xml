@@ -116,20 +116,13 @@
         <activity
                 android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|uiMode"
                 android:windowSoftInputMode="adjustResize|stateHidden"
-                android:exported="true"
+                android:exported="false"
                 android:name="com.hydrogen.LuaActivity"/>
-
-        <activity
-                android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|uiMode"
-                android:documentLaunchMode="intoExisting"
-                android:windowSoftInputMode="adjustResize|stateHidden"
-                android:excludeFromRecents="false"
-                android:exported="true"
-                android:name="com.hydrogen.LuaActivityX"/>
 
         <activity
                 android:configChanges="mcc|mnc|locale|touchscreen|keyboard|navigation|screenLayout|fontScale|smallestScreenSize|keyboardHidden|orientation|screenSize|uiMode"
                 android:windowSoftInputMode="adjustResize|stateHidden"
+                android:launchMode="singleTask"
                 android:exported="false"
                 android:name="com.hydrogen.Welcome"
                 android:theme="@style/Theme.Welcome"/>
@@ -150,7 +143,6 @@
                     android:name="android.support.FILE_PROVIDER_PATHS"
                     android:resource="@xml/file_paths"/>
         </provider>
-
 
     </application>
 

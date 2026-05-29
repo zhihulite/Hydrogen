@@ -794,8 +794,8 @@ end
 
 function AnswerFragment:onDestroy()
   for _, page in pairs(self.pageData) do
-    if page.ids and page.ids.webview then
-      page.ids.webview.destroy()
+    if page.helper then
+      page.helper:destroy()
     end
   end
   self.pageData = {}

@@ -39,7 +39,20 @@ function BasePage:runIfAlive(callback)
 end
 
 local EdgeToEdgeUtils = require("pages.base.EdgeToEdgeUtils")
+
+-- 配置 EdgeToEdge
+-- @param options table
+--   options.top: View|table 需要适配状态栏的视图
+--   options.bottom: View|table 需要适配导航栏的视图
+--   options.start: View|table 需要适配左边的视图
+--   options["end"]: View|table 需要适配右边的视图
+--   options.lazy: 偷懒模式，decorView 自动处理 left/right（默认 true）
+--   options.useMargin: 全局是否使用 margin 而非 padding
 function BasePage:setupEdgeToEdge(options)
+  if not options then
+    error("setupEdgeToEdge() 必须传入 options 参数")
+  end
+
   local addedViews = EdgeToEdgeUtils.setup(options)
   if addedViews and #addedViews > 0 then
     for _, view in ipairs(addedViews) do
@@ -48,7 +61,12 @@ function BasePage:setupEdgeToEdge(options)
   end
 end
 
+-- 添加单个 EdgeToEdge 视图
+-- @param view 需要适配的视图
+-- @param direction 方向: "start", "end", "top", "bottom"
+-- @param useMargin 是否使用 margin 而非 padding
 function BasePage:addEdgeToEdgeView(view, direction, useMargin)
+  if not view then return end
   EdgeToEdgeUtils.add(view, direction, useMargin)
   table.insert(self.edgeToEdgeViews, view)
 end
@@ -59,11 +77,11 @@ function BasePage:onPause() end
 
 function BasePage:onDestroy()
   -- 销毁时移除所有 EdgeToEdge 添加的视图
-  if #self.edgeToEdgeViews > 0 then
+  if self.edgeToEdgeViews and #self.edgeToEdgeViews > 0 then
     EdgeToEdgeUtils.remove(self.edgeToEdgeViews)
     self.edgeToEdgeViews = nil
   end
-  
+
   self.isDestroyed = true
   self.root_view = nil
 end

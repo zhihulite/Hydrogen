@@ -43,7 +43,7 @@ return {
         id = "people_avatar",
         layout_width = "40dp",
         layout_height = "40dp",
-        shapeAppearanceModel = circleShape,
+        shapeAppearanceModel = circleShapeModel,
       },
       {
         LinearLayoutCompat,

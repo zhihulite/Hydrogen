@@ -6,10 +6,11 @@ local M = {}
 local pageCache = {}
 
 -- 注册页面
-function M.register(name, path, isActivity)
+function M.register(name, path, isActivity, replace)
   M[name] = {
     path = path,
     isActivity = isActivity or false,
+    replace = replace or false,
   }
 end
 
@@ -47,9 +48,10 @@ end
 
 -- 预注册所有页面
 -- Activity 模式（独立虚拟机，跳转到 BlankActivity 执行）
-M.register("welcome", "pages.activity.welcome.WelcomeActivity", true)
-M.register("login", "pages.activity.login.LoginActivity", true)
-M.register("main", "pages.activity.main.MainActivity", true)   -- 新增主Activity
+M.register("welcome", "pages.activity.welcome.WelcomeActivity", true, true) -- welcome 需要覆盖
+M.register("main", "pages.activity.main.MainActivity", true, true) -- main 需要覆盖
+M.register("login", "pages.activity.login.LoginActivity", true, false) -- login 正常启动
+M.register("image", "pages.activity.image.ImageActivity", true, false) -- image 正常启动
 
 -- Fragment 模式（共享虚拟机，在主 Activity 容器中切换）
 M.register("home", "pages.fragment.home.HomeFragment", false)
@@ -74,6 +76,5 @@ M.register("about", "pages.fragment.about.AboutFragment", false)
 M.register("theme_picker", "pages.fragment.theme_picker.ThemePickerFragment", false)
 M.register("open_source", "pages.fragment.open_source.OpenSourceFragment", false)
 M.register("scan", "pages.fragment.scan.ScanFragment", false)
-M.register("image", "pages.activity.image.ImageActivity", true)
 
 return M

@@ -1,17 +1,18 @@
 -- helpers/resources.lua
 -- 极简 Android 资源访问工具
 -- 使用方式：
---   local color = resource.app.attr.colorPrimary          -- 自动返回颜色值
---   local size = resource.android.attr.actionBarSize      -- 自动返回尺寸（px）
---   local flag = resource.android.attr.windowNoTitle      -- 自动返回布尔值
---   local text = resource.app.string.app_name             -- 静态字符串
---   local icon = resource.app.drawable.ic_launcher        -- 静态图片
+--   local color = resources.app.attr.colorPrimary          -- 自动返回颜色值
+--   local size = resources.android.attr.actionBarSize      -- 自动返回尺寸（px）
+--   local flag = resources.android.attr.windowNoTitle      -- 自动返回布尔值
+--   local text = resources.app.string.app_name             -- 静态字符串
+--   local icon = resources.app.drawable.ic_launcher        -- 静态图片
 
 import "androidx.core.content.ContextCompat"
 import "android.util.TypedValue"
 
-local resources = activity.resources -- 获取资源管理器
-local theme = activity.theme -- 获取当前主题
+local resources = activity.resources
+local theme = activity.theme
+local packageName = activity.packageName
 
 -- 静态资源类型的获取方法映射表
 local staticGetters = {
@@ -28,18 +29,28 @@ local staticGetters = {
   fraction = function(id) return resources.getFraction(id, 1, 1) end,
 }
 
--- 获取静态资源（字符串、颜色、图片等）
-local function getStatic(rClass, type, name)
-  local id = rClass[type] and rClass[type][name]
-  if not id then error(string.format("Resource not found: %s.%s.%s", rClass, type, name)) end
+-- 通过资源名称获取资源 ID
+local function getResourceId(type, name, isSystem)
+  local pkg = isSystem and "android" or packageName
+  return resources.getIdentifier(name, type, pkg)
+end
+
+-- 获取静态资源
+local function getStatic(type, name, isSystem)
+  local id = getResourceId(type, name, isSystem)
+  if id == 0 then
+    error(string.format("Resource not found: %s.%s", type, name))
+  end
   return staticGetters[type](id)
 end
 
--- 获取主题属性（?attr/xxx 的值），自动识别类型并转换
-local function getThemeAttr(rClass, attrName, styleId)
-  local attrId = rClass.attr and rClass.attr[attrName]
-  if not attrId then error(string.format("Attribute not found: %s.attr.%s", rClass, attrName)) end
-  local arr = theme.obtainStyledAttributes(styleId or 0, { attrId })
+-- 获取主题属性，自动识别类型并转换
+local function getThemeAttr(attrName, isSystem)
+  local attrId = getResourceId("attr", attrName, isSystem)
+  if attrId == 0 then
+    error(string.format("Attribute not found: %s", attrName))
+  end
+  local arr = theme.obtainStyledAttributes(0, { attrId })
   local tv = TypedValue()
   local success = arr.getValue(0, tv)
   arr.recycle()
@@ -62,23 +73,22 @@ local function getThemeAttr(rClass, attrName, styleId)
   end
 end
 
---- 构建访问器，通过元表实现直接访问
-local function buildAccessor(rClass)
+-- 构建访问器，通过元表实现直接访问
+local function buildAccessor(isSystem)
   return setmetatable({}, {
     __index = function(_, key)
-      -- 处理 attr 主题属性
       if key == "attr" then
         return setmetatable({}, {
           __index = function(_, attrName)
-            -- 直接返回属性值
-            return getThemeAttr(rClass, attrName)
+            return getThemeAttr(attrName, isSystem)
           end
         })
       end
-      -- 处理静态资源类型（string、color、drawable 等）
       if staticGetters[key] then
         return setmetatable({}, {
-          __index = function(_, name) return getStatic(rClass, key, name) end
+          __index = function(_, name)
+            return getStatic(key, name, isSystem)
+          end
         })
       end
       return nil
@@ -86,13 +96,8 @@ local function buildAccessor(rClass)
   })
 end
 
--- 获取应用自己的 R 类
-local appR = luajava.bindClass(activity.packageName .. ".R")
--- 获取 Android 系统的 R 类
-local androidR = luajava.bindClass("android.R")
-
 -- 返回两个命名空间的访问器
 return {
-  app = buildAccessor(appR), -- 访问应用资源：resource.app.xxx
-  android = buildAccessor(androidR), -- 访问系统资源：resource.android.xxx
+  app = buildAccessor(false),
+  android = buildAccessor(true),
 }

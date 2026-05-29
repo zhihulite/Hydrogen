@@ -7,19 +7,21 @@ import "androidx.appcompat.widget.SearchView"
 import "com.google.android.material.textview.MaterialTextView"
 import "androidx.core.widget.NestedScrollView"
 import "androidx.recyclerview.widget.RecyclerView"
-import "androidx.recyclerview.widget.GridLayoutManager"
-import "androidx.recyclerview.widget.LinearLayoutManager"
 import "com.google.android.material.chip.ChipGroup"
+import "androidx.appcompat.widget.AppCompatImageView"
 import "android.view.View"
+import "android.content.res.ColorStateList"
 
 local colors = AppTheme.colors
+local marginLeft = AppCardStyle.basic.marginLeft
+local marginRight = AppCardStyle.basic.marginRight
 
 return {
   LinearLayoutCompat,
+  id = "main_container",
   layout_width = "fill",
   layout_height = "fill",
   orientation = "vertical",
-  id = "main_container",
   backgroundColor = colors.background,
   {
     MaterialToolbar,
@@ -31,7 +33,7 @@ return {
     SearchView,
     id = "search_view",
     layout_width = "fill",
-    layout_height = "wrap_content",
+    layout_height = "wrap",
     queryHint = "搜索知乎内容",
   },
   {
@@ -44,50 +46,68 @@ return {
       LinearLayoutCompat,
       orientation = "vertical",
       layout_width = "fill",
-      layout_height = "wrap_content",
+      layout_height = "wrap",
       {
-        MaterialTextView,
-        text = "热门搜索",
-        textSize = AppTextStyle.labelSmall.size,
-        textColor = AppTextStyle.labelSmall.color,
-        typeface = AppTextStyle.labelSmall.font,
-        layout_marginLeft = "20dp",
+        LinearLayoutCompat,
+        orientation = "horizontal",
+        layout_width = "fill",
+        layout_height = "wrap",
+        layout_marginLeft = marginLeft,
+        layout_marginRight = marginRight,
         layout_marginTop = "16dp",
         layout_marginBottom = "8dp",
+        gravity = "center_vertical",
+        {
+          MaterialTextView,
+          id = "hot_title",
+          text = "热门搜索",
+          textSize = AppTextStyle.labelLarge.size,
+          textColor = AppTextStyle.labelLarge.color,
+          typeface = AppTextStyle.labelLarge.font,
+          layout_weight = 1,
+        },
+        {
+          Helpers.MaterialWidgets.IconButton_ExtraSmall,
+          id = "refresh_btn",
+          layout_width = "wrap",
+          layout_height = "wrap",
+          icon = Helpers.Static.materialDrawable("twotone_refresh", 24, true),
+          iconTint = ColorStateList.valueOf(AppTextStyle.labelLarge.color),
+          clickable = true,
+        }
       },
       {
         RecyclerView,
         id = "hot_grid",
         layout_width = "fill",
-        layout_height = "wrap_content",
-        layout_marginLeft = "12dp",
-        layout_marginRight = "12dp",
+        layout_height = "wrap",
         nestedScrollingEnabled = false,
       },
       {
         LinearLayoutCompat,
+        id = "history_header",
         orientation = "horizontal",
         layout_width = "fill",
-        layout_height = "wrap_content",
-        layout_marginLeft = "20dp",
-        layout_marginRight = "20dp",
+        layout_height = "wrap",
+        layout_marginLeft = marginLeft,
+        layout_marginRight = marginRight,
         layout_marginTop = "16dp",
         gravity = "center_vertical",
         {
           MaterialTextView,
           text = "历史记录",
-          textSize = AppTextStyle.labelSmall.size,
-          textColor = AppTextStyle.labelSmall.color,
-          typeface = AppTextStyle.labelSmall.font,
+          textSize = AppTextStyle.labelLarge.size,
+          textColor = AppTextStyle.labelLarge.color,
+          typeface = AppTextStyle.labelLarge.font,
           layout_weight = 1,
         },
         {
-          MaterialTextView,
+          Helpers.MaterialWidgets.IconButton_ExtraSmall,
           id = "clear_btn",
-          text = "清空",
-          textSize = AppTextStyle.labelSmall.size,
-          textColor = AppTextStyle.labelSmall.color,
-          typeface = AppTextStyle.labelSmall.font,
+          layout_width = "wrap",
+          layout_height = "wrap",
+          icon = Helpers.Static.materialDrawable("twotone_delete", 24, true),
+          iconTint = ColorStateList.valueOf(AppTextStyle.labelLarge.color),
           clickable = true,
         }
       },
@@ -95,8 +115,11 @@ return {
         ChipGroup,
         id = "chip_group",
         layout_width = "fill",
-        layout_height = "wrap_content",
-        layout_margin = "12dp",
+        layout_height = "wrap",
+        layout_marginLeft = marginLeft,
+        layout_marginRight = marginRight,
+        layout_marginTop = "12dp",
+        layout_marginBottom = "16dp",
       }
     }
   },
@@ -105,6 +128,6 @@ return {
     id = "suggest_list",
     layout_width = "fill",
     layout_height = "fill",
-    visibility = View.GONE
+    visibility = View.GONE,
   }
 }

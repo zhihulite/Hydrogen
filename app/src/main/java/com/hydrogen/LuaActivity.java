@@ -6,11 +6,12 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.splashscreen.SplashScreen;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
@@ -26,7 +27,7 @@ public class LuaActivity extends com.androlua.LuaActivity {
 
     public boolean updating = false;
     private boolean checkUpdate = false;
-    private String luaPath = null;
+    public String luaPath = null;
     public String luaDir = null;
     private WeakReference<Context> originalContextRef = null;
 
@@ -137,37 +138,100 @@ public class LuaActivity extends com.androlua.LuaActivity {
         checkUpdate = state;
     }
 
-    // 获取 Lua 脚本路径，首次调用时初始化
-    // 优先取 Intent 传入的 luaPath，没有则用默认路径 getLocalDir() + "/main.lua"
-    // 然后从父目录开始向上查找同时包含 main.lua 和 init.lua 的目录作为 luaDir，找不到就用父目录
-    // 返回路径不受 setLuaDir 影响
+    // 获取 Lua 脚本路径，首次调用时初始化，final 禁止子类重写
     @Override
-    public String getLuaPath() {
-        if (updating) return "/";
+    public final String getLuaPath() {
+        if (luaPath != null) {
+            return luaPath;
+        }
+        if (updating) {
+            luaPath = "/";
+        } else {
+            luaPath = getIntent().getStringExtra("luaPath");
+            Log.d(TAG, "getLuaPath: luaPath from Intent = " + luaPath);
+        }
 
-        if (luaPath == null) {
-            // 优先取 Intent 传入的路径，没有则用默认路径
-            String intentPath = getIntent().getStringExtra("luaPath");
-            luaPath = intentPath != null ? intentPath : getLocalDir() + "/main.lua";
-
-            // 记录原始父目录
-            String parentDir = new File(luaPath).getParent();
-            luaDir = parentDir;
-
-            // 向上找包含 main.lua 和 init.lua 的目录
-            while (luaDir != null) {
-                if (new File(luaDir, "main.lua").exists() && new File(luaDir, "init.lua").exists()) {
-                    break;
-                }
-                luaDir = new File(luaDir).getParent();
+        // 只有 luaPath 非空时才初始化目录
+        if (luaPath != null) {
+            initLuaDir(luaPath);
+        } else {
+            // luaPath 为空，调用子类可重写的 fallback 方法
+            String fallbackPath = getFallbackLuaPath();
+            Log.d(TAG, "getLuaPath: using fallbackPath = " + fallbackPath);
+            if (fallbackPath != null) {
+                luaPath = fallbackPath;
+                initLuaDir(luaPath);
+            } else {
+                showMissingLuaPathDialog();
             }
-            // 找不到就用原始父目录
-            if (luaDir == null) luaDir = parentDir;
-
-            setLuaDir(luaDir);
         }
 
         return luaPath;
+    }
+
+    // 子类可重写此方法，提供备用路径
+    protected String getFallbackLuaPath() {
+        return null;  // 默认无备用路径
+    }
+
+    // 显示路径缺失错误弹窗
+    private void showMissingLuaPathDialog() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("错误")
+                .setMessage("无法获取 Lua 脚本路径，请确保 Intent 中包含 luaPath 参数")
+                .setCancelable(false)
+                .setPositiveButton("退出", (dialog, which) -> finish())
+                .show();
+    }
+
+    private boolean hasAttemptedInit = false;
+
+    // 根据传入的 luaPath 初始化 luaDir
+    // 从父目录开始向上查找同时包含 main.lua 和 init.lua 的目录，找不到就用父目录
+    // 最后调用 setLuaDir()
+    private void initLuaDir(String luaPath) {
+        if (luaDir != null || hasAttemptedInit) {
+            showDuplicateCallDialog();
+            return;
+        }
+
+        hasAttemptedInit = true;
+
+        if (luaPath == null || luaPath.isEmpty()) {
+            showMissingLuaPathDialog();
+            return;
+        }
+
+        String parentDir = new File(luaPath).getParent();
+        if (parentDir == null) {
+            showMissingLuaPathDialog();
+            return;
+        }
+
+        String foundDir = parentDir;
+        while (foundDir != null) {
+            File dirFile = new File(foundDir);
+            // 检查目录是否可访问
+            if (dirFile.exists() && dirFile.canRead() && dirFile.isDirectory()) {
+                if (new File(foundDir, "main.lua").exists() && new File(foundDir, "init.lua").exists()) {
+                    break;
+                }
+            }
+            foundDir = new File(foundDir).getParent();
+        }
+        if (foundDir == null) foundDir = parentDir;
+
+        setLuaDir(foundDir);
+        luaDir = foundDir;
+    }
+
+    // 显示重复调用错误弹窗
+    private void showDuplicateCallDialog() {
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("代码错误")
+                .setMessage("initLuaDir 被重复调用")
+                .setPositiveButton("确定", null)
+                .show();
     }
 
     @Override
@@ -196,25 +260,32 @@ public class LuaActivity extends com.androlua.LuaActivity {
         runFunc("onRestoreInstanceState", savedInstanceState);
     }
 
-    // 构建跳转 Intent
-    public Intent buildNewActivityIntent(int req, String path, Object[] arg, boolean newDocument, int documentId) {
-        Intent intent = new Intent(this, LuaActivity.class);
-
+    // 构建基础 Intent，自动设置 Flags
+    private Intent buildIntent(boolean isReplace, String path, Object[] arg) {
+        Class<?> targetClass = isReplace ? this.getClass() : LuaActivity.class;
+        Intent intent = new Intent(this, targetClass);
         String resolvedPath = resolveLuaPath(path);
         intent.putExtra("luaPath", resolvedPath);
-        intent.setData(Uri.parse("file://" + resolvedPath + "?documentId=" + documentId));
         intent.putExtra("name", resolvedPath);
-
         if (arg != null) {
             intent.putExtra("arg", arg);
         }
-        if (newDocument) {
+
+        if (isReplace) {
+            // 替换当前：强制创建全新实例，清空任务栈
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        } else {
+            // 启动多实例：新文档任务
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_DOCUMENT);
+            intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
         }
+
         return intent;
     }
 
-    // 解析 Lua 文件路径，处理相对路径、目录自动补全 main.lua、后缀自动补全 .lua
+    // 解析 Lua 文件路径
+    // 处理相对路径、目录自动补全 main.lua、后缀自动补全 .lua
     private String resolveLuaPath(String path) {
         if (path == null || path.isEmpty()) {
             return "/";
@@ -238,39 +309,81 @@ public class LuaActivity extends com.androlua.LuaActivity {
         return path;
     }
 
+    // 新 API（禁止重写）
+
+    // 启动多实例页面（新文档任务），默认无动画
     @SuppressWarnings("unused")
-    public void newActivity(String path, boolean newDocument, int documentId) {
-        newActivity(1, path, null, newDocument, documentId);
+    public final void startDocumentActivity(String path, Object[] arg) {
+        Intent intent = buildIntent(false, path, arg);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        startActivity(intent);
     }
 
+    // 启动多实例页面（新文档任务），带动画
     @SuppressWarnings("unused")
-    public void newActivity(String path, Object[] arg, boolean newDocument, int documentId) {
-        newActivity(1, path, arg, newDocument, documentId);
+    public final void startDocumentActivityWithAnim(String path, Object[] arg) {
+        Intent intent = buildIntent(false, path, arg);
+        startActivity(intent);
     }
 
+    // 启动多实例页面（新文档任务），带共享元素
+    @SuppressWarnings("unused")
+    public final void startDocumentActivityWithShared(String path, Object[] arg, android.view.View sharedElement, String transitionName) {
+        Intent intent = buildIntent(false, path, arg);
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, sharedElement, transitionName);
+        startActivity(intent, options.toBundle());
+    }
+
+    // 替换当前页面（单例模式），强制创建全新实例，默认无动画
+    @SuppressWarnings("unused")
+    public final void replaceActivity(String path, Object[] arg) {
+        Intent intent = buildIntent(true, path, arg);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
+        startActivity(intent);
+        finish();
+    }
+
+    // 替换当前页面（单例模式），强制创建全新实例，带动画
+    @SuppressWarnings("unused")
+    public final void replaceActivityWithAnim(String path, Object[] arg) {
+        Intent intent = buildIntent(true, path, arg);
+        startActivity(intent);
+        finish();
+    }
+
+    // 替换当前页面（单例模式），强制创建全新实例，带共享元素
+    @SuppressWarnings("unused")
+    public final void replaceActivityWithShared(String path, Object[] arg, android.view.View sharedElement, String transitionName) {
+        Intent intent = buildIntent(true, path, arg);
+        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(this, sharedElement, transitionName);
+        startActivity(intent, options.toBundle());
+        finish();
+    }
+
+    // 旧 API（已废弃）
+
+    @Deprecated
     @Override
     public void newActivity(int req, String path, Object[] arg, boolean newDocument) {
-        newActivity(req, path, arg, newDocument, 0);
+        showDeprecatedMessage(newDocument);
     }
 
-    // 启动新 Activity
-    public void newActivity(int req, String path, Object[] arg, boolean newDocument, int documentId) {
-        Intent intent = buildNewActivityIntent(req, path, arg, newDocument, documentId);
-        if (newDocument) {
-            startActivity(intent);
-        } else {
-            startActivityForResult(intent, req);
-        }
-    }
-
+    @Deprecated
     @Override
     public void newActivity(int req, String path, int in, int out, Object[] arg, boolean newDocument) {
-        newActivity(req, path, in, out, arg, newDocument, 0);
+        showDeprecatedMessage(newDocument);
     }
 
-    // 启动新 Activity 并指定转场动画
-    public void newActivity(int req, String path, int in, int out, Object[] arg, boolean newDocument, int documentId) {
-        newActivity(req, path, arg, newDocument, documentId);
-        overridePendingTransition(in, out);
+    private void showDeprecatedMessage(boolean newDocument) {
+        String method = newDocument ? "startDocumentActivity" : "replaceActivity";
+        String msg = "newActivity 已废弃，请使用 " + method + "(path, arg)、" + method + "WithAnim(path, arg) 或 " + method + "WithShared(path, arg, view, transitionName)";
+        Log.e(TAG, msg);
+        new MaterialAlertDialogBuilder(this)
+                .setTitle("API 已废弃")
+                .setMessage(msg)
+                .setPositiveButton("确定", null)
+                .setCancelable(false)
+                .show();
+        throw new UnsupportedOperationException(msg);
     }
 }

@@ -109,8 +109,8 @@ end
 
 if activity then
   local MaterialAlertDialogBuilder = luajava.bindClass("com.google.android.material.dialog.MaterialAlertDialogBuilder")
-  local androidR = luajava.bindClass("android.R")
-  local message_id = androidR.id.message
+  local resources = activity.resources
+  local message_id = resources.getIdentifier("message", "id", "android")
 
   local function alert(title, msg)
     title = title or "提示"

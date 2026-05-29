@@ -65,6 +65,8 @@ function SearchFragment:initViews()
 
   self:setupToolbar()
   self:setupSearchView()
+  self:setupRefreshButton()
+  self:setupClearHistoryButton()
 
   -- 初始化自动对焦并弹出键盘
   self.searchView.focusable = true
@@ -77,7 +79,6 @@ function SearchFragment:initViews()
 
   self:setupAdapter("hot", views.hot_grid)
   self:setupAdapter("suggest", views.suggest_list)
-  self:setupHistory()
   self.model:loadHotSearch()
 end
 
@@ -219,10 +220,22 @@ function SearchFragment:setupAdapter(dataType, containerView)
   })
 end
 
-function SearchFragment:setupHistory()
+-- 初始化刷新按钮
+function SearchFragment:setupRefreshButton()
+  if not self.views.refresh_btn then return end
+
+  self.views.refresh_btn.onClick = function()
+    self.model:loadHotSearch()
+  end
+end
+
+function SearchFragment:setupClearHistoryButton()
   self.views.clear_btn.onClick = function()
-    SearchHistoryService.clearAll()
-    self.views.chip_group.removeAllViews()
+    local BottomDialog = require("helpers.bottom_dialog")
+    BottomDialog.confirm("确定清空所有搜索历史吗？", function()
+      SearchHistoryService.clearAll()
+      self:loadHistory()
+    end)
   end
 end
 

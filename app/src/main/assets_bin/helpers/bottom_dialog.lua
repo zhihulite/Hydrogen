@@ -245,6 +245,7 @@ end
 ---@param onItemLongClick function|nil
 function M.selectSingle(items, selectedIndex, callback, title, onItemLongClick)
   local enhancedItems = {}
+  local wrapper = nil
   for i, item in ipairs(items) do
     local titleText = type(item) == "table" and item.title or item
     enhancedItems[i] = { title = titleText, selected = (i == selectedIndex) }
@@ -254,7 +255,7 @@ function M.selectSingle(items, selectedIndex, callback, title, onItemLongClick)
     wrapper.updateItems(enhancedItems)
     if callback then callback(index, item) end
   end
-  local wrapper = M.show({
+  wrapper = M.show({
     title = title,
     listItems = enhancedItems,
     onItemClick = onItemClick,

@@ -15,9 +15,8 @@ local MainActivity = Extensions.Class(BaseActivity, {"main"})
 
 local _transition_name = "shared_element"
 
-local appR = luajava.bindClass("com.zhihu.hydrogen.x.R")
-local TAG_LAST_TIME = appR.id.tag_last_time
-local TAG_LAST_NAME = appR.id.tag_last_name
+local TAG_LAST_TIME = Helpers.Resources.app.id.tag_last_time
+local TAG_LAST_NAME = Helpers.Resources.app.id.tag_last_name
 
 
 function MainActivity:ctor()
