@@ -191,9 +191,7 @@ function M.shareBytes(bytes, fileName, mimeType, text, onError)
   end
 
   fileName = fileName or ("share_" .. os.time())
-
-  local _filename, _mimeType = Extensions.File.getFileNameAndType(fileName)
-  mimeType = mimeType or _mimeType or "application/octet-stream"
+  mimeType = mimeType or "application/octet-stream"
 
   local tempDir = M.prepareShareTempDir()
   local file = File(tempDir, fileName)
@@ -442,11 +440,11 @@ function M.runDelayedOnBackground(delay, func, callback)
 
   local runnable = Runnable {
     run = function()
-      local result = func()
+      local result = {func()}
       if callback then
         mainHandler.post(Runnable {
           run = function()
-            callback(result)
+            callback(table.unpack(result))
           end
         })
       end

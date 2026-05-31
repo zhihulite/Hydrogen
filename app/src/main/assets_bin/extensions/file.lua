@@ -452,21 +452,48 @@ end
 
 --- 根据 URL 推断文件名和 MIME 类型
 --- @param url string 图片 URL
---- @return string fileName, string mimeType
-function M.getFileNameAndType(url)
-  local fileName = URLUtil.guessFileName(url, nil, nil) or ("image_" .. os.time())
-  if not fileName:find("%.") then fileName = fileName .. ".jpg" end
+--- @param headers table|nil 自定义请求头
+--- @param callback function 回调函数 (fileName, mimeType)
+function M.getFileNameAndType(url, headers, callback)
+  -- 重载：getFileNameAndType(url, callback)
+  if type(headers) == "function" then
+    callback = headers
+    headers = nil
+  end
 
-  local ext = fileName:match("%.([^.]+)$"):lower()
-  local mimeMap = {
-    jpg = "image/jpeg", jpeg = "image/jpeg",
-    png = "image/png",
-    gif = "image/gif",
-    webp = "image/webp",
-  }
-  local mimeType = mimeMap[ext] or "image/*"
+  -- 备选文件名：从 URL 猜测
+  local fallbackName = URLUtil.guessFileName(url, nil, nil) or ("image_" .. os.time())
+  if not fallbackName:find("%.") then
+    fallbackName = fallbackName .. ".jpg"
+  end
 
-  return fileName, mimeType
+  NetWork.head(url, headers, function(code, respHeaders)
+    local mimeType = nil
+    local fileName = fallbackName
+
+    if respHeaders and respHeaders["Content-Type"] then
+      mimeType = respHeaders["Content-Type"]:match("([^;]+)")
+
+      local extMap = {
+        ["image/jpeg"] = "jpg",
+        ["image/png"] = "png",
+        ["image/gif"] = "gif",
+        ["image/webp"] = "webp",
+      }
+
+      local correctExt = extMap[mimeType]
+      if correctExt then
+        local nameWithoutExt = fallbackName:gsub("%.[^%.]+$", "")
+        fileName = nameWithoutExt .. "." .. correctExt
+        if fileName == "." .. correctExt then
+          fileName = "image_" .. os.time() .. "." .. correctExt
+        end
+      end
+    end
+
+    local finalMime = mimeType or "image/*"
+    callback(fileName, finalMime)
+  end)
 end
 
 ---保存图片
@@ -727,44 +754,64 @@ end
 
 ---下载文件到公共下载目录（无需存储权限）
 ---@param url string 文件链接
----@param options? table 可选参数
+---@param options? table|function 可选参数或回调
 ---   options.fileName string 文件名（可选，默认从 URL 推断）
----   options.mimeType string MIME 类型（可选"
+---   options.mimeType string MIME 类型（可选）
 ---   options.subDir string 子目录，默认 "Hydrogen"
 ---   options.headers table 自定义请求头
----@return boolean 是否成功
-function M.downloadFile(url, options)
-  if not url or url == "" then return false end
-
-  options = options or {}
-  local fileName, mimeType = M.getFileNameAndType(url)
-  if options.fileName then fileName = options.fileName end
-  if options.mimeType then mimeType = options.mimeType end
-
-  local request = DownloadManager.Request(Uri.parse(url))
-  request.allowedNetworkTypes = DownloadManager.Request.NETWORK_MOBILE | DownloadManager.Request.NETWORK_WIFI
-  request.notificationVisibility = DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
-  request.title = fileName
-  request.mimeType = mimeType
-  request.allowedOverRoaming = true
-  request.allowScanningByMediaScanner()
-  request.addRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
-  request.addRequestHeader("Referer", url)
-
-  if options.headers then
-    for k, v in pairs(options.headers) do
-      request.addRequestHeader(k, v)
-    end
+---@param callback? function 回调函数 (success, downloadId, errorMsg)
+function M.downloadFile(url, options, callback)
+  if not url or url == "" then
+    if callback then callback(false, nil, "URL 为空") end
+    return
   end
 
-  local subDir = options.subDir or "Hydrogen"
-  request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, subDir .. "/" .. fileName)
+  -- 重载1：downloadFile(url, callback)
+  if type(options) == "function" then
+    callback = options
+    options = {}
+  end
 
-  local ok = pcall(function()
-    activity.getSystemService(Context.DOWNLOAD_SERVICE).enqueue(request)
+  -- 重载2：downloadFile(url) 或 downloadFile(url, options)
+  options = options or {}
+  callback = callback or function() end
+
+  -- 通过 HEAD 请求获取真实文件名和 MIME 类型
+  M.getFileNameAndType(url, options.headers or {}, function(fileName, mimeType)
+    if options.fileName then fileName = options.fileName end
+    if options.mimeType then mimeType = options.mimeType end
+
+    local request = DownloadManager.Request(Uri.parse(url))
+    request.allowedNetworkTypes = DownloadManager.Request.NETWORK_MOBILE | DownloadManager.Request.NETWORK_WIFI
+    request.notificationVisibility = DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED
+    request.title = fileName
+    request.mimeType = mimeType
+    request.allowedOverRoaming = true
+    request.allowScanningByMediaScanner()
+    request.addRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+    request.addRequestHeader("Referer", url)
+
+    if options.headers then
+      for k, v in pairs(options.headers) do
+        request.addRequestHeader(k, v)
+      end
+    end
+
+    local subDir = options.subDir or "Hydrogen"
+    request.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, subDir .. "/" .. fileName)
+
+    local success, result = pcall(function()
+      return activity.getSystemService(Context.DOWNLOAD_SERVICE).enqueue(request)
+    end)
+
+    if success then
+      callback(true, result, nil)
+      tip("已开始下载，请查看通知栏进度")
+     else
+      callback(false, nil, tostring(result))
+      tip("下载失败")
+    end
   end)
-  if ok then tip("已开始下载，请查看通知栏进度") else tip("下载失败") end
-  return ok
 end
 
 --- 获取图片的宽高（从 Uri）

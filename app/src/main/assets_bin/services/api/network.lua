@@ -169,6 +169,45 @@ function M.delete(url, headers, callback)
   end)
 end
 
+-- head请求
+function M.head(url, headers, callback)
+  if type(headers) == "function" then
+    callback = headers
+    headers = nil
+  end
+
+  Helpers.UI.runDelayedOnBackground(function()
+    local conn = luajava.newInstance("java.net.URL", url).openConnection()
+    conn.setRequestMethod("HEAD")
+    conn.setConnectTimeout(5000)
+    conn.setReadTimeout(5000)
+
+    if headers then
+      for k, v in pairs(headers) do
+        conn.setRequestProperty(k, v)
+      end
+    end
+
+    conn.connect()
+
+    local code = conn.getResponseCode()
+    local content = {}
+    local fields = conn.getHeaderFields()
+    local iter = fields.entrySet().iterator()
+
+    while iter.hasNext() do
+      local entry = iter.next()
+      local key = entry.getKey()
+      if key then
+        content[key] = entry.getValue().get(0)
+      end
+    end
+
+    conn.disconnect()
+    return code, content
+    end, callback)
+end
+
 -- 获取Cookie
 function M.getCookie(url)
   return CookieManager.instance.getCookie(url)

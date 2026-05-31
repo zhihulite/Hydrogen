@@ -179,30 +179,31 @@ function ImageActivity:shareCurrentImage()
   end
 
   local url = self:processImageUrl(self.imageUrls[currentIndex + 1])
-  local fileName, mimeType = Extensions.File.getFileNameAndType(url)
-  fileName = "shared_" .. fileName
+  Extensions.File.getFileNameAndType(url, function(fileName, mimeType)
+    fileName = "shared_" .. fileName
 
-  local GifDrawableClass = luajava.bindClass("com.bumptech.glide.load.resource.gif.GifDrawable")
+    local GifDrawableClass = luajava.bindClass("com.bumptech.glide.load.resource.gif.GifDrawable")
 
-  if luajava.instanceof(drawable, GifDrawableClass) then
-    -- GIF：克隆后获取完整字节
-    local cloned = drawable.constantState.newDrawable().mutate()
-    local buffer = cloned.buffer
-    local bytes = luajava.newArray(luajava.bindClass("java.lang.Byte").TYPE, buffer.capacity())
-    local dup = buffer.duplicate()
-    dup.clear()
-    dup.get(bytes)
-    dup.clear()
-    Helpers.UI.shareBytes(bytes, fileName, mimeType)
-   else
-    -- 静态图：直接获取 bitmap 分享
-    local bitmap = drawable.bitmap
-    if bitmap then
-      Helpers.UI.shareBitmap(bitmap, fileName)
+    if luajava.instanceof(drawable, GifDrawableClass) then
+      -- GIF：克隆后获取完整字节
+      local cloned = drawable.constantState.newDrawable().mutate()
+      local buffer = cloned.buffer
+      local bytes = luajava.newArray(luajava.bindClass("java.lang.Byte").TYPE, buffer.capacity())
+      local dup = buffer.duplicate()
+      dup.clear()
+      dup.get(bytes)
+      dup.clear()
+      Helpers.UI.shareBytes(bytes, fileName, mimeType)
      else
-      tip("无法获取图片数据")
+      -- 静态图：直接获取 bitmap 分享
+      local bitmap = drawable.bitmap
+      if bitmap then
+        Helpers.UI.shareBitmap(bitmap, fileName)
+       else
+        tip("无法获取图片数据")
+      end
     end
-  end
+  end)
 end
 
 
