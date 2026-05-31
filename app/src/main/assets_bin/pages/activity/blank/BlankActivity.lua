@@ -27,7 +27,7 @@ page:start(page_params)
 local activityMethods = {
   "onResume", "onPause", "onDestroy",
   "onKeyDown", "onKeyUp", "onConfigurationChanged",
-  "onActivityResult"
+  "onNewIntent" 
 }
 
 for _, method in ipairs(activityMethods) do

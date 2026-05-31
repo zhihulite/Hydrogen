@@ -24,8 +24,13 @@ function M.parse(url)
   if not url or url == "" then return nil end
 
   local fullUrl = url
-  if url:find("^zhihu://") then
-    fullUrl = url:gsub("^zhihu://", "https://www.zhihu.com/")
+
+  if fullUrl:find("^zhihu://") then
+    fullUrl = fullUrl:gsub("^zhihu://([^/]+)(.*)", function(word, rest)
+      -- 第一个/ 有 s 就替换掉
+      if word:sub(-1) == "s" then word = word:sub(1, -2) end
+      return "https://www.zhihu.com/" .. word .. rest
+    end)
   end
 
   if not fullUrl:find("zhihu.com") then

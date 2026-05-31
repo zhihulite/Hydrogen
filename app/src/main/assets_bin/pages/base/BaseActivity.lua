@@ -33,14 +33,14 @@ function BaseActivity:addBackPressedCallback(options)
   if type(options) ~= "table" then
     error("BaseFragment:addBackPressedCallback 需要传入 table 参数")
   end
- 
+
   local callback = luajava.override(OnBackPressedCallback, {
     handleOnBackPressed = options.handleOnBackPressed,
     handleOnBackStarted = options.onBackStarted,
     handleOnBackProgressed = options.onBackProgressed,
     handleOnBackCancelled = options.onBackCancelled,
   }, options.enabled == nil or options.enabled)
-  
+
   activity.onBackPressedDispatcher.addCallback(activity, callback)
 
   if not self.backPressedCallbacks then
@@ -71,7 +71,7 @@ end
 function BaseActivity:onKeyDown(keyCode, event) end
 function BaseActivity:onKeyUp(keyCode, event) end
 function BaseActivity:onConfigurationChanged(newConfig) end
-function BaseActivity:onActivityResult(requestCode, resultCode, data) end
+function BaseActivity:onNewIntent(intent) end
 
 -- final 标记
 BaseActivity:final(

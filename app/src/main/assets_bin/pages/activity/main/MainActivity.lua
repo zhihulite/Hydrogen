@@ -11,7 +11,7 @@ import "android.view.accessibility.AccessibilityEvent"
 
 local BaseActivity = require("pages.base.BaseActivity")
 
-local MainActivity = Extensions.Class(BaseActivity, {"main"})
+local MainActivity = Extensions.Class(BaseActivity, { "main" })
 
 local _transition_name = "shared_element"
 
@@ -109,13 +109,14 @@ function MainActivity:setupSmartNoImage()
   end
 end
 
-
 function MainActivity:onCreate(params)
   self:refreshIcon()
   self:setupWebViewSwitch()
   self:setupSmartNoImage()
   self:setupFragmentLoader()
   self:setupVolumeController()
+  -- 处理启动 Intent
+  self:handleIntent(activity.getIntent())
   if Extensions.Config.getBool(Constants.SharedDataKeys.AUTO_CLEAN_CACHE) then
     Helpers.UI.clearAppCache()
   end
@@ -262,10 +263,10 @@ function MainActivity:setupSharedElementTransition(transaction, fragment, fragme
   fragmentModule:setOnViewCreatedCallback(function(container)
     -- 设置源视图名称
     -- 可能需要 replace 才生效
-    local sharedViewName = _transition_name..generate_id()
+    local sharedViewName = _transition_name .. generate_id()
     ViewCompat.setTransitionName(sharedView, sharedViewName)
     transaction.addSharedElement(sharedView, sharedViewName)
-    local sharedViewName = _transition_name..generate_id()
+    local sharedViewName = _transition_name .. generate_id()
     ViewCompat.setTransitionName(container, sharedViewName)
     transaction.addSharedElement(container, sharedViewName)
 
@@ -331,7 +332,7 @@ function MainActivity:initViews()
   self.rightContainer.id = View.generateViewId()
 
   self:updateParallelWorld()
-  Router.go("home", nil , { noBackStack = true })
+  Router.go("home", nil, { noBackStack = true })
 
   self:setupTalkBack()
 
@@ -449,6 +450,29 @@ function MainActivity:onResume()
   self:checkClipboard()
 end
 
+function MainActivity:handleIntent(intent)
+  if not intent then return end
+
+  local uri = intent.data
+  if not uri then return end
+
+  local url = uri.toString()
+  if url then
+    print("获取到 URL:", url)
+    Helpers.ZhihuParser.goUrl(url)
+  end
+end
+
+function MainActivity:onNewIntent(intent)
+  if not intent then return end
+
+  local action = intent.action
+  if action ~= Intent.ACTION_VIEW and action ~= Intent.ACTION_EDIT then
+    return
+  end
+
+  self:handleIntent(intent)
+end
 
 function MainActivity:setupTalkBack()
   local accessibilityManager = activity.getSystemService(Context.ACCESSIBILITY_SERVICE)
