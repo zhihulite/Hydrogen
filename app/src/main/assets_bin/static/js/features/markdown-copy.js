@@ -5,17 +5,21 @@
         turndownService: null,
 
         init() {
-            this.loadTurndown();
+            // 动态加载 libs/turndown，完成后初始化 turndown 规则
+            HydrogenCore.loadJSModule('turndown', {
+                jsWindowName: 'TurndownService',
+                callback: () => this.initTurndown()
+            });
         },
 
-        loadTurndown() {
-            if (typeof TurndownService === 'undefined') {
-                alert('[MarkdownCopy] waiting for turndown');
+        initTurndown() {
+            if (this.turndownService) {
+                alert('功能已就绪，无需重复加载');
                 return;
             }
-            
+
             this.turndownService = new TurndownService();
-            
+
             // 忽略 noscript 标签
             this.turndownService.addRule('ignoreNoscript', {
                 filter: ['noscript'],
@@ -25,38 +29,33 @@
             // 处理图片：忽略 SVG Data URI，保留正常图片
             this.turndownService.addRule('ignoreDataImages', {
                 filter: 'img',
-                replacement: (content, node) => {
+                replacement: (_, node) => {
                     const src = node.getAttribute('src');
-                    if (src && src.startsWith('image/svg')) {
-                        return '';
-                    }
-                    return `![](${src})`;
+                    return src?.startsWith('image/svg') ? '' : `![](${src})`;
                 }
             });
         },
 
         getMarkdown() {
+            // 检查 turndown 是否就绪
             if (!this.turndownService) {
-                alert('[MarkdownCopy] turndown not ready');
+                alert('功能加载中，请稍后重试');
                 return null;
             }
-
             const richtext = document.querySelector('.RichText.ztext');
+            // 未找到正文内容
             if (!richtext) {
-                alert('[MarkdownCopy] RichtText not found');
+                alert('未找到正文内容');
                 return null;
             }
-
             return this.turndownService.turndown(richtext.innerHTML);
         },
 
         copy() {
             const markdown = this.getMarkdown();
-            if (markdown) {
-                HydrogenCore.api.copyText(markdown);
-                return true;
-            }
-            return false;
+            // 复制成功返回 true，失败返回 false
+            if (markdown) HydrogenCore.api.copyText(markdown);
+            return !!markdown;
         }
     };
 

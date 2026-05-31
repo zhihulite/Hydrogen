@@ -169,9 +169,7 @@
                 const res = await fetch(`https://www.zhihu.com/appview/v2/answer/${id}`);
                 const html = await res.text();
                 
-                const temp = document.createElement('html');
-                temp.innerHTML = html;
-                const sourceRich = temp.querySelector('.RichText');
+                const sourceRich = new DOMParser().parseFromString(html, 'text/html').querySelector('.RichText');
                 const targetRich = document.querySelector('.RichText');
 
                 if (sourceRich && targetRich) {

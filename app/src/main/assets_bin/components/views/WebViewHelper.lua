@@ -127,6 +127,8 @@ function M:initFindListener()
   }))
 end
 
+local fontScale = activity.resources.configuration.fontScale
+local textZoom = tointeger(fontScale * 100)
 function M:initSettings()
   if not self:isAlive() then return self end
   local settings = self.webView.settings
@@ -138,6 +140,11 @@ function M:initSettings()
   settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
   self.webView.backgroundColor = 0
   self.webView.webContentsDebuggingEnabled = true
+  -- 安卓15及以下兼容：WebView 字体大小适配
+  -- 问题：低版本 createPackageContext 挂载资源时 fontScale 被重置为 1.0，导致系统字体设置不生效
+  -- 方案：手动读取当前 Context 的 fontScale，换算为 textZoom 强制设置到 WebView
+  -- 安卓15+ 已通过 register_resource_paths 修复，此方案兼容所有版本无副作用
+  self.webView.textZoom = textZoom
   -- 初始化查找监听
   self:initFindListener()
   return self
@@ -204,6 +211,13 @@ function M:setWebViewClient(callbacks)
     end,
     onReceivedSslError = function(view, handler, error)
       handler.proceed()
+    end,
+    onRenderProcessGone = function(webView, renderProcessGoneDetail)
+      -- WebView 渲染进程崩溃回调
+      -- 返回 true 表示已处理，系统不会终止当前 Activity
+      -- 返回 false 则系统会弹出"应用已停止"对话框并退出
+      print("boom")
+      return true
     end,
   }
 

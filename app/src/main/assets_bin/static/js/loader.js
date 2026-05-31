@@ -45,6 +45,58 @@
             return 'default';
         },
 
+        loadJSModule(moduleName, options) {
+            const callback = typeof options === 'function' ? options : options?.callback;
+            const jsWindowName = typeof options === 'object' ? options?.jsWindowName || moduleName : moduleName;
+
+            if (window[jsWindowName]) {
+                if (callback) callback();
+                return;
+            }
+            this.execute('loadJSModule', moduleName);
+            if (callback) {
+                const check = setInterval(() => {
+                    if (window[jsWindowName]) {
+                        clearInterval(check);
+                        callback();
+                    }
+                }, 50);
+            }
+        },
+
+        injectJS: {
+            // DOM 开始解析（document.head 出现时）
+            start(callback) {
+                if (document.head) {
+                    callback();
+                } else {
+                    const obs = new MutationObserver(() => {
+                        if (document.head) {
+                            obs.disconnect();
+                            callback();
+                        }
+                    });
+                    obs.observe(document.documentElement || document, { childList: true, subtree: true });
+                }
+            },
+            // DOM 解析完成（document-end）
+            domReady(callback) {
+                if (document.readyState === 'interactive' || document.readyState === 'complete') {
+                    callback();
+                } else {
+                    document.addEventListener('DOMContentLoaded', callback);
+                }
+            },
+            // 页面完全加载（window load）
+            idle(callback) {
+                if (document.readyState === 'complete') {
+                    callback();
+                } else {
+                    window.addEventListener('load', callback);
+                }
+            }
+        },
+
         api: {
             sendMessage(action, data) {
                 return Core.execute('message', { action, data });
@@ -104,7 +156,7 @@
         const get = (key) => Core.getConfig(key);
         const pageType = Core.getPageType();
 
-        if (get('debug') && window.eruda) window.eruda.init();
+        if (get('debug')) Core.injectJS.idle(() => Core.loadJSModule('eruda', () => window.eruda?.init()));
 
         runIf('FetchManager');
         runIf('StyleManager');
@@ -114,14 +166,15 @@
         if (get('image_viewer')) runIf('ImageViewer');
         if (get('fade_animation')) runIf('FadeAnimation');
         if (pageType !== 'answer' && get('dark_mode')) runIf('DarkMode');
-  
+
         // 只在 answer、pin、article 页面执行 ContentBackground
         const contentPages = ['answer', 'pin', 'article'];
         if (get('background_color') && contentPages.includes(pageType)) {
             runIf('ContentBackground');
         }
-        
+
         if (get('md_copy')) runIf('MarkdownCopy');
+        if (get('enable_mhtml_convert')) runIf('MhtmlConvert');
         if (get('enableScrollTracking')) runIf('ScrollExposureTracker');
 
         if (pageType === 'answer') {
@@ -149,15 +202,5 @@
         if (pageMap[pageType]) runIf(pageMap[pageType]);
     };
 
-    if (document.head) {
-        initAll();
-    } else {
-        const obs = new MutationObserver((mutations, observer) => {
-            if (document.head) {
-                observer.disconnect();
-                initAll();
-            }
-        });
-        obs.observe(document, { childList: true, subtree: true });
-    }
+    Core.injectJS.start(() => initAll());
 })();

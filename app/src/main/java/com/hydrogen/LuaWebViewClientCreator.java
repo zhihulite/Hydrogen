@@ -6,6 +6,8 @@ import android.os.Message;
 import android.view.KeyEvent;
 import android.webkit.*;
 
+import androidx.annotation.RequiresApi;
+
 @SuppressWarnings("unused")
 public class LuaWebViewClientCreator extends WebViewClient {
 
@@ -138,6 +140,15 @@ public class LuaWebViewClientCreator extends WebViewClient {
         return super.shouldOverrideUrlLoading(view, url);
     }
 
+    @RequiresApi(api = android.os.Build.VERSION_CODES.O)
+    @Override
+    public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
+        if (creator != null) {
+            return creator.onRenderProcessGone(view, detail);
+        }
+        return super.onRenderProcessGone(view, detail);
+    }
+
     // Creator 接口
     public interface Creator {
         void doUpdateVisitedHistory(WebView view, String url, boolean isReload);
@@ -154,5 +165,9 @@ public class LuaWebViewClientCreator extends WebViewClient {
         WebResourceResponse shouldInterceptRequest(WebView view, String url);
         boolean shouldOverrideKeyEvent(WebView view, KeyEvent event);
         boolean shouldOverrideUrlLoading(WebView view, String url);
+
+        // 渲染进程崩溃回调 (Android O+)
+        @RequiresApi(api = android.os.Build.VERSION_CODES.O)
+        boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail);
     }
 }

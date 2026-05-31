@@ -62,13 +62,14 @@ public class LuaActivity extends com.androlua.LuaActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         SplashScreen.installSplashScreen(this);
-        super.onCreate(savedInstanceState);
 
         if (savedInstanceState == null) {
             handleFirstCreate();
         } else {
             restoreState(savedInstanceState);
         }
+
+        super.onCreate(savedInstanceState);
     }
 
     // 处理首次创建，检查是否需要更新
@@ -95,6 +96,8 @@ public class LuaActivity extends com.androlua.LuaActivity {
         updating = (oldLastTime != lastTime);
 
         if (updating) {
+            // 更新期间关闭 Debug 模式，避免父类加载 Lua 失败时弹出 Toast
+            // 因为 getLuaPath() 返回 "/" 会导致父类 doFile() 报错并弹 Toast
             setDebug(false);
             navigateToWelcome();
         }
@@ -124,12 +127,12 @@ public class LuaActivity extends com.androlua.LuaActivity {
     private void restoreState(Bundle savedInstanceState) {
         checkUpdate = savedInstanceState.getBoolean(KEY_CHECK_UPDATE, false);
         updating = savedInstanceState.getBoolean(KEY_UPDATING, false);
-        onRestoreInstanceState(savedInstanceState);
     }
 
     @Override
     protected void onNewIntent(@NonNull Intent intent) {
-        runFunc("onNewIntent", intent);
+        setIntent(intent);
+        safeRunFunc("onNewIntent", intent);
         super.onNewIntent(intent);
     }
 
@@ -240,7 +243,7 @@ public class LuaActivity extends com.androlua.LuaActivity {
         outState.putBoolean(KEY_CHECK_UPDATE, checkUpdate);
         outState.putBoolean(KEY_UPDATING, updating);
         Log.i(TAG, "save " + outState);
-        runFunc("onSaveInstanceState", outState);
+        safeRunFunc("onSaveInstanceState", outState);
     }
 
     @Override
@@ -251,13 +254,18 @@ public class LuaActivity extends com.androlua.LuaActivity {
 
     @Override
     public void onRestoreInstanceState(@NonNull Bundle savedInstanceState) {
+        safeRunFunc("onRestoreInstanceState", savedInstanceState);
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    // 安全执行 Lua 函数，自动捕获异常
+    protected void safeRunFunc(String funcName, Object... args) {
         try {
-            super.onRestoreInstanceState(savedInstanceState);
-            Log.i(TAG, "restore " + savedInstanceState);
+            runFunc(funcName, args);
         } catch (Exception e) {
-            sendError("onRestoreInstanceState", e);
+            Log.e(TAG, "safeRunFunc error in " + funcName + ": " + e.getMessage(), e);
+            sendError(funcName, e);
         }
-        runFunc("onRestoreInstanceState", savedInstanceState);
     }
 
     // 构建基础 Intent，自动设置 Flags

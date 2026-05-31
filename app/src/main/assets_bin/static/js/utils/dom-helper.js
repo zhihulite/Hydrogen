@@ -66,42 +66,6 @@
             if (element) element.addEventListener(event, handler);
         },
 
-        onDocumentReady(callback) {
-            if (document.readyState === 'loading') {
-                document.addEventListener('DOMContentLoaded', callback);
-            } else {
-                callback();
-            }
-        },
-
-        onHeadReady(callback) {
-            if (document.head) {
-                callback(document.head);
-                return;
-            }
-            const obs = new MutationObserver((mutations, observer) => {
-                if (document.head) {
-                    observer.disconnect();
-                    callback(document.head);
-                }
-            });
-            obs.observe(document.documentElement, { childList: true, subtree: true });
-        },
-
-        onBodyReady(callback) {
-            if (document.body) {
-                callback(document.body);
-                return;
-            }
-            const obs = new MutationObserver((mutations, observer) => {
-                if (document.body) {
-                    observer.disconnect();
-                    callback(document.body);
-                }
-            });
-            obs.observe(document.documentElement, { childList: true, subtree: true });
-        },
-
         observe(target, config, callback) {
             if (!target || !config || !callback) return null;
             const observer = new MutationObserver(callback);

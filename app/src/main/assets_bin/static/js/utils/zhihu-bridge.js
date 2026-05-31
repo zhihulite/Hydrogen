@@ -139,7 +139,7 @@
         const originalAddEventListener = EventTarget.prototype.addEventListener;
         EventTarget.prototype.addEventListener = function (type, listener, options) {
             if (type === 'selectionchange') {
-                originalAddEventListener.call(this, type, () => {}, options);
+                originalAddEventListener.call(this, type, () => { }, options);
             } else {
                 originalAddEventListener.call(this, type, listener, options);
             }
@@ -147,9 +147,9 @@
     }
 
     // 登录检查
-    DomHelper.onBodyReady(() => {
+    HydrogenCore.injectJS.idle(() => {
         if (document.documentElement.innerText?.includes("请求存在异常")) {
-            alert("知乎限制只能登录后访问 请检查是否登录账号");
+            alert("知乎限制只能登录后访问，请检查是否登录账号");
         }
     });
 

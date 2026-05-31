@@ -24,6 +24,7 @@ local page = PageClass()
 page:start(page_params)
 
 -- 代理所有生命周期方法给 page
+-- 不代理 onCreate，因为他会在 Lua 层被传入，并传入入参
 local activityMethods = {
   "onResume", "onPause", "onDestroy",
   "onKeyDown", "onKeyUp", "onConfigurationChanged",

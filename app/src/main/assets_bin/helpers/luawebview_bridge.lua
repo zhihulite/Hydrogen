@@ -29,6 +29,7 @@ local function getDefaultSettings()
     fade_animation = true,
     video_answer = true,
     md_copy = true,
+    enable_mhtml_convert = false,
   }
 end
 
@@ -47,10 +48,6 @@ end
 
 function M.getMergedModulesJS()
   local modules = {
-    'libs/eruda',
-    'libs/turndown',
-    'libs/html2canvas-pro',
-    'libs/mhtml2html',
     'core/style-manager',
     'core/fetch-manager',
     'utils/dom-helper',
@@ -63,6 +60,7 @@ function M.getMergedModulesJS()
     'features/content-background',
     'features/scroll-restore',
     'features/markdown-copy',
+    'features/mhtml-convert',
     'features/video-answer',
     'features/zhihu-style-fix',
     'features/screenshot',
@@ -86,11 +84,7 @@ function M.getMergedModulesJS()
   for _, path in ipairs(modules) do
     local code = M.getModuleCode(path)
     if code and code ~= "" then
-      if path:match("^libs/") then
-        table.insert(codes, "try{\n" .. code .. "\n}catch(e){console.error('[模块加载失败]" .. path .. ": '+e.message);}")
-       else
-        table.insert(codes, code)
-      end
+      table.insert(codes, code)
     end
   end
 
@@ -124,6 +118,13 @@ function M.addBridge(webView, userSettings)
         end
 
         return json.encode(merged)
+       elseif action == "loadJSModule" then
+        -- data 为模块名，如 "eruda", "turndown"
+        local code = M.getModuleCode("libs/" .. data)
+        if code and code ~= "" then
+          webView.evaluateJavascript(code, nil)
+        end
+        return ""
        elseif action == "log" then
         print("[JS]", data)
         return ""

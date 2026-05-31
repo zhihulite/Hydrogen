@@ -18,7 +18,7 @@ public class MainActivity extends LuaActivity {
 
     private void onVersionChanged(String newVersionName, String oldVersionName) {
         // TODO: Implement this method
-        runFunc("onVersionChanged", newVersionName, oldVersionName);
+        safeRunFunc("onVersionChanged", newVersionName, oldVersionName);
     }
 
     @Override

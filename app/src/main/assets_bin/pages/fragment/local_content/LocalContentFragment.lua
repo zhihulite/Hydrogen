@@ -151,6 +151,7 @@ function LocalContentFragment:initWebView()
       md_copy = false, -- 关闭 Markdown 复制
       scroll_restore = false, -- 关闭滚动恢复
       background_color = false, -- 不修改背景色
+      enable_mhtml_convert = true, -- 启用 MHTML 转换
     })
   end
 
@@ -193,9 +194,9 @@ function LocalContentFragment:initWebView()
 end
 
 function LocalContentFragment:onBridgeMessage(action, data)
-  if action == "sendhtml" then
+  if action == "saveHTML" then
     self:doSaveHtml(data)
-   elseif action == "gethtml" then
+   elseif action == "fetchMHTML" then
     local mhtmlPath = self.mhtmlPath
     if Extensions.File.exists(mhtmlPath) then
       return Extensions.File.read(mhtmlPath) or ""
@@ -236,16 +237,8 @@ function LocalContentFragment:savePage()
       return
     end
 
-    local mhtml2htmlCode = LuaWebViewBridge.getModuleCode("libs/mhtml2html")
-    if not mhtml2htmlCode or mhtml2htmlCode == "" then
-      tip("加载转换模块失败")
-      self.isSaving = false
-      return
-    end
     if self:getHelper() then
-      self:getHelper():evaluateJavascript(mhtml2htmlCode, nil)
-      local js = "setTimeout(function(){var mhtml=HydrogenCore.sendMessage('gethtml',null);var result=mhtml2html.convert(mhtml);var html=result.window.document.documentElement.outerHTML;HydrogenCore.sendMessage('sendhtml',html);},100);"
-      self:getHelper():evaluateJavascript(js, nil)
+      self:getHelper():evaluateJavascript("MhtmlConvert.convert();", nil)
     end
   end)
 end
