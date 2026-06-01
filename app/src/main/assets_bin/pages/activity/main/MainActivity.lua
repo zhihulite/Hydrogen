@@ -115,8 +115,6 @@ function MainActivity:onCreate(params)
   self:setupSmartNoImage()
   self:setupFragmentLoader()
   self:setupVolumeController()
-  -- 处理启动 Intent
-  self:handleIntent(activity.getIntent())
   if Extensions.Config.getBool(Constants.SharedDataKeys.AUTO_CLEAN_CACHE) then
     Helpers.UI.clearAppCache()
   end
@@ -128,6 +126,12 @@ function MainActivity:onCreate(params)
    else
     activity.supportFragmentManager.enablePredictiveBack(true)
   end
+
+  -- 等待一会处理启动 Intent 的 url，防止 view 还没加载。
+  Helpers.UI.runDelayed(500, self:runIfAlive(function()
+    local intentDataUrl = params.intentDataUrl
+    if (intentDataUrl) Helpers.ZhihuParser.goUrl(intentDataUrl) end
+  end))
 end
 
 import "androidx.core.view.ViewCompat"
@@ -194,7 +198,7 @@ function MainActivity:setupFragmentLoader()
     end
 
     local fragmentModule = FragmentClass()
-    local fragment = fragmentModule:getFragment(data.params)
+    local fragment = fragmentModule:getFragment(data.paramsKey)
     if not fragment then
       print("获取 Fragment 实例失败")
       return false
@@ -314,7 +318,7 @@ function MainActivity:setupReturnTransition(fragment, container, sharedView)
   .setOrdering(TransitionSet.ORDERING_TOGETHER)
   .addTransition(containerBackward)
   .addTransition(axisBackward)
-  
+
   fragment.returnTransition = backward
   -- 可能需要 replace 才生效
   fragment.sharedElementReturnTransition = backward

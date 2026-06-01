@@ -12,7 +12,10 @@ local function needWelcome()
 end
 
 local function launchMain()
-  Router.go("main")
+  local intent = activity.getIntent()
+  local data = intent.getData()
+  local intentDataUrl = data and data.toString() or nil
+  Router.go("main", intentDataUrl and { intentDataUrl = intentDataUrl } or nil)
 end
 
 local function launchWelcome()
