@@ -1,4 +1,6 @@
--- WebViewHelper.lua
+-- components/views/WebViewHelper.lua
+-- webview 助手
+
 import "android.app.DownloadManager"
 import "android.webkit.WebSettings"
 import "android.webkit.CookieManager"
@@ -138,13 +140,15 @@ function M:initSettings()
   settings.databaseEnabled = true
   settings.javaScriptEnabled = true
   settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-  self.webView.backgroundColor = 0
-  self.webView.webContentsDebuggingEnabled = true
   -- 安卓15及以下兼容：WebView 字体大小适配
   -- 问题：低版本 createPackageContext 挂载资源时 fontScale 被重置为 1.0，导致系统字体设置不生效
   -- 方案：手动读取当前 Context 的 fontScale，换算为 textZoom 强制设置到 WebView
   -- 安卓15+ 已通过 register_resource_paths 修复，此方案兼容所有版本无副作用
-  self.webView.textZoom = textZoom
+  settings.textZoom = textZoom
+
+  self.webView.backgroundColor = 0
+  -- 开启debug模式
+  self.webView.webContentsDebuggingEnabled = true
   -- 初始化查找监听
   self:initFindListener()
   return self
@@ -159,11 +163,11 @@ end
 
 function M:initDownloadListener()
   if not self:isAlive() then return self end
-  self.webView.setDownloadListener({
+  self.webView.setDownloadListener(luajava.createProxy("android.webkit.DownloadListener", {
     onDownloadStart = self:runIfAlive(function(url, userAgent, contentDisposition, mimeType, contentLength)
       downloadFile(url, userAgent, contentDisposition, mimeType, contentLength)
     end)
-  })
+  }))
   return self
 end
 
@@ -216,7 +220,6 @@ function M:setWebViewClient(callbacks)
       -- WebView 渲染进程崩溃回调
       -- 返回 true 表示已处理，系统不会终止当前 Activity
       -- 返回 false 则系统会弹出"应用已停止"对话框并退出
-      print("boom")
       return true
     end,
   }
@@ -266,6 +269,8 @@ function M:onInterceptRequest(view, url)
   return nil
 end
 
+import "android.graphics.Bitmap"
+local blankIcon = Bitmap.createBitmap(1, 1, Bitmap.Config.ARGB_8888)
 function M:setWebChromeClient(callbacks)
   if not self:isAlive() then return self end
   callbacks = callbacks or {}
@@ -276,6 +281,7 @@ function M:setWebChromeClient(callbacks)
     onJsAlert = true,
     onJsConfirm = true,
     onJsPrompt = true,
+    getDefaultVideoPoster = true,
   }
 
   for k in pairs(callbacks) do
@@ -337,6 +343,9 @@ function M:setWebChromeClient(callbacks)
       .setCancelable(false)
       .show()
       return true
+    end,
+    getDefaultVideoPoster = function()
+      return blankIcon
     end,
   }
 

@@ -403,7 +403,7 @@ function HomeFragment:setupDrawerHeader()
         Extensions.Config.delete(Constants.SharedDataKeys.UDID)
         tip("已退出登录")
         activity.recreate()
-      end)
+      end, true)
     end)
   end
   nav.addHeaderView(header)
@@ -538,11 +538,11 @@ function HomeFragment:loadUserInfo()
   end
   local userModel = UserModel(Extensions.Config.get(Constants.SharedDataKeys.USER_ID))
   userModel:load(nil, function(success, data)
+    self:updateDrawerUser(data)
     if success then
-      self:updateDrawerUser(data)
       self:onLoginSuccess()
     end
-  end)
+  end, true)
 end
 
 function HomeFragment:updateDrawerUser(data)
@@ -550,13 +550,16 @@ function HomeFragment:updateDrawerUser(data)
   if data then
     self.drawerHeader.name.text = data.name
     self.drawerHeader.signature.text = data.headline and data.headline ~= "" and data.headline or "暂无签名"
-    self.drawerHeader.logout.visibility = View.VISIBLE
     Helpers.Image.load(self.drawerHeader.avatar, data.avatarUrl)
    else
     self.drawerHeader.name.text = "未登录"
     self.drawerHeader.signature.text = "点击登录"
-    self.drawerHeader.logout.visibility = View.GONE
     Helpers.Image.load(self.drawerHeader.avatar, "logo")
+  end
+  if self.lastLoginState then
+    self.drawerHeader.logout.visibility = View.VISIBLE
+   else
+    self.drawerHeader.logout.visibility = View.GONE
   end
 end
 

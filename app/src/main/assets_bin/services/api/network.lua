@@ -99,7 +99,7 @@ pcall(function()
 end)
 
 -- GET请求
-function M.get(url, headers, callback)
+function M.get(url, headers, callback, skipZse96)
   if canLoad == false then return false end
 
   if type(headers) == "function" then
@@ -108,8 +108,8 @@ function M.get(url, headers, callback)
   end
   headers = headers or _G.Headers.defaultHead
 
-  -- ZSE96 加密
-  if url:find("https://www.zhihu.com") and zse96Encrypt then
+  -- ZSE96 加密（可通过 skipZse96 参数跳过）
+  if not skipZse96 and url:find("https://www.zhihu.com") and zse96Encrypt then
     url, headers = zse96Encrypt(url)
   end
 
@@ -205,7 +205,7 @@ function M.head(url, headers, callback)
 
     conn.disconnect()
     return code, content
-    end, callback)
+  end, callback)
 end
 
 -- 获取Cookie
