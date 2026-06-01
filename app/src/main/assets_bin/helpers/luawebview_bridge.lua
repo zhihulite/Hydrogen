@@ -122,7 +122,9 @@ function M.addBridge(webView, userSettings)
         -- data 为模块名，如 "eruda", "turndown"
         local code = M.getModuleCode("libs/" .. data)
         if code and code ~= "" then
-          webView.evaluateJavascript(code, nil)
+          activity.runOnUiThread(function()
+            webView.evaluateJavascript(code, nil)
+          end)
         end
         return ""
        elseif action == "log" then
@@ -134,9 +136,7 @@ function M.addBridge(webView, userSettings)
        elseif action == "openImages" then
         local decoded = json.decode(data)
         local index = table.remove(decoded)
-        activity.setSharedData("imagedata", json.encode(decoded))
-        activity.setSharedData("imageindex", tostring(index))
-        Router.go("image")
+        Router.go("image", { data = decoded, index = index})
         return ""
        elseif action == "screenshotError" then
         tip("截图失败: " .. (data or "未知错误"))

@@ -3,31 +3,38 @@
 
 local M = {}
 
-local pageCache = {}
+local allPages = {}
 
 -- 注册页面
 function M.register(name, path, isActivity, replace)
-  M[name] = {
+  allPages[name] = {
     path = path,
     isActivity = isActivity or false,
     replace = replace or false,
   }
 end
 
+-- 注册分发路由
+function M.registerDispatch(name, resolver)
+  allPages[name] = {
+    dispatch = true,
+    resolver = resolver,
+  }
+end
+
 -- 获取页面
 function M.get(name)
-  if pageCache[name] then
-    return pageCache[name]
-  end
-
-  local info = M[name]
+  local info = allPages[name]
   if not info then
     return nil
   end
 
+  if info.dispatch then
+    return info.resolver
+  end
+
   local ok, page = pcall(require, info.path)
   if ok then
-    pageCache[name] = page
     return page
   end
 
@@ -36,30 +43,67 @@ end
 
 -- 获取页面类型
 function M.isActivity(name)
-  local info = M[name]
+  local info = allPages[name]
   return info and info.isActivity or false
 end
 
 -- 获取页面路径
 function M.getPath(name)
-  local info = M[name]
+  local info = allPages[name]
   return info and info.path or nil
 end
 
--- 预注册所有页面
--- Activity 模式（独立虚拟机，跳转到 BlankActivity 执行）
-M.register("welcome", "pages.activity.welcome.WelcomeActivity", true, true) -- welcome 需要覆盖
-M.register("main", "pages.activity.main.MainActivity", true, true) -- main 需要覆盖
-M.register("login", "pages.activity.login.LoginActivity", true, false) -- login 正常启动
-M.register("image", "pages.activity.image.ImageActivity", true, false) -- image 正常启动
+-- 是否是分发路由
+function M.isDispatch(name)
+  local info = allPages[name]
+  return info and info.dispatch == true
+end
 
--- Fragment 模式（共享虚拟机，在主 Activity 容器中切换）
+-- 获取所有页面
+function M.getAllPages()
+  local pages = {}
+  for name, info in pairs(allPages) do
+    if info.path then
+      table.insert(pages, {
+        name = name,
+        path = info.path,
+        isActivity = info.isActivity,
+        replace = info.replace
+      })
+    end
+  end
+  return pages
+end
+
+-- 注册所有页面到 Router
+function M.registerToRouter(router)
+  for name, info in pairs(allPages) do
+    if info.path then
+      if info.isActivity then
+        router.registerActivity(name, info.path, info.replace)
+       else
+        router.registerFragment(name, info.path)
+      end
+     elseif info.dispatch then
+      router.registerDispatch(name, info.resolver)
+    end
+  end
+end
+
+-- ============ 预注册所有页面 ============
+
+-- Activity 模式
+M.register("welcome", "pages.activity.welcome.WelcomeActivity", true, true)
+M.register("main", "pages.activity.main.MainActivity", true, true)
+M.register("login", "pages.activity.login.LoginActivity", true, false)
+M.register("image", "pages.activity.image.ImageActivity", true, false)
+
+-- Fragment 模式
 M.register("home", "pages.fragment.home.HomeFragment", false)
 M.register("answer", "pages.fragment.answer.AnswerFragment", false)
 M.register("browser", "pages.fragment.browser.BrowserFragment", false)
 M.register("question", "pages.fragment.question.QuestionFragment", false)
 M.register("feedback", "pages.fragment.feedback.FeedbackFragment", false)
---M.register("comment", "pages.fragment.comment.CommentFragment", false)
 M.register("people", "pages.fragment.people.PeopleFragment", false)
 M.register("people_more", "pages.fragment.people_more.PeopleMoreFragment", false)
 M.register("people_list", "pages.fragment.people_list.PeopleListFragment", false)
@@ -76,5 +120,15 @@ M.register("about", "pages.fragment.about.AboutFragment", false)
 M.register("theme_picker", "pages.fragment.theme_picker.ThemePickerFragment", false)
 M.register("open_source", "pages.fragment.open_source.OpenSourceFragment", false)
 M.register("scan", "pages.fragment.scan.ScanFragment", false)
+
+-- 分发路由
+M.registerDispatch("report", function(params)
+  local id = params.id
+  local type = params.type
+  local url = "https://www.zhihu.com/report?id=" .. id .. "&type=" .. type.. "&source=android"
+  local name = "browser"
+  local params = { url = url }
+  return { name = name, params = params }
+end)
 
 return M

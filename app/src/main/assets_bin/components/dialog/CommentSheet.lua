@@ -134,7 +134,7 @@ function M:showCommentMenu(item, anchorView)
     { title = "分享", onClick = function() Helpers.UI.shareText(item.content and item.content.toString() or "") end },
     { title = "复制", onClick = function() Helpers.UI.copyText(item.content and item.content.toString() or "") tip("复制成功") end },
     { title = item.isDisliked and "取消踩" or "踩评论", onClick = function() self:handleDislike(item) end },
-    { title = "举报", onClick = function() Router.go("browser", { url = "https://www.zhihu.com/report?id=" .. item.id .. "&type=comment&source=android" }) end },
+    { title = "举报", onClick = function() Router.go("report", { id = item.id, type="comment" }) end },
     { title = "屏蔽用户", onClick = function() self:handleBlockUser(item.authorId) end },
     { title = "查看主页", onClick = function() Router.go("people", { id = item.authorId, data = item.author }) end },
   }

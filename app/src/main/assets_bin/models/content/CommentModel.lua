@@ -265,7 +265,7 @@ function CommentModel:createAdapter(dataList)
         views.comment_image.visibility = View.VISIBLE
 
         views.comment_image.onClick = function()
-          Helpers.UI.showImage(item.imageUrl)
+          Router.go("image", { data = { item.imageUrl }, index = 0})
         end
         local w,h = calcImageSize(item.imageWidth, item.imageHeight)
         Helpers.Image.load(views.comment_image, item.imageUrl, {
@@ -372,7 +372,7 @@ function CommentModel:setupChildRecycler(childRecycler, item)
       if childItem.hasImage then
         views.comment_image.visibility = View.VISIBLE
         views.comment_image.onClick = function()
-          Helpers.UI.showImage(childItem.imageUrl)
+          Router.go("image", { data = { item.imageUrl }, index = 0})
         end
         local w, h = calcImageSize(childItem.imageWidth, childItem.imageHeight)
         Helpers.Image.load(views.comment_image, childItem.imageUrl, {

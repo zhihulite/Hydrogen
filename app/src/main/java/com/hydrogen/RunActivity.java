@@ -75,7 +75,7 @@ public class RunActivity extends Activity {
             } else {
                 showErrorAndExit("文件无法读取，请检查文件是否损坏");
             }
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        } else {
             // Android 6-10 需要运行时权限
             if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
@@ -85,9 +85,6 @@ public class RunActivity extends Activity {
             } else {
                 showErrorAndExit("文件无法读取，请检查文件是否损坏");
             }
-        } else {
-            // Android 5及以下
-            showErrorAndExit("文件无法读取，请检查文件是否损坏");
         }
     }
 
@@ -141,7 +138,7 @@ public class RunActivity extends Activity {
         newIntent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
         newIntent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION);
         startActivity(newIntent);
-        finish();
+        finishAndRemoveTask();
     }
 
     private void showErrorAndExit(String msg) {

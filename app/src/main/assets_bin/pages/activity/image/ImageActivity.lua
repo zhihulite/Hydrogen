@@ -31,15 +31,10 @@ function ImageActivity:ctor()
 end
 
 function ImageActivity:onCreate(params)
-  local imageData = activity.getSharedData("imagedata")
-  if imageData then
-    local ok, decoded = pcall(json.decode, imageData)
-    if ok then
-      self.imageUrls = decoded
-    end
-  end
-
-  self.currentIndex = tonumber(activity.getSharedData("imageindex")) or 0
+  local imageData = params.data
+  local imageIndex = tonumber(params.index) or 0
+  self.imageUrls = imageData
+  self.currentIndex = imageIndex
   self.totalCount = #self.imageUrls
 
   if self.totalCount == 0 then
@@ -229,9 +224,6 @@ function ImageActivity:setFullScreen()
 end
 
 function ImageActivity:onDestroy()
-  activity.setSharedData("imagedata", nil)
-  activity.setSharedData("imageindex", nil)
-
   if self.pageViews then
     for _, page in pairs(self.pageViews) do
       if page.ids and page.ids.photo_view then

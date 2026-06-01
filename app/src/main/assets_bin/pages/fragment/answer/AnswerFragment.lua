@@ -65,7 +65,7 @@ function AnswerFragment:setupToolbar()
           Helpers.UI.shareText("https://www.zhihu.com/answer/" .. (self.currentAnswerId or self.answerId))
       end },
       { id = "report", title = "举报", click = function()
-          Router.go("browser", { url = "https://www.zhihu.com/report?id=" .. (self.currentAnswerId or self.answerId) .. "&type=answer&source=android" })
+          Router.go("report", { id = (self.currentAnswerId or self.answerId), type="answer" })
       end },
       { id = "saveAsPic", title = "以图片形式保存", click = function()
           local helper = self:getCurrentHelper()
@@ -764,10 +764,10 @@ function AnswerFragment:onVolumeDown()
   end
 
   local viewPager = self.views.view_pager
-  viewPager.setCurrentItem(current + 1, true)
   local current = viewPager.currentItem
   local adapter = viewPager.adapter
   if adapter and current < adapter.itemCount - 1 then
+    viewPager.setCurrentItem(current + 1, true)
     return true
   end
   return false

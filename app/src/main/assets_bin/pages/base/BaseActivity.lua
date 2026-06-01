@@ -12,9 +12,10 @@ function BaseActivity:setContentView()
 end
 
 --- 启动 Activity（final 方法，子类不应重写）
---- @param params table 启动参数
+--- @param paramsKey string Storage 中存储的参数 key，通过 Router.resolveParams 解析后传给 onCreate 
 --- @note 此方法为 final 方法，子类不应重写
-function BaseActivity:start(params)
+function BaseActivity:start(paramsKey)
+  local params = Router.resolveParams(paramsKey)
   self:onCreate(params)
   self:build()
   self:setContentView()

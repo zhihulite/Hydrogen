@@ -147,7 +147,7 @@
     }
 
     // 登录检查
-    HydrogenCore.injectJS.idle(() => {
+    window.addEventListener('load', () => {
         if (document.documentElement.innerText?.includes("请求存在异常")) {
             alert("知乎限制只能登录后访问，请检查是否登录账号");
         }

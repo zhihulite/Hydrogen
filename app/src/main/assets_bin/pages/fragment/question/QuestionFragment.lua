@@ -271,7 +271,7 @@ function QuestionFragment:showQuestionLog()
 end
 
 function QuestionFragment:reportQuestion()
-  Router.go("browser", { url = "https://www.zhihu.com/report?id=" .. self.questionId .. "&type=question&source=android" })
+  Router.go("report", { id = self.questionId, type="question" })
 end
 
 return QuestionFragment

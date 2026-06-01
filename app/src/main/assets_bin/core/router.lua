@@ -1,5 +1,5 @@
 -- core/router.lua
--- 路由
+-- 路由模块
 
 local M = {}
 
@@ -12,16 +12,46 @@ local PageType = {
   FRAGMENT = 2,
 }
 
--- 注册路由
--- @param name string 路由名称
--- @param path string 路径
--- @param pageType boolean Activity 模式 true / Fragment 模式 false
--- @param replace boolean|nil 是否覆盖当前 Activity（仅 Activity 模式有效）
+-- 大数据缓存（使用 Storage，基于文件，可跨虚拟机）
+local Storage = require("services.cache.storage")
+
+-- 存储参数，返回 key
+function M.storeParams(data)
+  local key = "router_params_" .. tostring(os.time()) .. "_" .. tostring(math.random(10000, 99999))
+  Storage.set(key, data)
+  return key
+end
+
+-- 根据 key 获取参数并删除
+function M.takeParams(key)
+  if not key or type(key) ~= "string" then
+    return nil
+  end
+  local data = Storage.get(key)
+  if data then
+    Storage.delete(key)
+  end
+  return data
+end
+
+-- 解析参数
+function M.resolveParams(data)
+  if type(data) == "table" then
+    return data
+  end
+  if type(data) == "string" then
+    return M.takeParams(data) or {}
+  end
+  return {}
+end
+
+-- 基础路由
+
 function M.register(name, path, pageType, replace)
   routes[name] = {
     path = path,
     pageType = pageType or PageType.FRAGMENT,
-    replace = replace or false, -- 是否覆盖当前 Activity
+    replace = replace or false,
   }
 end
 
@@ -32,6 +62,16 @@ end
 function M.registerFragment(name, path)
   return M.register(name, path, PageType.FRAGMENT)
 end
+
+-- 分发路由
+function M.registerDispatch(name, resolver)
+  routes[name] = {
+    dispatch = true,
+    resolver = resolver,
+  }
+end
+
+-- Fragment 加载器
 
 function M.setFragmentLoader(loader)
   fragmentLoader = loader
@@ -49,58 +89,92 @@ local function getBlankActivityPath()
   return _G.ROOT .. "/pages/activity/blank/BlankActivity.lua"
 end
 
--- 内部实现
--- @param name string 路由名称
--- @param params table 参数
--- @param options table|nil 选项
---   options.noBackStack: boolean 是否不添加到返回栈
---   options.sharedElement: view 共享元素视图
+-- 核心跳转
+
 function M.go(name, params, options)
+  params = params or {}
+  options = options or {}
+
   local route = routes[name]
   if not route then
     print("路由不存在: " .. name)
     return false
   end
 
-  options = options or {}
-  params = params or {}
+  -- 处理分发路由
+  if route.dispatch then
+    local result = route.resolver(params, options)
 
-  table.insert(history, { name = name, params = params, time = os.time() })
+    if result == false then
+      return false
+    end
 
+    if type(result) == "string" then
+      name = result
+     elseif type(result) == "table" then
+      name = result.name
+      params = result.params or params
+      options = result.options or options
+    end
+
+    route = routes[name]
+    if not route then
+      print("路由不存在: " .. name)
+      return false
+    end
+  end
+
+  -- 只存储 params 到 Storage，options 直接传递
+  local paramsKey = M.storeParams(params)
+
+  -- 记录历史（仅当前虚拟机有效）
+  table.insert(history, {
+    name = name,
+    paramsKey = paramsKey,
+    time = os.time()
+  })
+
+  -- 跳转
   if route.pageType == PageType.ACTIVITY then
-    local blankActivityPath = getBlankActivityPath()
-    -- 根据 replace 标识决定使用哪种启动方式
+    local blankPath = getBlankActivityPath()
+    -- 传递 paramsKey 和 options
+    local arg = { name, paramsKey, options }
     if route.replace then
-      -- 覆盖当前 Activity
-      activity.replaceActivity(blankActivityPath, { name, params })
+      activity.replaceActivity(blankPath, arg)
      else
-      -- 正常启动
-      activity.startDocumentActivity(blankActivityPath, { name, params })
+      activity.startDocumentActivity(blankPath, arg)
     end
     return true
    else
     if not fragmentLoader then
-      print("错误: Fragment 模式需要先调用 router.setFragmentLoader() 注册加载器")
+      print("错误: Fragment 模式需要先调用 router.setFragmentLoader()")
       return false
     end
-
-    local loaderData = {
+    return fragmentLoader({
       name = name,
-      params = params,
+      paramsKey = paramsKey,
+      options = options,
       path = route.path,
       noBackStack = options.noBackStack == true,
       sharedElement = options.sharedElement
-    }
-
-    return fragmentLoader(loaderData)
+    })
   end
 end
 
--- 返回上一页
+-- 获取当前页面的参数（仅当前虚拟机有效）
+function M.getCurrentParams()
+  local current = history[#history]
+  if current and current.paramsKey then
+    return M.takeParams(current.paramsKey)
+  end
+  return {}
+end
+
+-- 返回栈和历史
+
 function M.back()
   local fm = activity.supportFragmentManager
-
-  if fm.backStackEntryCount > 0 then
+  if fm and fm.backStackEntryCount > 0 then
     fm.popBackStack()
     if #history > 0 then
       table.remove(history)
@@ -111,10 +185,9 @@ function M.back()
   end
 end
 
--- 清空 Fragment 返回栈
 function M.clearBackStack()
   local fm = activity.supportFragmentManager
-  if fm.backStackEntryCount > 0 then
+  if fm and fm.backStackEntryCount > 0 then
     fm.popBackStack(nil, FragmentManager.POP_BACK_STACK_INCLUSIVE)
   end
 end
@@ -129,7 +202,19 @@ end
 
 function M.getBackStackCount()
   local fm = activity.supportFragmentManager
-  return fm.backStackEntryCount
+  return fm and fm.backStackEntryCount or 0
+end
+
+function M.getCurrentRoute()
+  return history[#history]
+end
+
+function M.exists(name)
+  return routes[name] ~= nil
+end
+
+function M.unregister(name)
+  routes[name] = nil
 end
 
 return M

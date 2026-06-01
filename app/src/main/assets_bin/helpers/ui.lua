@@ -327,29 +327,6 @@ function M.clearAppCache()
   return string.format("已清理缓存，释放 %.2f MB", mb)
 end
 
---- 跳转图片查看器（多图）
---- @param imageUrls table 图片 URL 列表
---- @param currentIndex number 当前显示的图片索引（从 0 开始）
-function M.showImageViewer(imageUrls, currentIndex)
-  if not imageUrls or #imageUrls == 0 then
-    tip("没有可显示的图片")
-    return
-  end
-  activity.setSharedData("imagedata", json.encode(imageUrls))
-  activity.setSharedData("imageindex", tostring(currentIndex or 0))
-  Router.go("image")
-end
-
---- 跳转图片查看器（单图）
---- @param imageUrl string 图片 URL
-function M.showImage(imageUrl)
-  if not imageUrl or imageUrl == "" then
-    tip("没有可显示的图片")
-    return
-  end
-  M.showImageViewer({ imageUrl }, 0)
-end
-
 import "android.os.Handler"
 import "java.lang.Runnable"
 import "android.os.Looper"

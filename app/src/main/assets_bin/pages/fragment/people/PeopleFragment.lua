@@ -288,7 +288,7 @@ function PeopleFragment:showSearchContentDialog()
 end
 
 function PeopleFragment:reportUser()
-  Router.go("browser", { url = "https://www.zhihu.com/report?id=" .. self.userId .. "&type=member&source=android" })
+  Router.go("report", { id = self.userId, type="member" })
 end
 
 function PeopleFragment:blockUser(menuItem)

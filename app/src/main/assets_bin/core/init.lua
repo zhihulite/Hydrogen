@@ -49,19 +49,10 @@ local Html = luajava.bindClass("android.text.Html")
 _G.fromHtml = function(text)
   return Html.fromHtml(text)
 end
+
 -- 路由
 _G.Router = require("core.router")
-local pages = require("pages.init")
-
-for name, info in pairs(pages) do
-  if type(info) == "table" and info.path then
-    if info.isActivity then
-      _G.Router.registerActivity(name, info.path, info.replace)
-     else
-      _G.Router.registerFragment(name, info.path, info.replace)
-    end
-  end
-end
+require("pages.init").registerToRouter(Router)
 
 -- 配置配置默认值
 Extensions.Config.init(Constants.defaults)

@@ -5,7 +5,6 @@ local BaseFragment = Extensions.Class(BasePage)
 
 function BaseFragment:ctor(name)
   self.name = name
-  self.initParams = nil
   self.fragmentView = nil
   self.fragment = nil
   self.container = nil
@@ -14,10 +13,11 @@ end
 
 
 --- 创建 Fragment 实例（final 方法，子类不应重写）
---- @param params table 创建参数
+--- @param paramsKey string Storage 中存储的参数 key，通过 Router.resolveParams 解析后传给 onCreate 
 --- @return LuaFragment Fragment 实例
 --- @note 此方法为 final 方法，子类不应重写
-function BaseFragment:createFragment(params)
+function BaseFragment:createFragment(paramsKey)
+  local params = Router.resolveParams(paramsKey)
   local creator = luajava.createProxy("com.hydrogen.LuaFragment$Creator", {
     onCreate = function(savedState)
       self:onCreate(params)
@@ -75,15 +75,14 @@ function BaseFragment:setOnViewCreatedCallback(callback)
 end
 
 --- 获取 Fragment 实例（final 方法，子类不应重写）
---- @param params table 创建参数，可选，会传递给 onCreate
+--- @param paramsKey string Storage 中存储的参数 key，通过 Router.resolveParams 解析后传给 onCreate，可选，会传递给 onCreate 
 --- @return LuaFragment Fragment 实例
 --- @note 此方法为 final 方法，子类不应重写
-function BaseFragment:getFragment(params)
+function BaseFragment:getFragment(paramsKey)
   if self.fragment then
     return self.fragment
   end
-  self.initParams = params
-  return self:createFragment(params)
+  return self:createFragment(paramsKey)
 end
 
 --- 获取容器视图（final 方法，子类不应重写）
@@ -96,7 +95,6 @@ end
 -- 清理
 function BaseFragment:clear()
   self.fragmentView = nil
-  self.initParams = nil
   self.fragment = nil
   self.container = nil
   self.onViewCreatedCallback = nil

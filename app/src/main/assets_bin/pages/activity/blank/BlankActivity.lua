@@ -4,7 +4,7 @@
 
 require("initApp")
 
-local page_name, page_params = ...
+local page_name, page_params_key = ...
 
 if not page_name then
   print("BlankActivity: 未指定页面名称")
@@ -21,10 +21,9 @@ end
 
 local PageClass = require(route.path)
 local page = PageClass()
-page:start(page_params)
+page:start(page_params_key)
 
 -- 代理所有生命周期方法给 page
--- 不代理 onCreate，因为他会在 Lua 层被传入，并传入入参
 local activityMethods = {
   "onResume", "onPause", "onDestroy",
   "onKeyDown", "onKeyUp", "onConfigurationChanged",
