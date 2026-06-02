@@ -42,11 +42,9 @@ end
 
 local isChecking = false
 
--- core/app_info.lua
-
 function M.checkUpdate(callback)
   if isChecking then
-    if callback then callback(false, "正在检测中", nil) end
+    tip("正在检测中")
     return
   end
 
@@ -57,13 +55,13 @@ function M.checkUpdate(callback)
   NetWork.get(update_api, nil, function(code, content)
     isChecking = false
     if code ~= 200 then
-      if callback then callback(false, "检测更新失败，请检查网络连接", nil) end
+      tip(false, "检测更新失败，请检查网络连接", nil)
       return
     end
 
     local ok, data = pcall(json.decode, content)
     if not ok or not data or not data.content then
-      if callback then callback(false, "解析更新信息失败", nil) end
+      tip("解析更新信息失败")
       return
     end
 
@@ -76,14 +74,18 @@ function M.checkUpdate(callback)
 
     local currentVersion = M.getVersion()
     local hasNewVersion = updateVersion and tonumber(updateVersion) > currentVersion
+    if (hasNewVersion) then
+     else
 
+      print(updateVersion)
+    end
     if callback then
       callback(hasNewVersion, hasNewVersion and "发现新版本" or "已是最新版本", {
         hasNew = hasNewVersion,
         version = updateVersion,
         versionName = updateVersionName,
         info = updateInfo,
-        url = updateUrl
+        url = updateUrl,
       })
     end
   end)
@@ -92,14 +94,6 @@ end
 function M.showUpdateDialog(force)
   M.checkUpdate(function(hasNew, msg, result)
     if hasNew then
-      -- 有新版本
-      if not force then
-        local ignoredVersion = M.getIgnoredVersion()
-        if ignoredVersion and ignoredVersion == result.version then
-          return
-        end
-      end
-
       local message = string.format("发现新版本 %s(%s)\n\n%s",
       result.versionName, result.version, result.info or "")
 

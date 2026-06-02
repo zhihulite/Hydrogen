@@ -184,6 +184,7 @@ function SettingsFragment:initListView()
         local nextItem = self.items[position + 2]
         local isTitlePrev = prevItem and prevItem.type == "title"
         local isTitleNext = nextItem and nextItem.type == "title"
+        local isLast = (position + 2) > #self.items -- 判断是否是最后一项
 
         if isTitlePrev and isTitleNext then
           card.shapeAppearanceModel = shapeModels.single
@@ -191,6 +192,8 @@ function SettingsFragment:initListView()
           card.shapeAppearanceModel = shapeModels.top
          elseif isTitleNext then
           card.shapeAppearanceModel = shapeModels.bottom
+         elseif isLast then
+          card.shapeAppearanceModel = shapeModels.bottom -- 最后一项用底部圆角
          else
           card.shapeAppearanceModel = shapeModels.middle
         end

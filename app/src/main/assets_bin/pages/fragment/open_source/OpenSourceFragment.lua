@@ -22,7 +22,6 @@ local licenses = {
   { name = "AndroidX WebKit", license = "Apache 2.0", message = "WebView 扩展库", url = "https://developer.android.com/jetpack/androidx" },
   { name = "Material Design Components", license = "Apache 2.0", message = "Material Design 组件库", url = "https://github.com/material-components/material-components-android" },
   { name = "Glide", license = "Apache 2.0", message = "图片加载库", url = "https://github.com/bumptech/glide" },
-  { name = "Zip4j", license = "Apache 2.0", message = "Zip 压缩解压库", url = "https://github.com/srikanth-lingala/zip4j" },
   { name = "PhotoView", license = "Apache 2.0", message = "图片缩放库", url = "https://github.com/Baseflow/PhotoView" },
   { name = "WebViewUpgrade", license = "Apache 2.0", message = "WebView 内核更新库", url = "https://github.com/JonaNorman/WebViewUpgrade" },
   { name = "ZXing Embedded", license = "Apache 2.0", message = "二维码扫描库", url = "https://github.com/journeyapps/zxing-android-embedded" },

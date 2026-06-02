@@ -12,7 +12,11 @@ return {
   {
     MaterialTextView,
     id = "title",
-    layout_marginLeft = "20dp",
+    -- marginLeft 需要加上卡片的左边距
+    layout_marginLeft = AppCardStyle.setting.marginLeft + dp2px(4),
+    layout_marginRight = AppCardStyle.setting.marginRight,
+    layout_marginTop = AppCardStyle.setting.marginTop,
+    layout_marginBottom = AppCardStyle.setting.marginBottom,
     textSize  = AppTextStyle.labelSmall.size,
     textColor = AppTextStyle.labelSmall.color,
     typeface  = AppTextStyle.labelSmall.font

@@ -312,6 +312,19 @@ _G.AppCardStyle = {
     -- 增大marginTop，增加视觉差
     marginTop = dp2px(8), -- 上边距8dp
     marginBottom = dp2px(0) -- 下边距0dp
+  },
+  -- 设置/关于项目卡片样式
+  setting = {
+    marginLeft = dp2px(12), -- 左边距12dp
+    marginRight = dp2px(12), -- 右边距12dp
+    marginTop = dp2px(4), -- 上边距4dp
+    marginBottom = dp2px(0), -- 下边距0dp
+
+    -- 内部 View 内边距
+    innerPaddingLeft = dp2px(12), -- 左内边距12dp
+    innerPaddingRight = dp2px(12), -- 右内边距12dp
+    innerPaddingTop = dp2px(2), -- 上内边距2dp
+    innerPaddingBottom = dp2px(2) -- 下内边距2dp
   }
 }
 
