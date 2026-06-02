@@ -4,7 +4,6 @@
 local M = {}
 
 local routes = {}
-local history = {}
 local fragmentLoader = nil
 
 local PageType = {
@@ -64,6 +63,7 @@ function M.registerFragment(name, path)
 end
 
 -- 分发路由
+
 function M.registerDispatch(name, resolver)
   routes[name] = {
     dispatch = true,
@@ -127,17 +127,9 @@ function M.go(name, params, options)
   -- 只存储 params 到 Storage，options 直接传递
   local paramsKey = M.storeParams(params)
 
-  -- 记录历史（仅当前虚拟机有效）
-  table.insert(history, {
-    name = name,
-    paramsKey = paramsKey,
-    time = os.time()
-  })
-
   -- 跳转
   if route.pageType == PageType.ACTIVITY then
     local blankPath = getBlankActivityPath()
-    -- 传递 paramsKey 和 options
     local arg = { name, paramsKey, options }
     if route.replace then
       activity.replaceActivity(blankPath, arg)
@@ -161,27 +153,14 @@ function M.go(name, params, options)
   end
 end
 
--- 获取当前页面的参数（仅当前虚拟机有效）
-function M.getCurrentParams()
-  local current = history[#history]
-  if current and current.paramsKey then
-    return M.takeParams(current.paramsKey)
-  end
-  return {}
-end
-
--- 返回栈和历史
+-- 返回栈
 
 function M.back()
   local fm = activity.supportFragmentManager
   if fm and fm.backStackEntryCount > 0 then
     fm.popBackStack()
-    if #history > 0 then
-      table.remove(history)
-    end
    else
     activity.finish()
-    history = {}
   end
 end
 
@@ -192,21 +171,9 @@ function M.clearBackStack()
   end
 end
 
-function M.clearHistory()
-  history = {}
-end
-
-function M.getHistory()
-  return history
-end
-
 function M.getBackStackCount()
   local fm = activity.supportFragmentManager
   return fm and fm.backStackEntryCount or 0
-end
-
-function M.getCurrentRoute()
-  return history[#history]
 end
 
 function M.exists(name)

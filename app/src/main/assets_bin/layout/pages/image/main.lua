@@ -44,20 +44,20 @@ return {
       id = "now_count",
       text = "0",
       textSize = AppTextStyle.headlineSmall.size,
-      textColor = colors.surfaceBright,
+      textColor = AppTextStyle.titleSmall.color,
     },
     {
       MaterialTextView,
       text = "/",
       textSize = AppTextStyle.titleSmall.size,
-      textColor = colors.surfaceBright,
+      textColor = AppTextStyle.titleSmall.color,
     },
     {
       MaterialTextView,
       id = "all_count",
       text = "0",
       textSize = AppTextStyle.titleSmall.size,
-      textColor = colors.surfaceBright,
+      textColor = AppTextStyle.titleSmall.color,
     },
   },
   {

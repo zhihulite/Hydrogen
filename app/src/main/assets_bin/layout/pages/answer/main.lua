@@ -19,7 +19,7 @@ local toolbarHeight = actionBarSize
 local floatingToolbar = {
   FloatingToolbarLayout,
   id = "floating_toolbar",
-  layout_width = "wrap_content",
+  layout_width = "match_parent",
   layout_height = "wrap_content",
   layout_gravity = "bottom|center",
   layout_marginBottom = "16dp",
@@ -27,7 +27,8 @@ local floatingToolbar = {
   {
     LinearLayoutCompat,
     orientation = "horizontal",
-    layout_width = "wrap_content",
+    layout_width = "match_parent",
+    -- FrameLayout 使用 minHeight 时，子布局 layout_height 设置 match_parent 不生效
     layout_height = "56dp",
     gravity = "center",
     paddingLeft = "8dp",
@@ -39,8 +40,7 @@ local floatingToolbar = {
       layout_height = "fill",
       gravity = "center",
       orientation = "horizontal",
-      paddingLeft = "12dp",
-      paddingRight = "12dp",
+      layout_weight = 1,
       {
         AppCompatImageView,
         id = "vote_icon",
@@ -66,8 +66,7 @@ local floatingToolbar = {
       layout_height = "fill",
       gravity = "center",
       orientation = "horizontal",
-      paddingLeft = "12dp",
-      paddingRight = "12dp",
+      layout_weight = 1,
       {
         AppCompatImageView,
         id = "thank_icon",
@@ -93,8 +92,7 @@ local floatingToolbar = {
       layout_height = "fill",
       gravity = "center",
       orientation = "horizontal",
-      paddingLeft = "12dp",
-      paddingRight = "12dp",
+      layout_weight = 1,
       {
         AppCompatImageView,
         id = "collect_icon",
@@ -121,10 +119,11 @@ local floatingToolbar = {
       radius="28dp";
       elevation=0;
       cardBackgroundColor = colors.SurfaceContainer,
+      layout_weight = 1,
       {
         LinearLayoutCompat,
         id = "comment_btn",
-        layout_width = "wrap_content",
+        layout_width = "fill",
         layout_height = "fill",
         gravity = "center",
         orientation = "horizontal",

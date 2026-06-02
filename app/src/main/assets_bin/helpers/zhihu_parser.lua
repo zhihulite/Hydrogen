@@ -58,7 +58,8 @@ function M.parse(url)
     return { type = "question", id = questionId }
   end
 
-  local articleId = base:match("p/(%d+)")
+  -- article(s) 仅在 intent 出现
+  local articleId = base:match("p/(%d+)") or base:match("article/(%d+)")
   if articleId then
     return { type = "article", id = articleId }
   end

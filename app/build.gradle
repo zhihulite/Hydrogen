@@ -99,7 +99,8 @@ dependencies {
     implementation libs.webviewup.core
     implementation libs.androidx.activity
     implementation libs.androidx.splashscreen
-    implementation libs.androidx.webkit
+    // 暂时用不到 webkit
+    // implementation libs.androidx.webkit
     implementation libs.zxing.embedded
     implementation libs.zxing.core
 
