@@ -519,10 +519,12 @@ function HomeFragment:setupDrawerEdge()
   local viewDragHelper = leftDraggerField.get(drawer)
   local edgeSizeField = viewDragHelper.class.getDeclaredField("mDefaultEdgeSize")
   edgeSizeField.accessible = true
-  edgeSizeField.setInt(viewDragHelper, Helpers.UI.screenWidth())
+  -- 必须使用 int
+  edgeSizeField.setInt(viewDragHelper, int(Helpers.UI.screenWidth()))
   local touchSlopField = viewDragHelper.class.getDeclaredField("mTouchSlop")
   touchSlopField.accessible = true
-  touchSlopField.setInt(viewDragHelper, touchSlopField.getInt(viewDragHelper) * 4)
+  -- 必须使用 int
+  touchSlopField.setInt(viewDragHelper, int(touchSlopField.getInt(viewDragHelper) * 4))
   local leftCallbackField = drawerClass.getDeclaredField("mLeftCallback")
   leftCallbackField.accessible = true
   local dragCallback = leftCallbackField.get(drawer)
@@ -656,12 +658,17 @@ end
 --- 依赖 style: Widget.Material3Expressive.BottomNavigationView
 --- 内部读取 m3expressive_bottom_nav_icon_gravity 和 m3expressive_bottom_nav_item_gravity
 --- 注意：这些资源 ID 可能在 Material Components 版本更新后变化
+local Objects = luajava.bindClass "java.util.Objects"
 function HomeFragment:updateBottomNavLayout()
   local bottomNav = self.homePageViews and self.homePageViews.bottom_nav
   if not bottomNav then return end
 
-  bottomNav.setItemIconGravity(Helpers.Resources.app.integer.m3expressive_bottom_nav_icon_gravity)
-  bottomNav.setItemGravity(Helpers.Resources.app.integer.m3expressive_bottom_nav_item_gravity)
+  -- 夜间模式切换等场景可能导致 Activity 被重建（recreate）
+  -- 重建过程中，EdgeToEdgeUtils.remove 调用的 luajava.clear 可能意外清理 View 使其变为 nil
+  -- 此处判断 View 是否为 nil，避免访问空值引发异常（亦可使用 pcall 包装）
+  if Objects.isNull(bottomNav) then return end
+  bottomNav.itemIconGravity = Helpers.Resources.app.integer.m3expressive_bottom_nav_icon_gravity
+  bottomNav.itemGravity = Helpers.Resources.app.integer.m3expressive_bottom_nav_item_gravity
 end
 
 function HomeFragment:onConfigurationChanged(newConfig)

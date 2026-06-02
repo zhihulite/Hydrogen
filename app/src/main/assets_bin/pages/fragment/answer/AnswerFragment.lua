@@ -424,19 +424,20 @@ function AnswerFragment:setupViewPager2()
 
   -- 调整滑动灵敏度
   local scrollSense = Extensions.Config.getNumber(Constants.SharedDataKeys.SCROLL_SENSE)
-  pcall(function()
-    local ViewPager2 = luajava.bindClass("androidx.viewpager2.widget.ViewPager2")
-    local RecyclerView = luajava.bindClass("androidx.recyclerview.widget.RecyclerView")
 
-    local recyclerViewField = ViewPager2.getDeclaredField("mRecyclerView")
-    recyclerViewField.accessible = true
-    local recyclerView = recyclerViewField.get(viewPager)
+  -- 反射修改 viewpager2 滑动灵敏度
+  local ViewPager2 = luajava.bindClass("androidx.viewpager2.widget.ViewPager2")
+  local RecyclerView = luajava.bindClass("androidx.recyclerview.widget.RecyclerView")
 
-    local touchSlopField = RecyclerView.getDeclaredField("mTouchSlop")
-    touchSlopField.accessible = true
-    local touchSlop = touchSlopField.get(recyclerView)
-    touchSlopField.set(recyclerView, touchSlop * scrollSense)
-  end)
+  local recyclerViewField = ViewPager2.getDeclaredField("mRecyclerView")
+  recyclerViewField.accessible = true
+  local recyclerView = recyclerViewField.get(viewPager)
+
+  local touchSlopField = RecyclerView.getDeclaredField("mTouchSlop")
+  touchSlopField.accessible = true
+  local touchSlop = touchSlopField.get(recyclerView)
+  -- 必须使用 int
+  touchSlopField.setInt(recyclerView, int(touchSlop * scrollSense))
 
   viewPager.offscreenPageLimit = 2
 
@@ -788,7 +789,7 @@ function AnswerFragment:onPause()
     _G.VolumeController.setActive(nil)
   end
   if self.currentPageIds and self.currentPageIds.webview then
-    self.currentPageIds.webview.setLayerType(View.LAYER_TYPE_SOFTWARE, nil)
+    self.currentPageIds.webview.setLayerType(View.LAYER_TYPE_HARDWARE, nil)
   end
 end
 

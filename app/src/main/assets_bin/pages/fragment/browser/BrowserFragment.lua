@@ -69,7 +69,7 @@ function BrowserFragment:registerBackHandler()
   callback = self:addBackPressedCallback({
     enabled = false, -- 初始禁用
     handleOnBackPressed = function()
-      self:goForward()
+      self:goBack()
     end
   })
   self.backCallback = callback
@@ -202,7 +202,7 @@ end
 import "android.view.View"
 function BrowserFragment:onPause()
   if self.webView then
-    self.webView.setLayerType(View.LAYER_TYPE_SOFTWARE, nil)
+    self.webView.setLayerType(View.LAYER_TYPE_HARDWARE, nil)
   end
 end
 

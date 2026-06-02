@@ -130,7 +130,7 @@ function MainActivity:onCreate(params)
   -- 等待一会处理启动 Intent 的 url，防止 view 还没加载。
   Helpers.UI.runDelayed(500, self:runIfAlive(function()
     local intentDataUrl = params.intentDataUrl
-    if (intentDataUrl) Helpers.ZhihuParser.goUrl(intentDataUrl) end
+    if (intentDataUrl) then Helpers.ZhihuParser.goUrl(intentDataUrl) end
   end))
 end
 

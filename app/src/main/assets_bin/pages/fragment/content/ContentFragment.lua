@@ -212,4 +212,17 @@ function ContentFragment:showFavoriteMoveSheet()
   })
 end
 
+import "android.view.View"
+function ContentFragment:onPause()
+  if self.webView then
+    self.webView.setLayerType(View.LAYER_TYPE_HARDWARE, nil)
+  end
+end
+
+function ContentFragment:onResume()
+  if self.webView then
+    self.webView.setLayerType(View.LAYER_TYPE_NONE, nil)
+  end
+end
+
 return ContentFragment

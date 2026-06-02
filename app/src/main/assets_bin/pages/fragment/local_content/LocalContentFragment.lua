@@ -146,7 +146,6 @@ function LocalContentFragment:initWebView()
       image_viewer = false, -- 关闭图片查看器
       fade_animation = false, -- 关闭淡入淡出动画
       dark_mode = false, -- 关闭暗色模式
-      dark_answer = false, -- 关闭回答暗色模式
       custom_font = false, -- 关闭自定义字体
       md_copy = false, -- 关闭 Markdown 复制
       scroll_restore = false, -- 关闭滚动恢复
@@ -331,7 +330,7 @@ end
 import "android.view.View"
 function LocalContentFragment:onPause()
   if self.webView then
-    self.webView.setLayerType(View.LAYER_TYPE_SOFTWARE, nil)
+    self.webView.setLayerType(View.LAYER_TYPE_HARDWARE, nil)
   end
 end
 
