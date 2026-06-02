@@ -19,6 +19,8 @@
                         console.log('举报失败，状态码:', response.status);
                         HydrogenCore.api.toast('举报失败');
                     }
+                    
+                    HydrogenCore.api.finishPage();
                 }
             );
         }

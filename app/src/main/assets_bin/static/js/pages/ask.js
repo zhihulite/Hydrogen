@@ -40,6 +40,8 @@
                         console.log('提问失败，状态码:', response.status);
                         HydrogenCore.api.toast('提问失败');
                     }
+
+                    HydrogenCore.api.finishPage();
                 }
             );
         },

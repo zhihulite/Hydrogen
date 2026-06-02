@@ -1,83 +1,97 @@
 ﻿// dark-mode.js - 暗色模式
+// 修改自 https://greasyfork.org/scripts/436455
 (() => {
+
     const DarkMode = {
         name: 'DarkMode',
-        enabled: false,
         styleId: 'dark-mode-style',
-        svgId: 'dark-mode-svg',
+
+        // 滤镜配置
+        filter: '-webkit-filter: url(#dark-mode-filter) !important; filter: url(#dark-mode-filter) !important;',
+        reverseFilter: '-webkit-filter: url(#dark-mode-reverse-filter) !important; filter: url(#dark-mode-reverse-filter) !important;',
+        noneFilter: '-webkit-filter: none !important; filter: none !important;',
 
         init() {
-            this.enabled = true;
-            this.enable();
+            this.createFilterSVG();
+            this.updateByFullscreen();
+            this.bindFullscreenEvents();
+        },
+
+        updateByFullscreen() {
+            if (document.fullscreenElement) {
+                this.disable();
+            } else {
+                this.enable();
+            }
+        },
+
+        bindFullscreenEvents() {
+            document.addEventListener('fullscreenchange', () => this.updateByFullscreen());
+            document.addEventListener('webkitfullscreenchange', () => this.updateByFullscreen());
+            document.addEventListener('mozfullscreenchange', () => this.updateByFullscreen());
         },
 
         enable() {
-            if (!this.enabled) return;
-            if (!this.isFirefox()) this.createFilterSVG();
-            this.createDarkStyle();
+            this.removeStyle();
+            this.createStyle();
             this.updateThemeColor('#131313');
         },
 
         disable() {
-            this.removeFilterSVG();
-            this.removeDarkStyle();
+            this.removeStyle();
             this.updateThemeColor('#ffffff');
-            this.enabled = false;
         },
 
         createFilterSVG() {
-            if (document.getElementById(this.svgId)) return;
-
+            // 避免重复添加
+            if (document.querySelector('#dark-mode-filter-svg')) return;
             const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-            svg.id = this.svgId;
-            svg.style.cssText = 'height:0;width:0';
+            svg.id = 'dark-mode-filter-svg';
+            svg.style.cssText = 'height:0;width:0;position:absolute;visibility:hidden';
             svg.innerHTML = [
-                '<filter id="dark-mode-filter">',
+                '<filter id="dark-mode-filter" color-interpolation-filters="sRGB">',
                 '<feColorMatrix type="matrix" values="0.283 -0.567 -0.567 0 0.925 -0.567 0.283 -0.567 0 0.925 -0.567 -0.567 0.283 0 0.925 0 0 0 1 0"/>',
                 '</filter>',
-                '<filter id="dark-mode-reverse-filter">',
+                '<filter id="dark-mode-reverse-filter" color-interpolation-filters="sRGB">',
                 '<feColorMatrix type="matrix" values="0.333 -0.667 -0.667 0 1 -0.667 0.333 -0.667 0 1 -0.667 -0.667 0.333 0 1 0 0 0 1 0"/>',
                 '</filter>'
             ].join('');
             document.head.appendChild(svg);
         },
 
-        removeFilterSVG() {
-            const svg = document.getElementById(this.svgId);
-            if (svg) svg.remove();
-        },
-
-        createDarkStyle() {
-            if (document.getElementById(this.styleId)) return;
-
-            const isFF = this.isFirefox();
-
-            // 基础滤镜
-            const filterVal = '0.283 -0.567 -0.567 0 0.925 -0.567 0.283 -0.567 0 0.925 -0.567 -0.567 0.283 0 0.925 0 0 0 1 0';
-            // 反向滤镜（用于图片等）
-            const reverseVal = '0.333 -0.667 -0.667 0 1 -0.667 0.333 -0.667 0 1 -0.667 -0.667 0.333 0 1 0 0 0 1 0';
-
-            const getFilterCss = (values, id) => {
-                if (isFF) {
-                    const encoded = encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg"><filter id="${id}"><feColorMatrix type="matrix" values="${values}"/></filter></svg>`);
-                    return `filter: url('data:image/svg+xml;utf8,${encoded}#${id}') !important;`;
-                }
-                return `-webkit-filter: url(#${id}) !important; filter: url(#${id}) !important;`;
-            };
-
-            const filterCss = getFilterCss(filterVal, 'dark-mode-filter');
-            const reverseFilterCss = getFilterCss(reverseVal, 'dark-mode-reverse-filter');
-
-            const css = [
-                `html { ${filterCss} scrollbar-color: #454a4d #202324; }`,
-                `img, video, iframe, canvas, object, svg image { ${reverseFilterCss} }`,
-                `img { filter: none !important; }`,
+        createStyle() {
+            const defaultCss = [
+                `html { ${this.filter} scrollbar-color: #454a4d #202324; }`,
+                /* Reverse */
+                `img, video, iframe, canvas, :not(object):not(body) > embed, object, svg image,`,
+                `[style*="background:url"], [style*="background-image:url"],`,
+                `[style*="background: url"], [style*="background-image: url"],`,
+                `[background], twitterwidget {`,
+                `    ${this.reverseFilter}`,
+                `}`,
+                /* None */
+                `[style*="background:url"] *, [style*="background-image:url"] *,`,
+                `[style*="background: url"] *, [style*="background-image: url"] *,`,
+                `input, [background] *, img[src^="https://s0.wp.com/latex.php"],`,
+                `twitterwidget .NaturalImage-image { ${this.noneFilter} }`,
+                `html { text-shadow: 0 0 0 !important; }`,
                 `::-webkit-scrollbar { background-color: #202324; }`,
                 `::-webkit-scrollbar-thumb { background-color: #454a4d; }`,
-                `body, body * { background-color: #1a1a1a !important; color: #e0e0e0 !important; }`,
-                `.AnswerItem-time *, .ExtraInfo * { color: inherit !important; }`,
-                `.ztext-math, .ztext-math *, [eeimg], [data-tex] { background-color: transparent !important; }`
+                `::-webkit-scrollbar-corner { background-color: #181a1b; }`,
+                /* 透明背景防止白屏闪烁 */
+                `html, body {`,
+                `    background-color: transparent !important;`,
+                `}`
             ].join('\n');
+
+            const zhihuCss = [
+                /* 知乎加载图片时的文字 */
+                `.ImageLoader-message { ${this.reverseFilter} }`,
+                /* 知乎回答链接卡片 */
+                `.RichText-LinkCardContainer { ${this.reverseFilter} }`,
+            ].join('\n');
+
+            const css = defaultCss + '\n' + zhihuCss;
 
             const style = document.createElement('style');
             style.id = this.styleId;
@@ -85,7 +99,7 @@
             document.head.appendChild(style);
         },
 
-        removeDarkStyle() {
+        removeStyle() {
             const style = document.getElementById(this.styleId);
             if (style) style.remove();
         },
@@ -98,10 +112,6 @@
                 document.head.appendChild(meta);
             }
             meta.content = color;
-        },
-
-        isFirefox() {
-            return /Firefox/i.test(navigator.userAgent);
         }
     };
 

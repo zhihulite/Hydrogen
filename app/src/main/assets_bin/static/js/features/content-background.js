@@ -10,18 +10,22 @@
         },
 
         inject(bgColor) {
-            // 核心背景覆盖: body, 根容器, AppMain, 评论区(CommentSection), 预加载骨架(skeleton), 
-            // 底部栏(Toolbar), 作者卡片(AuthorCard), 文章底部(PostIndex-Footer)
             const mainSelectors = [
+                'html',
                 'body',
                 'body > div:not([class]):not([id]) *',
                 'root',
                 '.AppMain',
                 '.AppMain > div',
+                /* 评论区 */
                 '.CommentSection',
+                /* 预加载骨架 */
                 '.skeleton',
+                /* 底部栏 */
                 '.Toolbar',
+                /* 作者卡片 */
                 '.UserLine.AuthorCard',
+                /* 文章底部 */
                 '.PostIndex-Footer *'
             ].join(', ');
 

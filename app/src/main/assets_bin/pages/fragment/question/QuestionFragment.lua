@@ -145,7 +145,6 @@ function QuestionFragment:showExcerptDetail()
   }
   :setSettings({
     debug = false, -- 关闭 eruda 调试工具
-    dark_answer = true, -- 关闭回答暗色模式
     md_copy = false, -- 关闭 Markdown 复制
   })
 

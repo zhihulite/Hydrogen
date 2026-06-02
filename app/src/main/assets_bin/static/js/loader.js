@@ -118,7 +118,10 @@
             },
             log(msg) {
                 Core.execute('log', msg);
-            }
+            },
+            finishPage() {
+                Core.execute('finishPage');
+            },
         }
     };
 
@@ -165,11 +168,11 @@
         if (get('custom_font')) runIf('CustomFont');
         if (get('image_viewer')) runIf('ImageViewer');
         if (get('fade_animation')) runIf('FadeAnimation');
-        if (pageType !== 'answer' && get('dark_mode')) runIf('DarkMode');
+        if (get('dark_mode')) runIf('DarkMode');
 
-        // 只在 answer、pin、article 页面执行 ContentBackground
+        // 只在 answer、pin、article 页面且不是夜间模式执行 ContentBackground
         const contentPages = ['answer', 'pin', 'article'];
-        if (get('background_color') && contentPages.includes(pageType)) {
+        if (get('background_color') && !get('dark_mode') && contentPages.includes(pageType)) {
             runIf('ContentBackground');
         }
 
@@ -178,7 +181,6 @@
         if (get('enableScrollTracking')) runIf('ScrollExposureTracker');
 
         if (pageType === 'answer') {
-            if (get('dark_answer') && get('background_color')) runIf('DarkAnswer');
             runIf('ScrollRestore');
             runIf('VideoAnswer');
             runIf('AnswerPage');

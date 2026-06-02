@@ -19,7 +19,6 @@ local function getDefaultSettings()
   local hexColor = colorToHex(background_color)
   return {
     dark_mode = AppTheme.isEffectiveNight(),
-    dark_answer = AppTheme.isEffectiveNight(),
     custom_font = Extensions.Config.has(Constants.SharedDataKeys.CUSTOM_WEB_FONT),
     background_color = hexColor,
     debug = Extensions.Config.getBool(Constants.SharedDataKeys.ERUDA) or false,
@@ -56,7 +55,6 @@ function M.getMergedModulesJS()
     'features/image-viewer',
     'features/fade-animation',
     'features/dark-mode',
-    'features/dark-answer',
     'features/content-background',
     'features/scroll-restore',
     'features/markdown-copy',
@@ -146,6 +144,9 @@ function M.addBridge(webView, userSettings)
         HistoryService.syncToServer(historyData.id, historyData.type, historyData.progress)
        elseif action == "copyText" then
         Helpers.UI.copyText(data)
+        return ""
+      elseif action == "finishPage" then
+        Router.back()
         return ""
        elseif action == "message" then
         if messageListener then
