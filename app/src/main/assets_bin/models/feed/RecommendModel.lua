@@ -66,7 +66,7 @@ function RecommendModel:setupSectionTabs(tabLayout)
 
     tabLayout.visibility = View.VISIBLE
 
-    tabLayout.addOnTabSelectedListener(TabLayout.OnTabSelectedListener({
+    tabLayout.addOnTabSelectedListener(luajava.createProxy("com.google.android.material.tabs.TabLayout$OnTabSelectedListener", {
       onTabSelected = function(tab)
         local pos = tab.position
         local url = self.sectionUrls[pos + 1]

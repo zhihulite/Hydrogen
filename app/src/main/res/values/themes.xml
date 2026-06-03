@@ -4,7 +4,8 @@
     <style name="Theme.Welcome" parent="Theme.Default" />
 
     <!-- transparent splash -->
-    <!-- 系统在onCreate前已读取主题背景，此时强制切换的夜间模式未生效，使用透明防止白色背景闪烁 -->
+    <!-- 系统在 onCreate 前已读取主题背景，此时强制切换的夜间模式未生效，使用透明防止白色背景闪烁 -->
+    <!-- TransparentSplash 无预测性返回动画 -->
     <style name="Theme.TransparentSplash" parent="Theme.SplashScreen">
         <!-- 确保窗口透明 -->
         <item name="android:windowIsTranslucent">true</item>

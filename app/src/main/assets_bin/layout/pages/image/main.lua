@@ -44,20 +44,20 @@ return {
       id = "now_count",
       text = "0",
       textSize = AppTextStyle.headlineSmall.size,
-      textColor = AppTextStyle.titleSmall.color,
+      textColor = 0xFFFFFFFF, -- 纯白色
     },
     {
       MaterialTextView,
       text = "/",
       textSize = AppTextStyle.titleSmall.size,
-      textColor = AppTextStyle.titleSmall.color,
+      textColor = 0xCCFFFFFF, -- 白色，80% 透明度
     },
     {
       MaterialTextView,
       id = "all_count",
       text = "0",
       textSize = AppTextStyle.titleSmall.size,
-      textColor = AppTextStyle.titleSmall.color,
+      textColor = 0xCCFFFFFF, -- 白色，80% 透明度
     },
   },
   {

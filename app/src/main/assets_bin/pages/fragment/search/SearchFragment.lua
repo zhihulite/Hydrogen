@@ -211,13 +211,13 @@ function SearchFragment:setupAdapter(dataType, containerView)
     end,
   })
 
-  containerView.addOnItemTouchListener({
+  containerView.addOnItemTouchListener(luajava.createProxy("androidx.recyclerview.widget.RecyclerView$OnItemTouchListener", {
     onInterceptTouchEvent = function(rv, e)
       return gestureDetector.onTouchEvent(e)
     end,
     onTouchEvent = function(rv, e) end,
     onRequestDisallowInterceptTouchEvent = function(disallow) end
-  })
+  }))
 end
 
 -- 初始化刷新按钮

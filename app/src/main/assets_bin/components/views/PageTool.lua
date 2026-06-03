@@ -45,15 +45,15 @@ local function setupRecyclerView(rv, adapter, onLoadMore)
   rv.adapter = adapter
 
   local lm = rv.layoutManager
-  rv.addOnScrollListener(RecyclerView.OnScrollListener{
-    onScrollStateChanged = function(_, state)
+  rv.addOnScrollListener(luajava.override(RecyclerView.OnScrollListener, {
+    onScrollStateChanged = function(super, _, state)
       if state == RecyclerView.SCROLL_STATE_IDLE then
         Glide.with(activity).resumeRequests()
        else
         Glide.with(activity).pauseRequests()
       end
     end,
-    onScrolled = function(_, _, dy)
+    onScrolled = function(super, _, _, dy)
       if dy > 0 then
         local lastVisible = lm.findLastVisibleItemPosition()
         local totalCount = adapter.itemCount
@@ -62,7 +62,7 @@ local function setupRecyclerView(rv, adapter, onLoadMore)
         end
       end
     end
-  })
+  }))
 end
 
 local function finishRefresh(rv, sr, withAnimation)
@@ -574,7 +574,7 @@ function M:setOnTabListener(callback)
 
   callback = callback or function() end
 
-  self.tabLayout.addOnTabSelectedListener({
+  self.tabLayout.addOnTabSelectedListener(luajava.createProxy("com.google.android.material.tabs.TabLayout$OnTabSelectedListener", {
     onTabSelected = function(tab)
       local pos = tab.position
       local key = self.pageKeys[pos + 1]
@@ -599,7 +599,7 @@ function M:setOnTabListener(callback)
         self:refresh(key)
       end)
     end
-  })
+  }))
   return self
 end
 

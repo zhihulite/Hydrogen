@@ -37,7 +37,6 @@ function PeopleModel:destroy()
   self.tabConfigs = nil
   self.urls = nil
   self.answerKey = nil
-  self:super("destroy")
 end
 
 function PeopleModel:getSortOptions()

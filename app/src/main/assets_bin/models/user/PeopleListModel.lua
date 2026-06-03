@@ -20,7 +20,6 @@ function PeopleListModel:destroy()
     self.userModel:destroy()
     self.userModel = nil
   end
-  self:super("destroy")
 end
 
 function PeopleListModel:setListType(listType)

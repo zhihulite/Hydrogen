@@ -23,13 +23,13 @@ function PeopleListFragment:updateMenu()
   local items = {}
   if self.model.listType == "followers" or self.model.listType == "followees" then
     items = {
-      { title = "粉丝列表", onClick = function() self:switchType("followers") end },
-      { title = "关注列表", onClick = function() self:switchType("followees") end },
+      { title = "粉丝列表", click = function() self:switchType("followers") end },
+      { title = "关注列表", click = function() self:switchType("followees") end },
     }
   elseif self.model.listType:find("block") then
     items = {
-      { title = "全部黑名单", onClick = function() self:switchType("block_all") end },
-      { title = "瓦力黑名单", onClick = function() self:switchType("block_walle") end },
+      { title = "全部黑名单", click = function() self:switchType("block_all") end },
+      { title = "瓦力黑名单", click = function() self:switchType("block_walle") end },
     }
   end
 

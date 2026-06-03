@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-> 请确保使用 **[GitHub Actions](https://github.com/zhihulite/hydrogen/actions)** 下载的**最新版本**
+> 请确保使用 **[GitHub Actions](https://github.com/zhihulite/Hydrogen/actions)** 下载的**最新版本**
 
 **应用版本**：
 

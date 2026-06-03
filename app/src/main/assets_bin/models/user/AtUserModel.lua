@@ -126,7 +126,6 @@ end
 function AtUserModel:destroy()
   self.bottomSheet = nil
   self.onUserSelected = nil
-  self:super("destroy")
 end
 
 return AtUserModel

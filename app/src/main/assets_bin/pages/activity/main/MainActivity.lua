@@ -531,11 +531,11 @@ function MainActivity:setupTalkBack()
 
   local debouncedUpdate = Helpers.UI.debounce(doUpdateAccessibility, 100)
 
-  activity.supportFragmentManager.addOnBackStackChangedListener({
+  activity.supportFragmentManager.addOnBackStackChangedListener(luajava.createProxy("androidx.fragment.app.FragmentManager$OnBackStackChangedListener", {
     onBackStackChanged = function()
       debouncedUpdate()
     end
-  })
+  }))
 
   doUpdateAccessibility()
 end

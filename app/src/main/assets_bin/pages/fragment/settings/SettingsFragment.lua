@@ -33,8 +33,7 @@ local shapeModels = {
 -- 设置项布局引用
 local LAYOUTS = {
   tab_header = Layouts.pages.settings.items.home_tab_header,
-  tab_item = Layouts.pages.settings.items.home_tab_item,
-  card_wrapper = Layouts.pages.settings.items.card_wrapper,
+  tab_item = Layouts.pages.settings.items.home_tab_item
 }
 
 -- 弹窗布局引用
@@ -63,8 +62,8 @@ local settingsConfig = {
   { type = "switch", title = "无图模式", key = SharedDataKeys.NO_IMAGE },
   { type = "switch", title = "智能无图模式", key = SharedDataKeys.SMART_NO_IMAGE },
   { type = "slider", title = "左右滑动倍数阈值", key = SharedDataKeys.SCROLL_SENSE, from = 0.5, to = 5, unit = "倍", step = 0.1 },
-  { type = "slider", title = "字体大小", key = SharedDataKeys.FONT_SIZE, from = 12, to = 30, unit = "sp" },
-  { type = "slider", title = "推荐缓存数量", key = SharedDataKeys.FEED_CACHE, from = 0, to = 200, unit = "条" },
+  { type = "slider", title = "字体大小", key = SharedDataKeys.FONT_SIZE, from = 12, to = 30, unit = "sp", step = 1 },
+  { type = "slider", title = "推荐缓存数量", key = SharedDataKeys.FEED_CACHE, from = 0, to = 200, unit = "条", step = 1 },
   { type = "switch", title = "回答单页模式", key = SharedDataKeys.ANSWER_SINGLE_PAGE },
   { type = "switch", title = "关闭热门搜索", key = SharedDataKeys.CLOSE_HOT_SEARCH },
   { type = "switch", title = "代码块自动换行", key = SharedDataKeys.CODE_WRAP },
@@ -126,6 +125,13 @@ function SettingsFragment:initViews()
   self:initListView()
 end
 
+-- 边界检查函数
+local function clampValue(value, minVal, maxVal)
+  if value < minVal then return minVal end
+  if value > maxVal then return maxVal end
+  return value
+end
+
 function SettingsFragment:buildSettingsData()
   self.items = {}
   for _, config in ipairs(settingsConfig) do
@@ -143,11 +149,13 @@ function SettingsFragment:buildSettingsData()
      elseif config.type == "slider" then
       item.title = config.title
       item.key = config.key
-      item.value = Extensions.Config.getNumber(config.key)
       item.from = config.from
       item.to = config.to
       item.unit = config.unit
       item.step = config.step
+      -- 读取并限制范围
+      local rawValue = Extensions.Config.getNumber(config.key)
+      item.value = clampValue(rawValue, config.from, config.to)
     end
     table.insert(self.items, item)
   end
@@ -209,9 +217,9 @@ function SettingsFragment:initListView()
 
       if item.type == "slider" then
         views.slider.clearOnChangeListeners()
-        views.slider.valueFrom = item.from or 12
-        views.slider.valueTo = item.to or 30
-        views.slider.value = item.value or item.from or 16
+        views.slider.valueFrom = item.from
+        views.slider.valueTo = item.to
+        views.slider.value = item.value or item.from
         if item.step then views.slider.stepSize = item.step end
 
         local function formatValue(val)
@@ -223,7 +231,7 @@ function SettingsFragment:initListView()
         end
 
         views.value.text = formatValue(views.slider.value)
-        views.slider.addOnChangeListener({
+        views.slider.addOnChangeListener(luajava.createProxy("com.google.android.material.slider.Slider$OnChangeListener", {
           onValueChange = function(slider, value, fromUser)
             if fromUser then
               local saveValue = item.step and tonumber(string.format("%.1f", value)) or math.floor(value + 0.5)
@@ -231,7 +239,7 @@ function SettingsFragment:initListView()
               self:onSliderChanged(item.key, saveValue)
             end
           end
-        })
+        }))
       end
 
       if card then
@@ -516,9 +524,9 @@ function SettingsFragment:showHomeLayoutDialog()
     end,
     onCreateView = function(viewType)
       if viewType == 1 then
-        return SimpleRecyclerAdapter.inflate(Layouts.pages.settings.items.home_tab_header)
+        return SimpleRecyclerAdapter.inflate(LAYOUTS.tab_header)
        else
-        return SimpleRecyclerAdapter.inflate(Layouts.pages.settings.items.home_tab_item)
+        return SimpleRecyclerAdapter.inflate(LAYOUTS.tab_item)
       end
     end,
     onBind = function(views, item, position, holder)

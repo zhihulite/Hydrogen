@@ -66,8 +66,8 @@ function PageModel:init(recyclerView, swipeRefresh)
   end
 
   if self.enableLoadMore then
-    self.recyclerView.addOnScrollListener(RecyclerView.OnScrollListener{
-      onScrolled = function(rv, dx, dy)
+    self.recyclerView.addOnScrollListener(luajava.override(RecyclerView.OnScrollListener, {
+      onScrolled = function(super, rv, dx, dy)
         if dy > 0 and not self.isLoading and self.hasNextPage then
           local lm = rv.layoutManager
           if lm.findLastVisibleItemPosition() >= self.adapter.itemCount - 5 then
@@ -75,7 +75,7 @@ function PageModel:init(recyclerView, swipeRefresh)
           end
         end
       end
-    })
+    }))
   end
 end
 
