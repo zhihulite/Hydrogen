@@ -389,6 +389,8 @@ end
 
 function MainActivity:onConfigurationChanged(newConfig)
   self:updateParallelWorld()
+  -- 配置变化时重新应用夜间模式，确保主题实时生效
+  AppTheme.applyNightMode()
 end
 
 function MainActivity:setupVolumeController()

@@ -275,8 +275,8 @@ function SettingsFragment:onSwitchChanged(key, value)
     end
     Extensions.Config.set(key, value)
     self:updateItemChecked(key, value)
-    Helpers.BottomDialog.confirm("更改夜间模式需要重启应用才能完全生效，是否立即重启？", function()
-      activity.recreate()
+    Helpers.BottomDialog.confirm("更改夜间模式可能需要重启才能完全生效，是否立即应用？", function()
+      AppTheme.applyNightMode()
     end)
    elseif key == SharedDataKeys.AUTO_NIGHT_MODE then
     if value and Extensions.Config.getBool(SharedDataKeys.NIGHT_MODE) then
@@ -286,8 +286,8 @@ function SettingsFragment:onSwitchChanged(key, value)
     end
     Extensions.Config.set(key, value)
     self:updateItemChecked(key, value)
-    Helpers.BottomDialog.confirm("更改自动夜间模式需要重启应用才能完全生效，是否立即重启？", function()
-      activity.recreate()
+    Helpers.BottomDialog.confirm("更改自动夜间模式可能需要重启才能完全生效，是否立即应用？", function()
+      AppTheme.applyNightMode()
     end)
    elseif key == SharedDataKeys.OLED_MODE then
     Extensions.Config.set(SharedDataKeys.OLED_MODE, value)

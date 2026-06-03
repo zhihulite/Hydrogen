@@ -5,7 +5,7 @@
         ready: false,
 
         init() {
-            HydrogenCore.loadJSModule('html2canvas-pro', {
+            HydrogenCore.loadJSModule('html2canvas-pro.min', {
                 jsWindowName: 'html2canvas',
                 callback: () => {
                     this.ready = true;

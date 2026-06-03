@@ -18,7 +18,7 @@ local function getDefaultSettings()
   local background_color = colors.surface or 0xFFFFFFFF
   local hexColor = colorToHex(background_color)
   return {
-    dark_mode = AppTheme.isEffectiveNight(),
+    dark_mode = AppTheme.getAppIsNight(),
     custom_font = Extensions.Config.has(Constants.SharedDataKeys.CUSTOM_WEB_FONT),
     background_color = hexColor,
     debug = Extensions.Config.getBool(Constants.SharedDataKeys.ERUDA) or false,
@@ -29,6 +29,7 @@ local function getDefaultSettings()
     video_answer = true,
     md_copy = true,
     enable_mhtml_convert = false,
+    enable_screenshot = false,
   }
 end
 

@@ -119,7 +119,8 @@ function ContentFragment:initWebView()
   :initDownloadListener()
   :setZhiHuUA()
   :setSettings({
-    enableScrollTracking = true
+    -- 开启滚动位置记录
+    enable_scroll_tracking = true
   })
   :setMessageListener(function(action, data)
     self:onBridgeMessage(action, data)

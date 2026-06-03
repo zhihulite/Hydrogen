@@ -178,7 +178,8 @@
 
         if (get('md_copy')) runIf('MarkdownCopy');
         if (get('enable_mhtml_convert')) runIf('MhtmlConvert');
-        if (get('enableScrollTracking')) runIf('ScrollExposureTracker');
+        if (get('enable_scroll_tracking')) runIf('ScrollExposureTracker');
+        if (get('enable_screenshot')) runIf('Screenshot');
 
         if (pageType === 'answer') {
             runIf('ScrollRestore');

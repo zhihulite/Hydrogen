@@ -9,7 +9,6 @@ import "android.view.WindowManager"
 import "androidx.appcompat.app.AppCompatDelegate"
 import "android.content.res.Configuration"
 
-local initialized = false
 -- OLED 纯黑模式覆盖颜色
 local oledColorsInt = {
   background = 0xFF000000,
@@ -82,6 +81,16 @@ M.colors = setmetatable({}, {
   end
 })
 
+import "android.app.UiModeManager"
+import "android.content.Context"
+-- 判断系统全局的深色模式状态
+local function isSystemNightMode()
+    local uiModeManager = activity.getSystemService(Context.UI_MODE_SERVICE)
+    -- MODE_NIGHT_YES 通常值为 2
+    return uiModeManager.getNightMode() == UiModeManager.MODE_NIGHT_YES
+end
+
+local initialized = false
 -- 初始化主题
 function M.init()
   M.applyNightMode()
@@ -98,7 +107,7 @@ function M.init()
   })
 
   -- OLED 模式判断
-  local isOled = Extensions.Config.getBool(Constants.SharedDataKeys.OLED_MODE) and M.isEffectiveNight()
+  local isOled = Extensions.Config.getBool(Constants.SharedDataKeys.OLED_MODE) and M.getAppIsNight()
   -- OLED 模式覆盖：仅在夜间模式下生效
   if isOled then
     M.colors = setmetatable({}, {
@@ -115,12 +124,12 @@ function M.init()
 
 end
 
--- 判断是否夜间模式
-function M.isEffectiveNight()
+-- 获取App当前夜间模式
+function M.getAppIsNight()
   local resources = activity.resources
   local config = resources.configuration
-  local isNight = (config.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
-  return isNight
+  local AppIsNight = (config.uiMode & Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+  return AppIsNight
 end
 
 function M.getColor(name)
@@ -138,15 +147,19 @@ function M.applyNightMode()
   local targetMode
   if isManualNight then
     targetMode = AppCompatDelegate.MODE_NIGHT_YES
-   elseif isAutoNight then
-    targetMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-   else
+  elseif isAutoNight then
+    -- 自动模式：从系统获取当前是否是夜间
+    -- 由于自动模式也要重启，所以这里将自动模式映射一下。
+    -- 把 AndroidManifest.xml 对应 Activity 的 android:configChanges 的 uiMode 部分删除也可。 
+    local isSystemNight = isSystemNightMode()
+    targetMode = isSystemNight and AppCompatDelegate.MODE_NIGHT_YES or AppCompatDelegate.MODE_NIGHT_NO
+  else
     targetMode = AppCompatDelegate.MODE_NIGHT_NO
   end
-  -- 只有不一致时才设置并重建
+  
+  -- 如果模式设置不一致，就重建
   if currentMode ~= targetMode then
     AppCompatDelegate.setDefaultNightMode(targetMode)
-    -- 重建 Activity 使主题生效
     activity.recreate()
   end
 end

@@ -3,11 +3,18 @@
 
     <style name="Theme.Welcome" parent="Theme.Default" />
 
-    <!--splash-->
+    <!-- transparent splash -->
+    <!-- 系统在onCreate前已读取主题背景，此时强制切换的夜间模式未生效，使用透明防止白色背景闪烁 -->
+    <style name="Theme.TransparentSplash" parent="Theme.SplashScreen">
+        <!-- 确保窗口透明 -->
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+    <!-- splash -->
     <style name="Theme.Splash" parent="Theme.SplashScreen">
     <item name="windowSplashScreenAnimatedIcon">@xml/avd</item>
     <item name="windowSplashScreenAnimationDuration">400</item>
-   
         <item name="postSplashScreenTheme">@style/Theme.Default</item>
     </style>
     

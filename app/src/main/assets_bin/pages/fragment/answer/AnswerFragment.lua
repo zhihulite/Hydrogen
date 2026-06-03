@@ -152,12 +152,10 @@ function AnswerFragment:showScreenshotPreview(base64)
 
   -- 标题栏布局
   local headerIds = {}
-  local colors = AppTheme.colors
   local headerLayout = loadlayout(Layouts.pages.answer.screenshot_header, headerIds)
 
   -- 获取标题和作者
-  local titleText = ""
-  titleText = self.views.toolbar.title
+  local titleText = self.views.toolbar.title
   local authorText = self.currentPageIds.user_name.text
 
   headerIds.title.text = titleText
@@ -374,8 +372,9 @@ function AnswerFragment:setupWebView(webview, answerId, pageIds)
   helper:setSettings({
     pageType = "answer",
     -- 开始记录历史记录
-    enableScrollTracking = self.isFirstLoad,
-    codeScrollDisabled = Constants.SharedDataKeys.ANSWER_SINGLE_PAGE
+    enable_scroll_tracking = self.isFirstLoad,
+    answer_code_no_scroll = Extensions.Config.getBool(Constants.SharedDataKeys.ANSWER_SINGLE_PAGE),
+    enable_screenshot = true
   })
   helper:setMessageListener(function(action, data)
     self:onBridgeMessage(action, data)

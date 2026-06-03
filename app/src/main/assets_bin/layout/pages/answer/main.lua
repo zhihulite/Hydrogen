@@ -23,6 +23,8 @@ local floatingToolbar = {
   layout_height = "wrap_content",
   layout_gravity = "bottom|center",
   layout_marginBottom = "16dp",
+  layout_marginLeft = "8dp",
+  layout_marginRight = "8dp",
   layout_behavior = "hide_bottom_view_on_scroll_behavior",
   {
     LinearLayoutCompat,
@@ -31,8 +33,6 @@ local floatingToolbar = {
     -- FrameLayout 使用 minHeight 时，子布局 layout_height 设置 match_parent 不生效
     layout_height = "56dp",
     gravity = "center",
-    paddingLeft = "8dp",
-    paddingRight = "8dp",
     {
       LinearLayoutCompat,
       id = "vote_btn",

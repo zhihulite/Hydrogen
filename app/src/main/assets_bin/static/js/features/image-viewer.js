@@ -55,10 +55,20 @@
         },
 
         findImageAtPoint(clientX, clientY) {
-            const elements = document.elementsFromPoint(clientX, clientY);
-            // 先找直接 IMG，再找包含 IMG 的元素
-            return elements.find(el => el.tagName === 'IMG')
-                || elements.find(el => el.querySelector('img'))?.querySelector('img');
+            // 只查找可见图片
+            const allImages = document.querySelectorAll('img:not([style*="display:none"]):not([style*="visibility:hidden"])');
+
+            for (let img of allImages) {
+                const rect = img.getBoundingClientRect();
+                // 检查点击坐标是否在图片范围内
+                if (clientX >= rect.left && clientX <= rect.right &&
+                    clientY >= rect.top && clientY <= rect.bottom) {
+                    console.log(`命中图片: ${img.src.substring(0, 50)}...`);
+                    return img;
+                }
+            }
+
+            return null;
         },
 
         isGifPlayer(img) {

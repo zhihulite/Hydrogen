@@ -117,7 +117,8 @@
                 android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|uiMode"
                 android:windowSoftInputMode="adjustResize|stateHidden"
                 android:exported="false"
-                android:name="com.hydrogen.LuaActivity"/>
+                android:name="com.hydrogen.LuaActivity"
+                android:theme="@style/Theme.TransparentSplash"/>
 
         <activity
                 android:configChanges="mcc|mnc|locale|touchscreen|keyboard|navigation|screenLayout|fontScale|smallestScreenSize|keyboardHidden|orientation|screenSize|uiMode"

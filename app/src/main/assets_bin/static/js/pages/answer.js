@@ -222,7 +222,7 @@
             OrientationHandler.run();
 
             AnswerLoadWaiter.run(() => {
-                if (HydrogenCore.getConfig("codeScrollDisabled") !== true) CodeScrollHandler.run();
+                if (HydrogenCore.getConfig("answer_code_no_scroll") !== true) CodeScrollHandler.run();
                 VideoLoader.run();
                 PaidAnswerHandler.run();
                 ScrollRestore.restore();
