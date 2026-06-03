@@ -137,6 +137,14 @@ if activity then
     alert("Print", msg)
   end
 
+  local Environment = luajava.bindClass("android.os.Environment")
+  local state = Environment.getExternalStorageState()
+  local MEDIA_MOUNTED = Environment.MEDIA_MOUNTED
+
+  if state ~= MEDIA_MOUNTED then
+    error("外部存储未挂载，请检查SD卡或内部存储")
+  end
+
   local crashDir = activity.getExternalFilesDir(nil).absolutePath .. "/crash"
   local dir = luajava.bindClass("java.io.File")(crashDir)
   local path = crashDir .. "/" .. activity.packageName .. ".txt"

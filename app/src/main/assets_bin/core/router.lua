@@ -18,6 +18,13 @@ local Storage = require("services.cache.storage")
 function M.storeParams(data)
   local key = "router_params_" .. tostring(os.time()) .. "_" .. tostring(math.random(10000, 99999))
   Storage.set(key, data)
+  -- 兜底：1秒后清理（防止参数未被消费）
+  Helpers.UI.runDelayedOnBackground(1000, function()
+    local pendingData = Storage.get(key)
+    if pendingData then
+      Storage.delete(key)
+    end
+  end)
   return key
 end
 
