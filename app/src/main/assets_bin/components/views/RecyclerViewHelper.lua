@@ -5,11 +5,8 @@ local M = {}
 
 import "androidx.recyclerview.widget.ConcatAdapter"
 import "com.hydrogen.adapter.LuaCustRecyclerAdapter"
-import "com.hydrogen.adapter.LuaCustRecyclerHolder"
 
--- ============================================
 -- 创建单个视图的适配器
--- ============================================
 
 local function createViewAdapter(view, views, viewType)
   return LuaCustRecyclerAdapter(activity, LuaCustRecyclerAdapter.Creator({
@@ -22,7 +19,7 @@ local function createViewAdapter(view, views, viewType)
     end,
 
     onCreateViewHolder = function(parent, vt)
-      local holder = LuaCustRecyclerHolder(view)
+      local holder = LuaCustRecyclerAdapter.LuaCustRecyclerHolder(view)
       holder.views = views or {}
       return holder
     end,
@@ -33,9 +30,7 @@ local function createViewAdapter(view, views, viewType)
   }))
 end
 
--- ============================================
 -- 创建带 Header/Footer 的适配器包装器
--- ============================================
 
 function M.new(adapter)
   local self = {
@@ -55,9 +50,7 @@ function M.new(adapter)
   return self
 end
 
--- ============================================
 -- Header/Footer 管理
--- ============================================
 
 --- 添加 Header
 function M:addHeader(view, views)
@@ -125,10 +118,7 @@ function M:clearFooters()
   return self
 end
 
--- ============================================
 -- 获取包装后的适配器
--- ============================================
-
 function M:getAdapter()
   if self.concatAdapter then
     return self.concatAdapter
@@ -154,28 +144,19 @@ function M:getAdapter()
   return self.concatAdapter
 end
 
--- ============================================
 -- 设置到 RecyclerView（自动保存引用）
--- ============================================
-
 function M:setup(recyclerView)
   self.recyclerView = recyclerView
   recyclerView.adapter = self:getAdapter()
   return self
 end
 
--- ============================================
 -- 获取原始适配器
--- ============================================
-
 function M:getOriginalAdapter()
   return self.adapter
 end
 
--- ============================================
 -- 刷新 Header/Footer 内容（如果视图内容变化）
--- ============================================
-
 function M:notifyHeaderChanged(index)
   if self.headerAdapters[index] then
     self.headerAdapters[index].notifyDataSetChanged()

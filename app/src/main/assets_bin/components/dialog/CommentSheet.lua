@@ -17,6 +17,25 @@ function M:initListView()
   local model = self.model
   local views = self.sheetViews
 
+  local menuItems = {
+    {
+      id = "sort_score",
+      title = "默认",
+      click = function() self:changeSortOrder("score") end,
+    },
+    {
+      id = "sort_ts",
+      title = "最新",
+      click = function() self:changeSortOrder("ts") end,
+    },
+  }
+
+  Helpers.UI.setupToolbar(views.toolbar, {  
+    title = "评论",
+    menu = menuItems,
+    navCallback = function() self.bottomSheet.dismiss() end,
+  })
+
   model:setupSingle(views.recycler_view, views.swipe_refresh)
   model:ensureLoaded()
 
@@ -44,11 +63,6 @@ end
 
 function M:setupEvents()
   local views = self.sheetViews
-
-  local navCallback = function() self.bottomSheet.dismiss() end
-  views.toolbar.navigationOnClickListener = luajava.createProxy("android.view.View$OnClickListener", { onClick = navCallback })
-  views.chip_score.onClick = function() self:changeSortOrder("score") end
-  views.chip_ts.onClick = function() self:changeSortOrder("ts") end
 
   -- 点击卡片打开评论编辑器
   views.bottom_card.onClick = function()
@@ -83,9 +97,9 @@ function M:changeSortOrder(orderBy)
 end
 
 function M:updateHeader()
-  if self.sheetViews.comment_count then
-    self.sheetViews.comment_count.text = string.format("共%d条", self.totalCount)
-  end
+  self.sheetViews.toolbar.title = "评论"
+  -- 设置子标题
+  self.sheetViews.toolbar.subtitle = string.format("共%d条", self.totalCount)
 end
 
 function M:onCommentClick(item)

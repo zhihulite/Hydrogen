@@ -13,21 +13,21 @@ local SimpleRecyclerAdapter = require("components.adapter.SimpleRecyclerAdapter"
 local SettingsFragment = Extensions.Class(BaseFragment, { "SettingsFragment" })
 local SharedDataKeys = Constants.SharedDataKeys
 
--- 卡片圆角模型（用于 item/switch/slider 的连续圆角效果）
-local function getShapeModel(tl, tr, br, bl)
-  local shapeBuilder = ShapeAppearanceModel.builder()
-  shapeBuilder.topLeftCornerSize = RelativeCornerSize(tl)
-  shapeBuilder.topRightCornerSize = RelativeCornerSize(tr)
-  shapeBuilder.bottomRightCornerSize = RelativeCornerSize(br)
-  shapeBuilder.bottomLeftCornerSize = RelativeCornerSize(bl)
-  return shapeBuilder.build()
+-- 直接获取主题中的 ShapeAppearanceModel
+local function getShapeModelFromAttr(attrName)
+  local resourceId = Helpers.Resources.app.attr[attrName]
+  if resourceId and resourceId ~= 0 then
+    return ShapeAppearanceModel.builder(activity, resourceId, 0).build()
+  end
+  return nil
 end
 
+-- 用于手动设置，默认 ListItemCardView 不够灵活。
 local shapeModels = {
-  top = getShapeModel(0.3, 0.3, 0, 0),
-  middle = getShapeModel(0, 0, 0, 0),
-  bottom = getShapeModel(0, 0, 0.3, 0.3),
-  single = getShapeModel(0.3, 0.3, 0.3, 0.3),
+  top = getShapeModelFromAttr("listItemShapeAppearanceFirst"),
+  middle = getShapeModelFromAttr("listItemShapeAppearanceMiddle"),
+  bottom = getShapeModelFromAttr("listItemShapeAppearanceLast"),
+  single = getShapeModelFromAttr("listItemShapeAppearanceSingle"),
 }
 
 -- 设置项布局引用

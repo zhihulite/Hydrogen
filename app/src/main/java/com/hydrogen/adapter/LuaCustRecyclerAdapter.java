@@ -1,14 +1,17 @@
 package com.hydrogen.adapter;
 
+import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.androlua.LuaActivity;
 import com.google.android.material.textview.MaterialTextView;
+import com.luajava.LuaTable;
 
 import java.util.Objects;
 
-public class LuaCustRecyclerAdapter extends RecyclerView.Adapter<LuaCustRecyclerHolder> {
+@SuppressWarnings("unused")
+public class LuaCustRecyclerAdapter extends RecyclerView.Adapter<LuaCustRecyclerAdapter.LuaCustRecyclerHolder> {
 
     private LuaActivity mContext;
     private Creator adapterCreator;
@@ -110,6 +113,22 @@ public class LuaCustRecyclerAdapter extends RecyclerView.Adapter<LuaCustRecycler
         void onBindViewHolder(LuaCustRecyclerHolder viewHolder, int position);
         LuaCustRecyclerHolder onCreateViewHolder(ViewGroup viewGroup, int viewType);
         void onViewRecycled(LuaCustRecyclerHolder viewHolder);
+    }
+
+    public static class LuaCustRecyclerHolder extends RecyclerView.ViewHolder {
+        public LuaCustRecyclerHolder(@NonNull View itemView) {
+            super(itemView);
+        }
+
+        public LuaTable Tag = null;
+
+        public void setViews(LuaTable tag) {
+            Tag = tag;
+        }
+
+        public LuaTable getViews() {
+            return Tag;
+        }
     }
 }
 

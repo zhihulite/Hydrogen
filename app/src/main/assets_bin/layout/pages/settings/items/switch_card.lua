@@ -1,5 +1,5 @@
 -- layout/pages/settings/items/switch_card.lua
--- 设置页面开关项（带卡片包裹）
+-- 设置页面开关项
 
 import "androidx.appcompat.widget.LinearLayoutCompat"
 import "com.google.android.material.card.MaterialCardView"

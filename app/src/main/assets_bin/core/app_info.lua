@@ -74,11 +74,6 @@ function M.checkUpdate(callback)
 
     local currentVersion = M.getVersion()
     local hasNewVersion = updateVersion and tonumber(updateVersion) > currentVersion
-    if (hasNewVersion) then
-     else
-
-      print(updateVersion)
-    end
     if callback then
       callback(hasNewVersion, hasNewVersion and "发现新版本" or "已是最新版本", {
         hasNew = hasNewVersion,
@@ -94,8 +89,15 @@ end
 function M.showUpdateDialog(force)
   M.checkUpdate(function(hasNew, msg, result)
     if hasNew then
-      local message = string.format("发现新版本 %s(%s)\n\n%s",
-      result.versionName, result.version, result.info or "")
+      -- 有新版本
+      if not force then
+        local ignoredVersion = M.getIgnoredVersion()
+        if ignoredVersion and ignoredVersion == result.version then
+          return
+        end
+      end
+      local versionStr = result.versionName and string.format("%s (%s)", result.versionName, result.version) or result.version
+      local message = string.format("发现新版本 %s\n\n%s", versionStr, result.info or "")
 
       import "com.google.android.material.dialog.MaterialAlertDialogBuilder"
       local builder = MaterialAlertDialogBuilder(activity)
@@ -111,7 +113,7 @@ function M.showUpdateDialog(force)
       if not force then
         builder.setNeutralButton("忽略此版本", { onClick = function()
             M.setIgnoredVersion(result.version)
-            tip("已忽略版本 " .. (result.versionName or result.version))
+            tip("已忽略版本 " .. versionStr)
         end })
       end
 

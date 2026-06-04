@@ -289,6 +289,7 @@ end
 M.LinearProgress_Wavy = create("linearprogress_wavy")
 
 -- ListItem
+M.LisiItem_CardView_Segmented = create("listitem_cardview_segmented")
 M.ListItem_Checkbox = create("listitem_checkbox")
 M.ListItem_Radiobutton = create("listitem_radiobutton")
 M.ListItem_Switch = create("listitem_switch")

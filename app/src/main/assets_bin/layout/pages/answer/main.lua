@@ -10,7 +10,6 @@ import "androidx.appcompat.widget.LinearLayoutCompat"
 import "com.google.android.material.textview.MaterialTextView"
 import "androidx.appcompat.widget.AppCompatImageView"
 import "com.google.android.material.floatingtoolbar.FloatingToolbarLayout"
-import "com.google.android.material.behavior.HideBottomViewOnScrollBehavior"
 
 local colors = AppTheme.colors
 local actionBarSize = Helpers.Resources.android.attr.actionBarSize

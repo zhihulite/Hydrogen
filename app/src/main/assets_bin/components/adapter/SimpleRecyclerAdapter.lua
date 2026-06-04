@@ -4,7 +4,6 @@
 local M = {}
 
 import "com.hydrogen.adapter.LuaCustRecyclerAdapter"
-import "com.hydrogen.adapter.LuaCustRecyclerHolder"
 
 -- 创建适配器
 function M.new(config)
@@ -28,7 +27,7 @@ function M.new(config)
 
     onCreateViewHolder = function(parent, viewType)
       local view, views = onCreateView(viewType)
-      local holder = LuaCustRecyclerHolder(view)
+      local holder = LuaCustRecyclerAdapter.LuaCustRecyclerHolder(view)
       holder.views = views or {}
       return holder
     end,
