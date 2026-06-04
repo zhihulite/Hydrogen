@@ -190,7 +190,7 @@ function FollowModel:parseItemGroupCard(item)
   if #allSubItems == 0 then return nil end
 
   local hasMore = #allSubItems > unfoldSize
-  local displayItems = hasMore and { unpack(allSubItems, 1, unfoldSize) } or allSubItems
+  local displayItems = hasMore and { table.unpack(allSubItems, 1, unfoldSize) } or allSubItems
 
   return {
     id = tostring(item.id),
@@ -207,9 +207,10 @@ function FollowModel:parseItemGroupCard(item)
 end
 
 function FollowModel:parseGroupSubItem(item)
+  local contentType = item.type == "moments_pin" and "pin" or item.type
   return {
     id = tostring(item.id),
-    type = item.type or "",
+    type = contentType,
     title = item.title ~= "" and item.title or "无标题",
     preview = item.digest or "",
     desc = item.desc or "",
@@ -400,11 +401,8 @@ function FollowModel:setupSubList(recyclerView, items)
         views.preview.visibility = hasPreview and View.VISIBLE or View.GONE
         views.desc.text = subItem.desc or ""
       end
-      if subItem.id and subItem.type then
-        local contentType = subItem.type == "moments_pin" and "pin" or subItem.type
-        views.card.onClick = function()
-          Helpers.ZhihuParser.go(contentType, { id = subItem.id }, { sharedElement = views.card })
-        end
+      views.card.onClick = function()
+        Helpers.ZhihuParser.go(subItem.type, { id = subItem.id }, { sharedElement = views.card })
       end
     end,
   })
