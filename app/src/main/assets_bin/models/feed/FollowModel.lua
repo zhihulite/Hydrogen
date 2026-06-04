@@ -401,8 +401,9 @@ function FollowModel:setupSubList(recyclerView, items)
         views.desc.text = subItem.desc or ""
       end
       if subItem.id and subItem.type then
+        local contentType = subItem.type == "moments_pin" and "pin" or subItem.type
         views.card.onClick = function()
-          Helpers.ZhihuParser.go(subItem.type, { id = subItem.id }, { sharedElement = views.card })
+          Helpers.ZhihuParser.go(contentType, { id = subItem.id }, { sharedElement = views.card })
         end
       end
     end,
