@@ -19,7 +19,7 @@ tasks.withType(JavaCompile).configureEach {
 
 android {
     namespace = 'com.zhihu.hydrogen.x'
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.zhihu.hydrogen.x"
@@ -58,6 +58,7 @@ android {
             signingConfig = signingConfigs.release
             // 必须要禁用 R8
             minifyEnabled = false
+            //noinspection NotShrinkingResources
             shrinkResources = false
             proguardFiles(getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro')
         }
@@ -65,6 +66,7 @@ android {
             signingConfig = signingConfigs.debug
             // 必须要禁用 R8
             minifyEnabled = false
+            //noinspection NotShrinkingResources
             shrinkResources = false
         }
     }

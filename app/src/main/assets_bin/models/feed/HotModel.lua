@@ -52,7 +52,7 @@ function HotModel:createAdapter()
     onBind = function(views, item, position, holder)
       views.rank.text = tostring(item.rank)
       views.title.text = item.title or ""
-      views.heat_row.Visibility = (closeHeat or not item.heat) and 8 or 0
+      views.heat_row.visibility = (closeHeat or not item.heat) and 8 or 0
 
       if item.heat then
         views.heat.text = item.heat
@@ -60,7 +60,7 @@ function HotModel:createAdapter()
 
       -- 图片：关闭图片 或 没有图片 就隐藏
       local hasImage = not closeImage and item.hasImage and item.imageUrl
-      views.image_container.Visibility = hasImage and 0 or 8
+      views.image_container.visibility = hasImage and 0 or 8
 
       if item.imageUrl then
         Helpers.Image.load(views.image, item.imageUrl)

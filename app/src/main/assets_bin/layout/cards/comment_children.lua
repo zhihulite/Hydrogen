@@ -66,7 +66,7 @@ return {
       layout_width = "wrap_content",
       layout_height = "wrap_content",
       layout_marginTop = "4dp",
-      visibility = "gone",
+      visibility = View.GONE,
       scaleType = "centerCrop",
     },
     {

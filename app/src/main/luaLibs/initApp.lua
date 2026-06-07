@@ -145,8 +145,14 @@ if activity then
     error("外部存储未挂载，请检查SD卡或内部存储")
   end
 
-  local crashDir = activity.getExternalFilesDir(nil).absolutePath .. "/crash"
-  local dir = luajava.bindClass("java.io.File")(crashDir)
+  local externalFilesDir = activity.getExternalFilesDir(nil)
+  if externalFilesDir == nil then
+    error("无法获取外部存储目录，请检查存储权限或系统状态")
+  end
+
+  local crashDir = externalFilesDir.absolutePath .. "/crash"
+  local File = luajava.bindClass("java.io.File")
+  local dir = File(crashDir)
   local path = crashDir .. "/" .. activity.packageName .. ".txt"
 
   if not dir.exists() then

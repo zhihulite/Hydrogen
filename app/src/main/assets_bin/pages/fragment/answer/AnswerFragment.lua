@@ -699,17 +699,35 @@ function AnswerFragment:setupFloatButtons()
 
   -- 根据配置显示/隐藏
   if Extensions.Config.getBool(Constants.SharedDataKeys.SHOW_VIRTUAL_SCROLL) then
-    views.float_scroll_container.Visibility = 0
+    views.float_scroll_container.visibility = View.VISIBLE
    else
     return
   end
 
   local function scrollWebView(direction)
     if not self.currentPageIds or not self.currentPageIds.webview then return end
-    local js = direction == "up"
-    and "window.scrollBy(0, -window.innerHeight)"
-    or "window.scrollBy(0, window.innerHeight)"
-    self.currentPageIds.webview.evaluateJavascript(js, nil)
+    
+    local webview = self.currentPageIds.webview
+    
+    if direction == "up" then
+      -- 向上：获取当前滚动位置
+      webview.evaluateJavascript("window.scrollY", {
+        onReceiveValue = function(scrollY)
+          local currentScroll = tonumber(scrollY) or 0
+          if currentScroll <= 0 then
+            -- 在顶部：展开 AppBar
+            self.views.appbar.setExpanded(true, true)
+          else
+            -- 不在顶部：向上滚动一屏
+            webview.evaluateJavascript("window.scrollBy(0, -window.innerHeight)", nil)
+          end
+        end
+      })
+    else -- direction == "down"
+      -- 向下：滚动一屏 + 收缩 AppBar
+      webview.evaluateJavascript("window.scrollBy(0, window.innerHeight)", nil)
+      self.views.appbar.setExpanded(false, true)
+    end
   end
 
   views.scroll_up.onClick = function() scrollWebView("up") end

@@ -161,6 +161,7 @@ local floatScrollButtons = {
   radius = "28dp",
   alpha = 0.9,
   cardBackgroundColor = colors.surfaceContainer,
+  visibility = View.GONE,
   {
     LinearLayoutCompat,
     orientation = "vertical",
