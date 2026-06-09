@@ -279,7 +279,7 @@ function M:setWebViewClient(callbacks)
   local defaultCallbacks = {
     onPageStarted = function(view, url, favicon)
       if mergedModulesJS and mergedModulesJS ~= "" then
-        self:evaluateJavascript(LuaWebViewBridge.getMergedModulesJS())
+        self:evaluateJavascript(mergedModulesJS)
       end
     end,
     shouldInterceptRequest = function(view, url)
