@@ -20,7 +20,7 @@
         },
 
         initFetchInterceptor() {
-            FetchManager.register('add_column',
+            FetchManager.registerOnce('add_column',
                 (url) => url && url.includes('/api/v4/columns/request'),
                 async (response) => {
                     if (response.status === 200) {

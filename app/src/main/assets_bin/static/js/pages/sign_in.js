@@ -8,7 +8,7 @@
         },
 
         initFetchInterceptor() {
-            FetchManager.register('sign_in',
+            FetchManager.registerOnce('sign_in',
                 (url) => url && url.includes('oauth'),
                 async (response) => {
                     if (response.status === 200) {

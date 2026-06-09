@@ -8,7 +8,7 @@
         },
 
         initFetchInterceptor() {
-            FetchManager.register('report',
+            FetchManager.registerOnce('report',
                 (url) => url && url.includes('/api/v4/reports'),
                 async (response) => {
                     if (response.status === 200) {

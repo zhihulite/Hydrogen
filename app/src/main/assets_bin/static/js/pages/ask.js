@@ -29,7 +29,7 @@
         },
 
         initFetchInterceptor() {
-            FetchManager.register('ask',
+            FetchManager.registerOnce('ask',
                 (url) => url && url.includes('/api/v4/questions'),
                 async (response) => {
                     if (response.status === 200) {

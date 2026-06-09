@@ -191,7 +191,7 @@
         loaded: false,
 
         run(callback) {
-            FetchManager.register('answer-wait-load',
+            FetchManager.registerOnce('answer-wait-load',
                 (url) => url && url.includes('/api/v4/answers/'),
                 () => {
                     setTimeout(() => {
