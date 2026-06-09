@@ -138,7 +138,7 @@
 
             options = options || {};
             // 延迟防止某些时候平滑滚动无效的问题。
-            const delay = options.delay !== undefined ? options.delay : 100;
+            const delay = options.delay !== undefined ? options.delay : 500;
 
             const transaction = this.db.transaction([this.config.storeName], 'readonly');
             const store = transaction.objectStore(this.config.storeName);

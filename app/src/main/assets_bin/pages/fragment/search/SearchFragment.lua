@@ -152,7 +152,6 @@ function SearchFragment:performSearch(query)
   SearchHistoryService.add(query)
   self.searchView.setQuery("", false)
   -- 收起键盘
-  local InputMethodManager = luajava.bindClass("android.view.inputmethod.InputMethodManager")
   local imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE)
   local token = self.searchView.getWindowToken()
   if token then
