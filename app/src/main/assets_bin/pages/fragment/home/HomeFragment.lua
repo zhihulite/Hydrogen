@@ -324,6 +324,8 @@ function HomeFragment:onHomePageSelected(position, displayTabs)
   self:updateBottomNavSelection(position)
   if tab.needLogin and not Extensions.Config.get(Constants.SharedDataKeys.USER_ID) then
     tip("请登录后使用")
+    -- 返回 false 防止选中
+    return false
   end
   local model = self.pageModels.home[tab.name]
   if model and model.ensureLoaded then model:ensureLoaded() end
@@ -432,6 +434,8 @@ function HomeFragment:setupDrawerMenu()
       if pageMap[title] then
         if (title == "收藏" or title == "关注") and not Extensions.Config.has(Constants.SharedDataKeys.USER_ID) then
           tip("请登录后使用")
+          -- 返回 false 防止选中
+          return false
          else
           self:switchToPage(title)
         end

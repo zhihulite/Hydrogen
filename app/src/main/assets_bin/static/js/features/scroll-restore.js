@@ -9,16 +9,26 @@
             dbVersion: 1,
             expirationPeriod: 10 * 24 * 60 * 60 * 1000, // 10 days
             debounceTime: 1000,
-            scrollThreshold: 5
+            scrollThreshold: 5,
+            maxPollingMs: 5000
         },
 
         db: null,
         lastPosition: 0,
         debounceTimer: null,
+        pollingTimer: null,
+        pollingStartTime: null,
+
+        log(...args) {
+            console.log('[ScrollRestore]', ...args);
+        },
+        warn(...args) {
+            console.warn('[ScrollRestore]', ...args);
+        },
 
         init() {
             if (!window.indexedDB) {
-                alert('IndexedDB not supported');
+                this.warn('不支持 IndexedDB');
                 return;
             }
             this.openDB();
@@ -38,11 +48,11 @@
 
             request.onsuccess = (event) => {
                 this.db = event.target.result;
-                this.restore();
+                this.log('初始化完成');
             };
 
             request.onerror = () => {
-                alert('Failed to open DB');
+                this.warn('数据库打开失败');
             };
         },
 
@@ -50,6 +60,7 @@
             return window.location.href;
         },
 
+        // 保存滚动位置（无限制，直接保存）
         save() {
             if (!this.db) return;
 
@@ -60,10 +71,74 @@
                 position: window.scrollY,
                 timestamp: Date.now()
             });
+            this.log(`保存: ${window.scrollY}`);
         },
 
-        restore() {
-            if (!this.db) return;
+        getDocumentHeight() {
+            return Math.max(
+                document.body.scrollHeight,
+                document.documentElement.scrollHeight,
+                document.body.offsetHeight,
+                document.documentElement.offsetHeight
+            );
+        },
+
+        scrollToPosition(position, options) {
+            const behavior = options.behavior || 'smooth';
+            window.scrollTo({ top: position, behavior: behavior });
+            this.log(`滚动到: ${position}`);
+        },
+
+        checkAndRestore(targetPosition, options) {
+            const currentHeight = this.getDocumentHeight();
+            
+            this.log(`目标: ${targetPosition}, 高度: ${currentHeight}`);
+            
+            if (currentHeight <= targetPosition) {
+                const maxPollingMs = options.maxPollingMs !== undefined ? options.maxPollingMs : this.config.maxPollingMs;
+                this.log(`高度不足, 轮询 ${maxPollingMs}ms`);
+                this.startPolling(targetPosition, options);
+            } else {
+                this.scrollToPosition(targetPosition, options);
+            }
+        },
+
+        startPolling(targetPosition, options) {
+            if (this.pollingTimer) clearInterval(this.pollingTimer);
+            
+            const maxPollingMs = options.maxPollingMs !== undefined ? options.maxPollingMs : this.config.maxPollingMs;
+            this.pollingStartTime = Date.now();
+            
+            this.pollingTimer = setInterval(() => {
+                const currentHeight = this.getDocumentHeight();
+                const elapsed = Date.now() - this.pollingStartTime;
+                
+                if (currentHeight > targetPosition || elapsed >= maxPollingMs) {
+                    clearInterval(this.pollingTimer);
+                    this.pollingTimer = null;
+                    
+                    if (currentHeight > targetPosition) {
+                        this.log(`轮询完成, 高度: ${currentHeight}`);
+                        this.scrollToPosition(targetPosition, options);
+                    } else {
+                        this.log(`轮询超时, 删除记录`);
+                        this.deleteCurrent();
+                    }
+                } else {
+                    this.log(`轮询中... 高度: ${currentHeight}, 目标: ${targetPosition}, 已过: ${elapsed}ms`);
+                }
+            }, 100);
+        },
+
+        restore(options) {
+            if (!this.db) {
+                this.warn('数据库未初始化');
+                return;
+            }
+
+            options = options || {};
+            // 延迟防止某些时候平滑滚动无效的问题。
+            const delay = options.delay !== undefined ? options.delay : 100;
 
             const transaction = this.db.transaction([this.config.storeName], 'readonly');
             const store = transaction.objectStore(this.config.storeName);
@@ -72,8 +147,19 @@
             request.onsuccess = () => {
                 const data = request.result;
                 if (data && data.position > 10) {
-                    window.scrollTo({ top: data.position, behavior: 'smooth' });
+                    this.log(`找到记录: ${data.position}`);
+                    setTimeout(() => {
+                        this.checkAndRestore(data.position, options);
+                    }, delay);
+                } else {
+                    this.log('未找到记录');
+                    if (options.onNotFound) options.onNotFound();
                 }
+            };
+
+            request.onerror = () => {
+                this.warn('读取失败');
+                if (options.onError) options.onError();
             };
         },
 
@@ -91,6 +177,7 @@
                 if (cursor) {
                     if (cursor.value.timestamp < now - expiration) {
                         cursor.delete();
+                        this.log(`删除过期: ${cursor.value.url}`);
                     }
                     cursor.continue();
                 }
@@ -115,6 +202,7 @@
             const transaction = this.db.transaction([this.config.storeName], 'readwrite');
             const store = transaction.objectStore(this.config.storeName);
             store.delete(this.getCurrentKey());
+            this.log('已删除当前记录');
         },
 
         deleteAll() {
@@ -122,6 +210,18 @@
             const transaction = this.db.transaction([this.config.storeName], 'readwrite');
             const store = transaction.objectStore(this.config.storeName);
             store.clear();
+            this.log('已删除所有记录');
+        },
+
+        destroy() {
+            if (this.pollingTimer) {
+                clearInterval(this.pollingTimer);
+                this.pollingTimer = null;
+            }
+            if (this.debounceTimer) {
+                clearTimeout(this.debounceTimer);
+                this.debounceTimer = null;
+            }
         }
     };
 

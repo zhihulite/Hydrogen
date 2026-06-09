@@ -1,6 +1,7 @@
 package com.hydrogen;
 
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Message;
 import android.view.View;
 import android.webkit.ConsoleMessage;
@@ -10,7 +11,6 @@ import android.webkit.JsResult;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
-import android.webkit.WebStorage;
 import android.webkit.WebView;
 
 @SuppressWarnings("unused")
@@ -64,15 +64,6 @@ public class LuaWebChromeClientCreator extends WebChromeClient {
             creator.onShowCustomView(view, callback);
         } else {
             super.onShowCustomView(view, callback);
-        }
-    }
-
-    @Override
-    public void onShowCustomView(View view, int requestedOrientation, CustomViewCallback callback) {
-        if (creator != null) {
-            creator.onShowCustomView(view, requestedOrientation, callback);
-        } else {
-            super.onShowCustomView(view, requestedOrientation, callback);
         }
     }
 
@@ -213,12 +204,11 @@ public class LuaWebChromeClientCreator extends WebChromeClient {
     }
 
     @Override
-    public void onExceededDatabaseQuota(String url, String databaseIdentifier, long quota, long estimatedDatabaseSize, long totalQuota, WebStorage.QuotaUpdater quotaUpdater) {
+    public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
         if (creator != null) {
-            creator.onExceededDatabaseQuota(url, databaseIdentifier, quota, estimatedDatabaseSize, totalQuota, quotaUpdater);
-        } else {
-            super.onExceededDatabaseQuota(url, databaseIdentifier, quota, estimatedDatabaseSize, totalQuota, quotaUpdater);
+            return creator.onShowFileChooser(webView, filePathCallback, fileChooserParams);
         }
+        return super.onShowFileChooser(webView, filePathCallback, fileChooserParams);
     }
 
     // Creator 接口
@@ -245,6 +235,6 @@ public class LuaWebChromeClientCreator extends WebChromeClient {
         Bitmap getDefaultVideoPoster();
         View getVideoLoadingProgressView();
         void getVisitedHistory(ValueCallback<String[]> callback);
-        void onExceededDatabaseQuota(String url, String databaseIdentifier, long quota, long estimatedDatabaseSize, long totalQuota, WebStorage.QuotaUpdater quotaUpdater);
+        boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams);
     }
 }

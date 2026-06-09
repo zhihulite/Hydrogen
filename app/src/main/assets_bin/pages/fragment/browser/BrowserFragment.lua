@@ -3,7 +3,6 @@
 
 local BaseFragment = require("pages.base.BaseFragment")
 local WebViewHelper = require("components.views.WebViewHelper")
-local MenuItem = luajava.bindClass("android.view.MenuItem")
 
 local BrowserFragment = Extensions.Class(BaseFragment, {"browser"})
 
@@ -83,6 +82,36 @@ function BrowserFragment:updateBackButtonState()
   end
 end
 
+local DailySectionListModel = require("models.feed.DailySectionListModel")
+local function showDailySectionListDialog(sectionId)
+  import "androidx.appcompat.widget.LinearLayoutCompat"
+  import "com.hydrogen.view.CustomSwipeRefresh"
+  import "androidx.recyclerview.widget.RecyclerView"
+  import "com.google.android.material.dialog.MaterialAlertDialogBuilder"
+
+  local dialogViews = {}
+  local layout = Layouts.pages.simple_list.main
+
+  local dialogView = loadlayout(layout, dialogViews)
+  local toolbar = dialogViews.toolbar
+  toolbar.parent.removeView(toolbar)
+  -- 背景透明
+  dialogViews.main_container.backgroundColor = 0
+  local dialog = MaterialAlertDialogBuilder(activity)
+  .setTitle("推荐收藏夹")
+  .setView(dialogView)
+  .setPositiveButton("关闭", nil)
+  .show()
+
+  local model = DailySectionListModel(sectionId)
+  model:init(dialogViews.recycler_view, dialogViews.swipe_refresh)
+  model:refresh()
+
+  dialog.onDismiss = function()
+    model:destroy()
+  end
+end
+
 function BrowserFragment:initWebView()
   local views = self.views
   self.webView = views.webview
@@ -94,6 +123,9 @@ function BrowserFragment:initWebView()
   :setSettings({
     pageType = self.pageType
   })
+  -- 开启文件上传
+  local thisFragment = self:getFragment()
+  self.webViewHelper:enableFileUpload(thisFragment)
 
   local ua = self.ua
   if ua == "pc" then
@@ -108,7 +140,15 @@ function BrowserFragment:initWebView()
   self.webViewHelper:setWebViewClient({
     shouldOverrideUrlLoading = function(view, url)
       -- 知乎日报特殊处理
-      if url:find("^zhdaiy://") then
+      if url:find("^zhdaily://") then
+        -- 处理 section 跳转
+        local sectionId = url:match("section%?id=(%d+)")
+        if sectionId then
+          -- 跳转到专栏/专题页面
+          showDailySectionListDialog(sectionId)
+          return true
+        end
+
         local realUrl = url:match("url=([^&]+)")
         if realUrl then
           Helpers.ZhihuParser.goUrl(realUrl)

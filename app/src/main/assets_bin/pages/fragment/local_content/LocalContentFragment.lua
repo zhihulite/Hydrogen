@@ -8,7 +8,6 @@ import "android.view.View"
 
 local BaseFragment = require("pages.base.BaseFragment")
 local WebViewHelper = require("components.views.WebViewHelper")
-local MenuItem = luajava.bindClass("android.view.MenuItem")
 
 local LocalContentFragment = Extensions.Class(BaseFragment, {"local_content"})
 

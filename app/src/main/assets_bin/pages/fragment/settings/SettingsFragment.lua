@@ -468,7 +468,7 @@ function SettingsFragment:showBlockWordsDialog()
 end
 
 function SettingsFragment:showHomeLayoutDialog()
-  local config = Extensions.Config.getString(SharedDataKeys.HOME_TAB_ORDER, "推荐,热榜,关注")
+  local config = Extensions.Config.getString(SharedDataKeys.HOME_TAB_ORDER)
   local enabledTabs = {}
   for tab in config:gmatch('[^,]+') do
     table.insert(enabledTabs, tab)

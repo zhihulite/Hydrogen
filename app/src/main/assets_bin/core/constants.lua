@@ -28,7 +28,6 @@ M.SharedDataKeys = {
   HOT_CLOSE_HOTNESS = "热榜关闭热度",
   CLOSE_RECOMMEND_ALL_SECTION = "关闭全站",
   FOLLOW_DEFAULT_TAB = "设置关注默认选中栏",
-  HOME_BOTTOM_BAR = "设置主页底栏排列",
 
   -- 缓存设置
   AUTO_CLEAN_CACHE = "自动清理缓存",
@@ -72,15 +71,14 @@ M.defaults = {
   [M.SharedDataKeys.SCROLL_SENSE] = 2.5, -- 左右滑动倍数阈值
   [M.SharedDataKeys.SWITCH_WEBVIEW] = false, -- 切换WebView
   [M.SharedDataKeys.USE_SYSTEM_FONT] = false, -- 使用系统字体
-  [M.SharedDataKeys.CUSTOM_WEB_FONT] = "", -- 自定义网页字体
-  [M.SharedDataKeys.BLOCK_WORDS] = "", -- 屏蔽词列表
+  [M.SharedDataKeys.CUSTOM_WEB_FONT] = nil, -- 自定义网页字体
+  [M.SharedDataKeys.BLOCK_WORDS] = nil, -- 屏蔽词列表
 
   -- 主页设置
   [M.SharedDataKeys.HOT_CLOSE_IMAGE] = false, -- 热榜关闭图片
   [M.SharedDataKeys.HOT_CLOSE_HOTNESS] = false, -- 热榜关闭热度
   [M.SharedDataKeys.CLOSE_RECOMMEND_ALL_SECTION] = false, -- 关闭全站
   [M.SharedDataKeys.FOLLOW_DEFAULT_TAB] = nil, -- 关注默认Tab
-  [M.SharedDataKeys.HOME_BOTTOM_BAR] = "", -- 主页底栏排列
 
   -- 缓存设置
   [M.SharedDataKeys.AUTO_CLEAN_CACHE] = false, -- 自动清理缓存
@@ -92,8 +90,8 @@ M.defaults = {
   [M.SharedDataKeys.USE_SIMPLE_ANIMATION] = false, -- 默认关闭，保留共享元素动画
 
   -- 用户信息
-  [M.SharedDataKeys.USER_ID] = "", -- 用户ID
-  [M.SharedDataKeys.SIGN_IN_DATA] = "", -- 登录凭证JSON
+  [M.SharedDataKeys.USER_ID] = nil, -- 用户ID
+  [M.SharedDataKeys.SIGN_IN_DATA] = nil, -- 登录凭证JSON
 
   -- 其他
   [M.SharedDataKeys.VOLUME_SWITCH_TAB] = false, -- 音量键切换Tab
@@ -102,7 +100,7 @@ M.defaults = {
   [M.SharedDataKeys.ALLOW_LOAD_CODE] = false, -- 允许加载代码
   [M.SharedDataKeys.ERUDA] = false, -- Eruda调试工具
   [M.SharedDataKeys.AUTO_CHECK_UPDATE] = true, -- 自动检测更新
-  [M.SharedDataKeys.UDID] = "", -- 唯一id
+  [M.SharedDataKeys.UDID] = nil, -- 唯一id
   [M.SharedDataKeys.SEARCH_URL_TEMPLATE] = "https://www.bing.com/search?q=site%3Azhihu.com%20", -- 搜索引擎模板
   [M.SharedDataKeys.FEED_CACHE_TIP] = false, -- 主页重复缓存提示
   [M.SharedDataKeys.IGNORED_VERSION] = nil, -- 忽略版本号

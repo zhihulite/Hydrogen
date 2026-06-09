@@ -20,6 +20,10 @@ import "java.io.File"
 import "java.io.FileInputStream"
 import "com.hydrogen.LuaWebViewClientCreator"
 import "com.hydrogen.LuaWebChromeClientCreator"
+import "androidx.activity.result.ActivityResultCallback"
+import "androidx.activity.result.contract.ActivityResultContracts"
+import "android.webkit.ValueCallback"
+import "android.webkit.WebChromeClient"
 
 local M = {}
 local LuaWebView = luajava.bindClass("com.hydrogen.view.LuaWebView")
@@ -48,8 +52,29 @@ local function downloadFile(url, userAgent, contentDisposition, mimeType, conten
   .show()
 end
 
+-- 辅助函数：自动判断 MIME 类型
+local function getMimeType(acceptTypes)
+  if not acceptTypes or #acceptTypes == 0 then
+    return "*/*"
+  end
+
+  local mime = acceptTypes[0]
+
+  if mime:find("image") or mime == "*/*" then
+    return "image/*"
+   elseif mime:find("video") then
+    return "video/*"
+   elseif mime:find("audio") then
+    return "audio/*"
+   elseif mime:find("pdf") then
+    return "application/pdf"
+  end
+
+  return mime
+end
+
 function M.new(webView)
-  if not luajava.instanceof(webView,LuaWebView) then
+  if not luajava.instanceof(webView, LuaWebView) then
     error("仅支持 LuaWebView 使用")
   end
 
@@ -58,9 +83,56 @@ function M.new(webView)
     settings = {},
     bridge = nil,
     isDestroyed = false,
+    fileUploadEnabled = false,
+    fileUploadOwner = nil,
+    fileUploadLauncher = nil,
+    filePathCallback = nil,
   }
   setmetatable(self, { __index = M })
   self.bridge = LuaWebViewBridge.addBridge(self.webView, self.settings)
+
+  return self
+end
+
+-- 开启文件上传功能，传入 Activity 或 Fragment
+function M:enableFileUpload(owner)
+  if not self:isAlive() then return self end
+
+  if not owner then
+    error("enableFileUpload: 无法获取 Activity/Fragment")
+    return self
+  end
+
+  self.fileUploadEnabled = true
+  self.fileUploadOwner = owner
+
+  -- 注册 Launcher
+  self.fileUploadLauncher = self.fileUploadOwner.registerForActivityResult(
+  ActivityResultContracts.OpenDocument(),
+  luajava.createProxy("androidx.activity.result.ActivityResultCallback", {
+    onActivityResult = function(uri)
+      if self.filePathCallback then
+        local UriArray = luajava.newArray(luajava.bindClass("android.net.Uri"), 1)
+        UriArray[0] = uri
+        self.filePathCallback.onReceiveValue(UriArray)
+        self.filePathCallback = nil
+      end
+    end
+  })
+  )
+
+  return self
+end
+
+-- 关闭文件上传功能
+function M:disableFileUpload()
+  self.fileUploadEnabled = false
+  if self.filePathCallback then
+    self.filePathCallback.onReceiveValue(nil)
+    self.filePathCallback = nil
+  end
+  self.fileUploadLauncher = nil
+  self.fileUploadOwner = nil
   return self
 end
 
@@ -284,6 +356,11 @@ function M:setWebChromeClient(callbacks)
     getDefaultVideoPoster = true,
   }
 
+  -- 如果开启了文件上传，也要保护这些回调
+  if self.fileUploadEnabled then
+    protectedCallbacks.onShowFileChooser = true
+  end
+
   for k in pairs(callbacks) do
     if protectedCallbacks[k] then
       error("禁止覆盖 WebChromeClient 的默认回调: " .. k)
@@ -348,6 +425,21 @@ function M:setWebChromeClient(callbacks)
       return blankIcon
     end,
   }
+
+  -- 如果开启了文件上传，添加上传回调
+  if self.fileUploadEnabled then
+    defaultCallbacks.onShowFileChooser = function(webView, filePathCallback, fileChooserParams)
+      self.filePathCallback = filePathCallback
+      local acceptTypes = fileChooserParams.getAcceptTypes()
+      local mimeType = getMimeType(acceptTypes)
+      if self.fileUploadLauncher then
+        local mimeArray = luajava.newArray(luajava.bindClass("java.lang.String"), 1)
+        mimeArray[0] = mimeType
+        self.fileUploadLauncher.launch(mimeArray)
+      end
+      return true
+    end
+  end
 
   local merged = {}
 
@@ -501,6 +593,8 @@ function M:destroy()
     self.webView.destroy()
     self.webView = nil
   end
+  -- 清理文件上传回调
+  self:disableFileUpload()
 end
 
 return M

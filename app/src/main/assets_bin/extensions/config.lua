@@ -21,12 +21,10 @@ end
 function M.init(defaults)
   defaultConfig = defaults or {}
   for key, defaultVal in pairs(defaultConfig) do
-    -- 只有当存储值无效（nil或空字符串）时才设置默认值
-    if not isValidValue(M.getRaw(key)) then
-      -- 如果默认值本身是空字符串，也存储为空字符串
-      if defaultVal == "" then
-        setSharedData(key, "")
-      else
+    -- 只有默认值有效才继续
+    if isValidValue(defaultVal) then
+      -- 只有当存储值无效（nil或空字符串）时才设置默认值
+      if not isValidValue(M.getRaw(key)) then
         M.set(key, defaultVal)
       end
     end
@@ -38,27 +36,20 @@ function M.getRaw(key)
   return getSharedData(key)
 end
 
--- 获取配置（如果找不到或为空字符串就返回默认值）
+-- 获取配置
 function M.get(key)
   local val = getSharedData(key)
-  if not isValidValue(val) and defaultConfig[key] ~= nil then
-    -- 如果默认值是空字符串，直接返回空字符串
-    return defaultConfig[key]
-  end
-  return val
+  if isValidValue(val) then return val end
+  local defaultValue = defaultConfig[key]
+  return isValidValue(defaultValue) and defaultValue or nil
 end
 
--- 获取配置（带默认值）
-function M.getDefault(key, defaultValue)
-  local val = M.get(key)
-  return isValidValue(val) and val or defaultValue
-end
 
 -- 设置配置
 function M.set(key, value)
   if value == nil then
     setSharedData(key, nil)
-  else
+   else
     setSharedData(key, tostring(value))
   end
 end
