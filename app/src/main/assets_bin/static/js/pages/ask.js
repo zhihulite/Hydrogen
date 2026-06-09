@@ -29,21 +29,21 @@
         },
 
         initFetchInterceptor() {
-            FetchManager.registerOnce('ask',
-                (url) => url && url.includes('/api/v4/questions'),
-                async (response) => {
-                    if (response.status === 200) {
-                        const res = await response.json();
-                        console.log('提问成功', res);
+            FetchManager.registerOnce('ask', {
+                matcher: (url) => url && url.includes('/api/v4/questions'),
+                after: async (res) => {
+                    if (res.status === 200) {
+                        const data = await res.json();
+                        console.log('提问成功', data);
                         HydrogenCore.api.toast("提问成功");
                     } else {
-                        console.log('提问失败，状态码:', response.status);
+                        console.log('提问失败，状态码:', res.status);
                         HydrogenCore.api.toast('提问失败');
                     }
-
                     HydrogenCore.api.finishPage();
+                    return res;
                 }
-            );
+            });
         },
 
         autoClickAskButton() {

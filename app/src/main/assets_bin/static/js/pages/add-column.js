@@ -20,17 +20,18 @@
         },
 
         initFetchInterceptor() {
-            FetchManager.registerOnce('add_column',
-                (url) => url && url.includes('/api/v4/columns/request'),
-                async (response) => {
-                    if (response.status === 200) {
-                        const res = await response.json();
-                        console.log('创建专栏成功', res);
+            FetchManager.registerOnce('add_column', {
+                matcher: (url) => url && url.includes('/api/v4/columns/request'),
+                after: async (res) => {
+                    if (res.status === 200) {
+                        const data = await res.json();
+                        console.log('创建专栏成功', data);
                     } else {
-                        console.log('创建专栏失败，状态码:', response.status);
+                        console.log('创建专栏失败，状态码:', res.status);
                     }
+                    return res;
                 }
-            );
+            });
         },
 
         autoClickCreateButton() {

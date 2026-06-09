@@ -1,5 +1,33 @@
 ﻿// answer.js - 回答页面优化
 (() => {
+    // HTTP 拦截器模块
+    const HttpInterceptor = {
+        run() {
+            // 拦截推荐阅读请求（阻断）
+            FetchManager.register('block-related-readings', {
+                matcher: (url) => url && url.includes('related-readings'),
+                before: () => false
+            });
+
+            // 拦截回答接口，禁用打赏功能
+            FetchManager.registerOnce('disable-reward', {
+                matcher: (url) => url?.includes('/api/v4/answers/'),
+                after: async (res) => {
+                    const data = await res.json();
+                    if (!data?.reward_info) return null;
+                    data.reward_info = {
+                        can_open_reward: false,
+                        is_rewardable: false,
+                        reward_member_count: 0,
+                        reward_total_money: 0,
+                        tagline: ""
+                    };
+                    return new Response(JSON.stringify(data), { status: res.status, headers: res.headers });
+                }
+            });
+        }
+    };
+
     // 样式注入模块
     const StyleInjector = {
         run() {
@@ -168,7 +196,7 @@
             try {
                 const res = await fetch(`https://www.zhihu.com/appview/v2/answer/${id}`);
                 const html = await res.text();
-                
+
                 const sourceRich = new DOMParser().parseFromString(html, 'text/html').querySelector('.RichText');
                 const targetRich = document.querySelector('.RichText');
 
@@ -191,9 +219,9 @@
         loaded: false,
 
         run(callback) {
-            FetchManager.registerOnce('answer-wait-load',
-                (url) => url && url.includes('/api/v4/answers/'),
-                () => {
+            FetchManager.registerOnce('answer-wait-load', {
+                matcher: (url) => url && url.includes('/api/v4/answers/'),
+                before: () => {
                     setTimeout(() => {
                         if (!this.loaded) {
                             this.loaded = true;
@@ -201,7 +229,7 @@
                         }
                     }, 500);
                 }
-            );
+            });
 
             if (document.querySelector('.RichText')) {
                 setTimeout(() => {
@@ -218,6 +246,7 @@
     const AnswerPage = {
         name: 'AnswerPage',
         init() {
+            HttpInterceptor.run();
             StyleInjector.run();
             OrientationHandler.run();
 

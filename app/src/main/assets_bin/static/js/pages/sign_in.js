@@ -8,17 +8,18 @@
         },
 
         initFetchInterceptor() {
-            FetchManager.registerOnce('sign_in',
-                (url) => url && url.includes('oauth'),
-                async (response) => {
-                    if (response.status === 200) {
-                        const data = await response.text();
+            FetchManager.registerOnce('sign_in', {
+                matcher: (url) => url && url.includes('oauth'),
+                after: async (res) => {
+                    if (res.status === 200) {
+                        const data = await res.text();
                         if (data && data.includes('access_token')) {
                             HydrogenCore.api.sendMessage('login_success', data);
                         }
                     }
+                    return res;
                 }
-            );
+            });
         }
     };
 

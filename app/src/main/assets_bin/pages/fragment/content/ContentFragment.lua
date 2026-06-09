@@ -145,6 +145,11 @@ function ContentFragment:initWebView()
         })
         return true
       end
+      -- 匹配在知乎打开的内容页URL模式（如视频），防止误触发“在知乎打开”按钮
+      local isContentPage = url:find(string.format("oia/%s/%s", self.contentType, self.contentId))
+      if isContentPage then
+        return true
+      end
       Helpers.UI.copyText(url)
       Helpers.ZhihuParser.goUrl(url)
       return true
