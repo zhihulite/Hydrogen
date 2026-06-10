@@ -79,7 +79,15 @@ function SearchFragment:initViews()
 
   self:setupAdapter("hot", views.hot_grid)
   self:setupAdapter("suggest", views.suggest_list)
-  self.model:loadHotSearch()
+
+  -- 判断是否关闭热门搜索
+  local closeHotSearch = Extensions.Config.getBool(Constants.SharedDataKeys.CLOSE_HOT_SEARCH)
+  if not closeHotSearch then
+    self.model:loadHotSearch()
+   else
+    -- 隐藏热门搜索区域
+    views.hot_section.visibility = View.GONE
+  end
 end
 
 function SearchFragment:setupToolbar()
@@ -150,6 +158,7 @@ function SearchFragment:performSearch(query)
   Router.go("browser", { url = self.searchUrlTemplate .. NetWork.urlEncode(query) })
 
   SearchHistoryService.add(query)
+  self:loadHistory()
   self.searchView.setQuery("", false)
   -- 收起键盘
   local imm = activity.getSystemService(Context.INPUT_METHOD_SERVICE)

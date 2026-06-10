@@ -260,16 +260,23 @@ function SettingsFragment:initListView()
   views.recycler_view.layoutManager = LinearLayoutManager(activity)
 end
 
--- 更新 items 中的开关状态
+-- 更新 items 中的开关状态（单个）
 function SettingsFragment:updateItemChecked(key, value)
-  for i, item in ipairs(self.items) do
-    if item.key == key then
-      item.checked = value
-      break
+  self:updateMultipleItems({ [key] = value })
+end
+
+-- 批量更新多个开关项的 UI 状态
+function SettingsFragment:updateMultipleItems(updates)
+  if not self.adapter then return end
+
+  for key, value in pairs(updates) do
+    for i, item in ipairs(self.items) do
+      if item.key == key then
+        item.checked = value
+        self.adapter.notifyItemChanged(i - 1)
+        break
+      end
     end
-  end
-  if self.adapter then
-    self.adapter.notifyDataSetChanged()
   end
 end
 
@@ -278,7 +285,7 @@ function SettingsFragment:onSwitchChanged(key, value)
   if key == SharedDataKeys.NIGHT_MODE then
     if value and Extensions.Config.getBool(SharedDataKeys.AUTO_NIGHT_MODE) then
       Extensions.Config.set(SharedDataKeys.AUTO_NIGHT_MODE, false)
-      self:updateItemChecked(SharedDataKeys.AUTO_NIGHT_MODE, false)
+      self:updateMultipleItems({ [SharedDataKeys.AUTO_NIGHT_MODE] = false })
       tip("已自动关闭「自动跟随系统」")
     end
     Extensions.Config.set(key, value)
@@ -289,7 +296,7 @@ function SettingsFragment:onSwitchChanged(key, value)
    elseif key == SharedDataKeys.AUTO_NIGHT_MODE then
     if value and Extensions.Config.getBool(SharedDataKeys.NIGHT_MODE) then
       Extensions.Config.set(SharedDataKeys.NIGHT_MODE, false)
-      self:updateItemChecked(SharedDataKeys.NIGHT_MODE, false)
+      self:updateMultipleItems({ [SharedDataKeys.NIGHT_MODE] = false })
       tip("已自动关闭「夜间模式」")
     end
     Extensions.Config.set(key, value)
@@ -344,6 +351,8 @@ function SettingsFragment:onSwitchChanged(key, value)
       tip(value and "调试模式已开启，重启生效" or "调试模式已关闭，重启生效")
      elseif key == SharedDataKeys.NO_IMAGE then
       tip(value and "无图模式已开启，下次刷新生效" or "无图模式已关闭，下次刷新生效")
+     elseif key == SharedDataKeys.AUTO_OPEN_CLIPBOARD then 
+      tip(value and "自动打开剪贴板链接已开启，重启生效" or "自动打开剪贴板链接已关闭，重启生效")
     end
   end
 end
@@ -536,11 +545,30 @@ function SettingsFragment:showHomeLayoutDialog()
         views.title.text = item.title
         views.radio.checked = item.isHome
         views.itemRoot.onClick = function()
-          for _, v in ipairs(pageData) do
-            if v.title then v.isHome = false end
+          local currentPos = holder.getAdapterPosition()
+          if currentPos == -1 then return end -- 无效位置
+
+          -- 找到当前选中的项
+          local currentHomeIndex = nil
+          for i, v in ipairs(pageData) do
+            if v.title and v.isHome then
+              currentHomeIndex = i
+              break
+            end
           end
+
+          -- 如果点击的就是当前选中的项，不做任何操作
+          if currentHomeIndex == currentPos + 1 then return end
+
+          -- 取消之前的选中
+          if currentHomeIndex then
+            pageData[currentHomeIndex].isHome = false
+            adapter.notifyItemChanged(currentHomeIndex - 1)
+          end
+
+          -- 设置新的选中
           item.isHome = true
-          adapter.notifyDataSetChanged()
+          adapter.notifyItemChanged(currentPos)
         end
       end
     end,
@@ -622,15 +650,15 @@ function SettingsFragment:showCustomFontDialog()
 
   views.font_switch.setOnCheckedChangeListener(luajava.createProxy("android.widget.CompoundButton$OnCheckedChangeListener", {
     onCheckedChanged = function(switchView, isChecked)
-    views.font_container.visibility = isChecked and View.VISIBLE or View.GONE
-    if not isChecked then
-      local fontDir = Extensions.File.getAppDir("fonts")
-      if Extensions.File.exists(fontDir) then
-        Extensions.File.delete(fontDir)
+      views.font_container.visibility = isChecked and View.VISIBLE or View.GONE
+      if not isChecked then
+        local fontDir = Extensions.File.getAppDir("fonts")
+        if Extensions.File.exists(fontDir) then
+          Extensions.File.delete(fontDir)
+        end
+        Extensions.Config.delete(SharedDataKeys.CUSTOM_WEB_FONT)
+        tip("已关闭自定义字体，重启生效")
       end
-      Extensions.Config.delete(SharedDataKeys.CUSTOM_WEB_FONT)
-      tip("已关闭自定义字体，重启生效")
-    end
   end}))
 
   -- 使用 App 字体

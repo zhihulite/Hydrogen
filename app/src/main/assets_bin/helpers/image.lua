@@ -11,6 +11,18 @@ local srcLuaDir = luajava.luadir
 -- 加载图片
 function M.load(view, url, options)
   if not view or not url then return end
+  local noImage = Extensions.Config.getBool(Constants.SharedDataKeys.NO_IMAGE)
+
+  -- 无图模式：只显示占位图，不加载网络图片
+  if noImage then
+    -- 获取占位图：优先使用 options 中的，否则使用默认
+    local placeholder = options and options.placeholder or Helpers.Static.image("logo")
+    -- 使用 Glide 加载本地占位图（不会发起网络请求）
+    Glide.with(activity)
+    .load(placeholder)
+    .into(view)
+    return
+  end
 
   local request = Glide.with(activity).load(url)
 

@@ -59,6 +59,14 @@ function CommentModel:ctor(contentId, contentType, parentContentType)
   self.requestHeadKey = "defaultHead"
   self.needLogin = false
   self.expandedGroups = {}
+
+  -- 是否为子评论：存在父类型且与当前类型不同
+  local isSubComment = self.parentContentType
+  and self.parentContentType ~= self.contentType
+
+  if isSubComment then
+    self.orderBy = "ts"
+  end
 end
 
 function CommentModel:getInitialUrl()
@@ -216,10 +224,10 @@ function CommentModel:parseItem(rawItem)
   end
 
   local commentTime = formatTimestamp(rawItem.created_time)
-  local commentBottom =  commentTime
+  local commentBottom = commentTime
   local comment_tag = rawItem.comment_tag and rawItem.comment_tag[1]
   if comment_tag and comment_tag.type == "ip_info" then
-    commentBottom = comment_tag.text .. " · ".. commentTime
+    commentBottom = commentTime .. " · ".. comment_tag.text
   end
 
   return {
@@ -277,7 +285,7 @@ function CommentModel:createAdapter(dataList)
       end
 
       if item.hasUrl then
-        views.comment_content.movementMethod  = linkMovementMethodInstance
+        views.comment_content.movementMethod = linkMovementMethodInstance
       end
 
       if item.childCount > 0 then
@@ -350,7 +358,7 @@ function CommentModel:setupChildRecycler(childRecycler, item)
       views.comment_bottom.text = childItem.commentBottom or ""
 
       if childItem.hasUrl then
-        views.comment_content.movementMethod  = linkMovementMethodInstance
+        views.comment_content.movementMethod = linkMovementMethodInstance
       end
 
       views.like_count.text = tostring(childItem.likeCount)

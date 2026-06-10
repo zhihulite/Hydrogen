@@ -16,24 +16,21 @@ local CommentModel = require("models.content.CommentModel")
 function M:initListView()
   local model = self.model
   local views = self.sheetViews
+  -- 是否为子评论的判断
+  local isSubComment = self.parentContentType
+  and self.parentContentType ~= self.contentType
 
-  local menuItems = {
-    {
-      id = "sort_score",
-      title = "默认",
-      click = function() self:changeSortOrder("score") end,
-    },
-    {
-      id = "sort_ts",
-      title = "最新",
-      click = function() self:changeSortOrder("ts") end,
-    },
+  local menuItems = isSubComment and {} or {
+    { id = "sort_score", title = "默认", click = function() self:changeSortOrder("score") end },
+    { id = "sort_ts", title = "最新", click = function() self:changeSortOrder("ts") end },
   }
 
-  Helpers.UI.setupToolbar(views.toolbar, {  
-    title = "评论",
+  Helpers.UI.setupToolbar(views.toolbar, {
+    title = isSubComment and "评论回复" or "评论",
     menu = menuItems,
-    navCallback = function() self.bottomSheet.dismiss() end,
+    navCallback = function()
+      self.bottomSheet:dismiss()
+    end,
   })
 
   model:setupSingle(views.recycler_view, views.swipe_refresh)
@@ -97,7 +94,6 @@ function M:changeSortOrder(orderBy)
 end
 
 function M:updateHeader()
-  self.sheetViews.toolbar.title = "评论"
   -- 设置子标题
   self.sheetViews.toolbar.subtitle = string.format("共%d条", self.totalCount)
 end

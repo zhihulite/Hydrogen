@@ -56,8 +56,6 @@ return {
           textSize  = AppTextStyle.titleSmall.size,
           typeface  = AppTextStyle.titleSmall.font,
           textColor = AppTextStyle.titleSmall.color,
-          maxLines = 2,
-          ellipsize = "end",
         },
         {
           LinearLayoutCompat,
