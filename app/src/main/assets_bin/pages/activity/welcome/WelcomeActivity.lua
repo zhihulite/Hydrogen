@@ -262,7 +262,6 @@ function WelcomeActivity:createPermissionPage()
     layout_width = "fill",
     layout_height = "fill",
     orientation = "vertical",
-    padding = "16dp",
     {
       MaterialTextView,
       text = "以下权限仅在实际使用时申请，无需提前授权。",
@@ -271,6 +270,8 @@ function WelcomeActivity:createPermissionPage()
       typeface = AppTextStyle.bodyMedium.font,
       gravity = "center",
       layout_marginBottom = "24dp",
+      layout_marginLeft = AppCardStyle.basic.marginLeft,
+      layout_marginRight = AppCardStyle.basic.marginRight,
     },
     {
       NestedScrollView,
@@ -296,15 +297,18 @@ function WelcomeActivity:createPermissionPage()
         MaterialCardView,
         layout_width = "fill",
         layout_height = "wrap",
-        layout_margin = "8dp",
-        layout_marginLeft = "16dp",
-        layout_marginRight = "16dp",
+        layout_marginLeft = AppCardStyle.basic.marginLeft,
+        layout_marginRight = AppCardStyle.basic.marginRight,
+        layout_marginTop = AppCardStyle.basic.marginTop,
+        layout_marginBottom = AppCardStyle.basic.marginBottom,
         {
           LinearLayoutCompat,
           layout_width = "fill",
           orientation = "horizontal",
           gravity = "center_vertical",
-          padding = "16dp",
+          paddingLeft = "16dp",
+          paddingRight = "16dp",
+          minHeight = "56dp",
           {
             LinearLayoutCompat,
             layout_width = 0,
@@ -323,7 +327,7 @@ function WelcomeActivity:createPermissionPage()
               textSize = AppTextStyle.bodySmall.size,
               textColor = AppTextStyle.bodySmall.color,
               typeface = AppTextStyle.bodySmall.font,
-              layout_marginTop = "4dp",
+              layout_marginTop = "2dp",
             }
           }
         }

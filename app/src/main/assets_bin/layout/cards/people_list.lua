@@ -9,7 +9,6 @@ import "com.google.android.material.imageview.ShapeableImageView"
 import "com.google.android.material.shape.ShapeAppearanceModel"
 import "com.google.android.material.shape.RelativeCornerSize"
 
-local colors = AppTheme.colors
 
 local circleShapeBuilder = ShapeAppearanceModel.builder()
 circleShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)
@@ -34,7 +33,10 @@ return {
       LinearLayoutCompat,
       orientation = "horizontal",
       layout_width = "match_parent",
-      padding = "12dp",
+      paddingLeft = AppCardStyle.basic.innerPaddingLeft,
+      paddingRight = AppCardStyle.basic.innerPaddingRight,
+      paddingTop = AppCardStyle.basic.innerPaddingTop,
+      paddingBottom = AppCardStyle.basic.innerPaddingBottom,
       gravity = "center_vertical",
       {
         ShapeableImageView,

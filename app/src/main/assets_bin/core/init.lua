@@ -304,7 +304,13 @@ _G.AppCardStyle = {
     marginLeft = dp2px(12), -- 左边距12dp
     marginRight = dp2px(12), -- 右边距12dp
     marginTop = dp2px(6), -- 上边距6dp
-    marginBottom = dp2px(0) -- 下边距0dp
+    marginBottom = dp2px(0), -- 下边距0dp
+
+    -- 内部 View 内边距
+    innerPaddingLeft = dp2px(12), -- 左内边距12dp
+    innerPaddingRight = dp2px(12), -- 右内边距12dp
+    innerPaddingTop = dp2px(12), -- 上内边距12dp
+    innerPaddingBottom = dp2px(12) -- 下内边距12dp
   },
   -- 子卡片样式（嵌套卡片）
   child = {
@@ -322,8 +328,8 @@ _G.AppCardStyle = {
     marginBottom = dp2px(0), -- 下边距0dp
 
     -- 内部 View 内边距
-    innerPaddingLeft = dp2px(12), -- 左内边距12dp
-    innerPaddingRight = dp2px(12), -- 右内边距12dp
+    innerPaddingLeft = dp2px(16), -- 左内边距16dp
+    innerPaddingRight = dp2px(16), -- 右内边距16dp
     innerPaddingTop = dp2px(2), -- 上内边距2dp
     innerPaddingBottom = dp2px(2) -- 下内边距2dp
   }

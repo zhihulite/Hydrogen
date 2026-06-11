@@ -33,7 +33,10 @@ return {
       orientation = "horizontal",
       layout_width = "match_parent",
       layout_height = "wrap_content",
-      padding = "16dp",
+      paddingLeft = AppCardStyle.basic.innerPaddingLeft,
+      paddingRight = AppCardStyle.basic.innerPaddingRight,
+      paddingTop = AppCardStyle.basic.innerPaddingTop,
+      paddingBottom = AppCardStyle.basic.innerPaddingBottom,
       {
         MaterialTextView,
         id = "rank",

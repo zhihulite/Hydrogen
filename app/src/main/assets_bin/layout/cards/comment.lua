@@ -44,7 +44,10 @@ return {
         id = "parent_comment",
         layout_width = "match_parent",
         layout_height = "wrap_content",
-        padding = "12dp",
+        paddingLeft = AppCardStyle.basic.innerPaddingLeft,
+        paddingRight = AppCardStyle.basic.innerPaddingRight,
+        paddingTop = AppCardStyle.basic.innerPaddingTop,
+        paddingBottom = AppCardStyle.basic.innerPaddingBottom,
         {
           LinearLayoutCompat,
           orientation = "horizontal",

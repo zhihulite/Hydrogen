@@ -191,7 +191,6 @@ function M:showSelectionDialog(opts)
       {
         MaterialDivider,
         layout_width = "match_parent",
-        layout_height = "1dp",
         layout_height = "wrap_content",
       },
       {

@@ -44,7 +44,6 @@ import "com.google.android.material.textview.MaterialTextView"
 import "com.google.android.material.imageview.ShapeableImageView"
 -- 创建适配器（自带布局和点击事件）
 function AtUserModel:createAdapter(dataList, key)
-  local colors = AppTheme.colors
   
   local circleShapeBuilder = ShapeAppearanceModel.builder()
   circleShapeBuilder.allCornerSizes = RelativeCornerSize(0.5)

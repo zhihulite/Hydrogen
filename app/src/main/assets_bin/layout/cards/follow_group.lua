@@ -35,7 +35,10 @@ return {
       LinearLayoutCompat,
       layout_width = "match_parent",
       orientation = "vertical",
-      padding = "12dp",
+      paddingLeft = AppCardStyle.basic.innerPaddingLeft,
+      paddingRight = AppCardStyle.basic.innerPaddingRight,
+      paddingTop = AppCardStyle.basic.innerPaddingTop,
+      paddingBottom = AppCardStyle.basic.innerPaddingBottom,
       {
         LinearLayoutCompat,
         orientation = "horizontal",

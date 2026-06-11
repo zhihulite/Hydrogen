@@ -31,8 +31,10 @@ return {
       layout_width = "fill",
       layout_height = "wrap",
       gravity = "center_vertical",
-      paddingLeft = "16dp",
-      paddingRight = "16dp",
+      paddingLeft = AppCardStyle.setting.innerPaddingLeft,
+      paddingRight = AppCardStyle.setting.innerPaddingRight,
+      paddingTop = AppCardStyle.setting.innerPaddingTop,
+      paddingBottom = AppCardStyle.setting.innerPaddingBottom,
       minHeight = "56dp",
       {
         MaterialTextView,
