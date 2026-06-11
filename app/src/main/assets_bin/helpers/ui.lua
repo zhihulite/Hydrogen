@@ -288,8 +288,8 @@ function M.clearAppCache()
   import "java.io.File"
   import "androidx.core.content.ContextCompat"
 
-  local dataDir = tostring(ContextCompat.getDataDir(activity))
-  local imageTmp = tostring(activity.externalCacheDir) .. "/images"
+  local dataDir = ContextCompat.getDataDir(activity).toString()
+  local imageTmp = activity.externalCacheDir.toString() .. "/images"
   local totalSize = 0
 
   local function countAndDelete(path)
@@ -299,7 +299,7 @@ function M.clearAppCache()
       if files then
         for _, f in ipairs(luajava.astable(files)) do
           if f.isDirectory() then
-            countAndDelete(tostring(f))
+            countAndDelete(f.toString())
            else
             totalSize = totalSize + f.length()
           end

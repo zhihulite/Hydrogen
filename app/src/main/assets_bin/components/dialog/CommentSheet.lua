@@ -20,7 +20,9 @@ function M:initListView()
   local isSubComment = self.parentContentType
   and self.parentContentType ~= self.contentType
 
-  local menuItems = isSubComment and {} or {
+  local menuItems = isSubComment and {
+    { title = "刷新", click = function() self.model:refresh() end }
+    } or {
     { id = "sort_score", title = "默认", click = function() self:changeSortOrder("score") end },
     { id = "sort_ts", title = "最新", click = function() self:changeSortOrder("ts") end },
   }
@@ -29,7 +31,7 @@ function M:initListView()
     title = isSubComment and "评论回复" or "评论",
     menu = menuItems,
     navCallback = function()
-      self.bottomSheet:dismiss()
+      self.bottomSheet.dismiss()
     end,
   })
 
@@ -100,20 +102,6 @@ end
 
 function M:onCommentClick(item)
   self:showReplyDialog(item.id, item.title)
-end
-
-function M:postComment()
-  if not Extensions.Config.has(Constants.SharedDataKeys.USER_ID) then
-    tip("请登录后使用")
-    Router.go("login")
-    return
-  end
-  local input = self.sheetViews.comment_input
-  local content = input and input.text.toString() or ""
-  if content == "" then tip("请输入内容") return end
-  self.model:postComment(content, nil, function(success)
-    if success then input.text = "" self.model:refresh() end
-  end)
 end
 
 function M:showReplyDialog(commentId, authorName)

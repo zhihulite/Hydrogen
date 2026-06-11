@@ -4,8 +4,6 @@
 local M = {}
 
 local Glide = luajava.bindClass("com.bumptech.glide.Glide")
-local RequestOptions = luajava.bindClass("com.bumptech.glide.request.RequestOptions")
-
 local srcLuaDir = luajava.luadir
 
 -- 加载图片
@@ -50,17 +48,6 @@ end
 -- 加载圆形图片
 function M.loadCircle(view, url)
   M.load(view, url, { circle = true })
-end
-
--- 获取图标路径
-function M.getIcon(name)
-  return srcLuaDir .. "/res/icons/twotone_" .. name .. "_black_24dp.png"
-end
-
--- 获取表情路径
-function M.getEmoji(name)
-  local cacheDir = activity.externalCacheDir.toString()
-  return cacheDir .. "/zemoji/" .. name .. ".png"
 end
 
 -- 清除内存缓存
