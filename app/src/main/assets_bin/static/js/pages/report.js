@@ -20,7 +20,7 @@
                         HydrogenCore.api.toast('举报失败');
                     }
                     HydrogenCore.api.finishPage();
-                    return res;
+                    return true;
                 }
             });
         }

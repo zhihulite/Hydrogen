@@ -41,7 +41,7 @@
                         HydrogenCore.api.toast('提问失败');
                     }
                     HydrogenCore.api.finishPage();
-                    return res;
+                    return true;
                 }
             });
         },

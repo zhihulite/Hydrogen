@@ -89,7 +89,7 @@ function M.getMergedModulesJS()
 
   local debug = false
   if debug then
-    local cacheDir = activity.cacheDir
+    local cacheDir = Extensions.File.getCacheDir()
     local path = cacheDir.path .. "/megred.js"
     Extensions.File.write(path, table.concat(codes, "\n"))
     print("luawebview_bridge [debug] megred.js 保存到: " .. path)

@@ -29,7 +29,7 @@
                     } else {
                         console.log('创建专栏失败，状态码:', res.status);
                     }
-                    return res;
+                    return true;
                 }
             });
         },

@@ -206,7 +206,7 @@ function ImageActivity:downloadCurrentImage()
   local url = self.imageUrls[self.currentIndex + 1]
   if not url then return end
   url = self:processImageUrl(url)
-  Extensions.File.downloadFile(url)
+  Extensions.Download.saveImageFromUrl(url)
 end
 
 function ImageActivity:setFullScreen()

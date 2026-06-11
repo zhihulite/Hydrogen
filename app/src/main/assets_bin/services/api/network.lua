@@ -118,6 +118,68 @@ function M.get(url, headers, callback, skipZse96)
   end)
 end
 
+-- 将 Lua String 转为 Java byte[]
+-- 
+-- 背景说明：
+-- 1. Lua 字符串底层可存储原始字节
+-- 2. 当 Lua 字符串作为参数传给 Java 方法时，LuaJava 根据目标参数类型决定转换方式
+--    - 目标为 String 时：LuaJava 调用 LuaState.toString(idx)，不传入 idx 该方法按 UTF-8 解码 byte[] 为 Java String（数据可能损坏）
+--    - 目标为 byte[] 时：LuaJava 直接传递原始字节数组（安全）
+-- 
+-- 拓展说明：LuaJava 将 Java 对象转为 Lua 对象的机制
+-- - Java byte[] → Lua string：通过 lua_pushlstring 直接传递原始字节（安全，保留 \0）
+-- - Java String → Lua string：按 UTF-8 编码（二进制数据会损坏）
+-- - Java 其他对象 → Lua userdata：包装为 userdata 对象
+-- 
+-- 拓展说明：跨虚拟机传递 LuaObject（LuaTable/LuaFunction 等）变成 userdata 的原因
+-- 1. LuaObject 内部持有原 LuaState 引用
+-- 2. 反序列化后，该引用指向原虚拟机而非当前虚拟机
+-- 3. pushObjectValue 判断 ref.getLuaState() == this 为 false
+-- 4. 执行 pushJavaObject(ref)，作为普通 Java 对象推入 Lua
+-- 5. 结果：type(obj) 返回 "userdata" 而非原生的 table/function
+-- 
+-- 拓展说明：compareTypes 中参数为 Object 时的行为
+-- 当 Java 方法参数类型为 Object 时，Lua 原生 table 传入时：
+-- compareTypes 内执行 Object.class.isAssignableFrom(LuaTable.class)，结果为 true
+-- 此时 Lua table 被包装为 LuaTable 对象传入 Java 方法
+-- 该对象后续若传回 Lua，其行为取决于是否与当前虚拟机绑定（同虚拟机保持原生，跨虚拟机变 userdata）
+-- 
+-- 因此需要此方法手动转换，避免依赖自动类型转换导致的数据损坏或类型丢失
+local byte = luajava.bindClass("java.lang.Byte").TYPE
+local function toByteArray(content)
+  if not content then return nil end
+  local len = #content
+  if len == 0 then return luajava.newArray(byte, 0) end
+
+  local bytes = luajava.newArray(byte, len)
+  for i = 0, len - 1 do
+    local b = content:byte(i + 1)
+    if b > 127 then b = b - 256 end
+    bytes[i] = b
+  end
+  return bytes
+end
+
+-- GET请求（原始字节，手动转换为 byte[]）
+function M.getRaw(url, headers, callback, skipZse96)
+  if canLoad == false then return false end
+
+  if type(headers) == "function" then
+    callback = headers
+    headers = nil
+  end
+  headers = headers or _G.Headers.defaultHead
+
+  if not skipZse96 and url:find("https://www.zhihu.com") and zse96Encrypt then
+    url, headers = zse96Encrypt(url)
+  end
+
+  Http.get(url, headers, function(code, content, raw, respHeaders)
+    local bytes = toByteArray(content)
+    callback(code, bytes)
+  end)
+end
+
 -- POST请求
 function M.post(url, data, headers, callback)
   if canLoad == false then return false end

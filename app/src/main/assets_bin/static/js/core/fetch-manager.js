@@ -11,10 +11,10 @@
             this.interceptors.push({ name, matcher, before, after });
         },
 
-        // 注册单次拦截器（返回 null 可保留，否则执行后自动移除）
+        // 注册单次拦截器（返回非 undefined 则消费并移除，无返回值则保留）
         registerOnce(name, options) {
             const { matcher, before, after } = options;
-            this.onceInterceptors.push({ name, matcher, before, after, once: true });
+            this.onceInterceptors.push({ name, matcher, before, after });
         },
 
         // 移除拦截器
@@ -26,7 +26,7 @@
         // 执行拦截器列表
         async _run(list, url, init, response = null) {
             for (let i = 0; i < list.length; i++) {
-                const { matcher, before, after, once } = list[i];
+                const { matcher, before, after } = list[i];
                 if (!matcher(url)) continue;
 
                 const hook = response ? after : before;
@@ -35,9 +35,12 @@
                 const result = await hook(response?.clone() ?? url, response ? url : init);
                 if (result === false) return { blocked: true };           // 阻断请求
                 if (result instanceof Response) return { response: result }; // 替换响应
-
-                // 单次拦截器：返回 null 则保留，否则移除
-                if (once && result !== null) { list.splice(i, 1); i--; }
+                
+                // 单次拦截器：有返回值则消费，无返回值则保留
+                if (list === this.onceInterceptors && result !== undefined) {
+                    list.splice(i, 1);
+                    i--;
+                }
             }
             return {};
         },

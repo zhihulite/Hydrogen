@@ -228,6 +228,7 @@
                             callback();
                         }
                     }, 500);
+                    return true
                 }
             });
 

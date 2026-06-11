@@ -15,9 +15,9 @@
                         const data = await res.text();
                         if (data && data.includes('access_token')) {
                             HydrogenCore.api.sendMessage('login_success', data);
+                            return true
                         }
                     }
-                    return res;
                 }
             });
         }

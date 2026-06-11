@@ -5,6 +5,7 @@ local M = {}
 
 M.config = require("extensions.config")
 M.file = require("extensions.file")
+M.download = require("extensions.download")
 M.crypto = require("extensions.crypto")
 M.class = require("extensions.class")
 

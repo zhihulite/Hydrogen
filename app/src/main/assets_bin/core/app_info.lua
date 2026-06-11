@@ -55,7 +55,7 @@ function M.checkUpdate(callback)
   NetWork.get(update_api, nil, function(code, content)
     isChecking = false
     if code ~= 200 then
-      tip(false, "检测更新失败，请检查网络连接", nil)
+      tip("检测更新失败，请检查网络连接")
       return
     end
 

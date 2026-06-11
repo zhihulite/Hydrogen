@@ -25,6 +25,7 @@ _G.Helpers.UI = helpers.ui
 _G.Extensions.File = extensions.file
 -- 初始化
 _G.Extensions.File.init()
+_G.Extensions.Download = extensions.download
 _G.Services.Permission = services.permission
 -- 初始化
 _G.Services.Permission.init()
