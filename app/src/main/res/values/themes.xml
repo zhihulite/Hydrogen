@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.Welcome" parent="Theme.Default" />
+    <!-- splash -->
+    <style name="Theme.Welcome" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenAnimatedIcon">@xml/avd</item>
+        <item name="windowSplashScreenAnimationDuration">400</item>
+        <item name="postSplashScreenTheme">@style/Theme.Default</item>
+    </style>
 
     <!-- transparent splash -->
     <!-- 系统在 onCreate 前已读取主题背景，此时强制切换的夜间模式未生效，使用透明防止白色背景闪烁 -->
@@ -13,11 +18,7 @@
         <item name="postSplashScreenTheme">@style/Theme.Default</item>
     </style>
 
-    <!-- splash -->
-    <style name="Theme.Splash" parent="Theme.SplashScreen">
-    <item name="windowSplashScreenAnimatedIcon">@xml/avd</item>
-    <item name="windowSplashScreenAnimationDuration">400</item>
-        <item name="postSplashScreenTheme">@style/Theme.Default</item>
-    </style>
-    
+    <!-- main 页面不显示动画，快速进入 -->
+    <style name="Theme.Main" parent="Theme.Default" />
+
 </resources>

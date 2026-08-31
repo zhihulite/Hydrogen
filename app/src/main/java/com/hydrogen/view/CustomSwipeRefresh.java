@@ -1,4 +1,4 @@
-// 原代码取自 https://blog.csdn.net/qq_38431616/article/details/128014877
+// 实现参考：https://blog.csdn.net/qq_38431616/article/details/128014877
 package com.hydrogen.view;
 
 import android.content.Context;
@@ -10,8 +10,8 @@ import android.view.animation.Animation.AnimationListener;
 import androidx.swiperefreshlayout.widget.CircularProgressDrawable;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Objects;
 
 @SuppressWarnings("unused")
@@ -52,7 +52,7 @@ public class CustomSwipeRefresh extends SwipeRefreshLayout {
         }
     }
 
-    // -0.125f是进度条拖动到顶部的一个临界值 经过调试打印得到的。
+    // -0.125f 是进度条拖到顶部的临界值
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         if (ev != null && ev.getAction() == MotionEvent.ACTION_UP && mProgress != null && mProgress.getProgressRotation() == -0.125f) {

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- OLED 纯黑覆盖层：夜间 + OLED 开启时经 applyStyle 叠加到当前主题。
+         叠加后 ?attr/colorSurface 等即解析为纯黑，layout 无需单独处理。 -->
+    <style name="ThemeOverlay.Hydrogen.Oled" parent="">
+        <item name="android:colorBackground">#FF000000</item>
+        <item name="colorSurface">#FF000000</item>
+        <item name="colorSurfaceVariant">#FF1A1A1A</item>
+        <item name="colorSurfaceContainer">#FF000000</item>
+        <item name="colorSurfaceContainerLow">#FF0A0A0A</item>
+        <item name="colorSurfaceContainerHigh">#FF1A1A1A</item>
+        <item name="colorSurfaceContainerHighest">#FF242424</item>
+    </style>
+</resources>

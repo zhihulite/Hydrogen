@@ -1,0 +1,55 @@
+-- layout/pages/theme_picker/item.lua
+-- 主题选择器列表项
+
+import "androidx.appcompat.widget.LinearLayoutCompat"
+import "com.google.android.material.card.MaterialCardView"
+import "com.google.android.material.radiobutton.MaterialRadioButton"
+
+local L = Helpers.Layout
+
+local colors = AppTheme.colors
+
+return {
+  LinearLayoutCompat,
+  layout_width = "fill",
+  layout_height = "wrap",
+  {
+    MaterialCardView,
+    id = "card",
+    layout_width = "fill",
+    layout_height = "wrap",
+    layout_marginLeft = AppSpacing.xl,
+    layout_marginRight = AppSpacing.xl,
+    layout_marginTop = AppSpacing.xs,
+    layout_marginBottom = AppSpacing.xs,
+    cardBackgroundColor = colors.surface,
+    {
+      LinearLayoutCompat,
+      orientation = "horizontal",
+      layout_width = "fill",
+      layout_height = "wrap",
+      gravity = "center_vertical",
+      minHeight = "64dp",
+      {
+        MaterialCardView,
+        id = "color_preview",
+        layout_width = "32dp",
+        layout_height = "32dp",
+        layout_marginLeft = "20dp",
+        radius = "16dp",
+        cardElevation = 0,
+        strokeWidth = 0,
+      },
+      L.text("title", AppTextStyle.titleSmall, nil, { layout_width = 0, layout_weight = 1, layout_marginLeft = AppSpacing.xl }),
+      {
+        MaterialRadioButton,
+        id = "radio",
+        layout_width = "wrap",
+        layout_height = "wrap",
+        layout_marginRight = "20dp",
+        focusable = false,
+        clickable = false,
+      }
+    }
+  }
+}

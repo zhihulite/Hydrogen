@@ -7,9 +7,6 @@ pluginManagement {
                 includeGroupByRegex("androidx.*")
             }
         }
-        maven { url 'https://maven.aliyun.com/repository/public' }
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
         mavenCentral()
         gradlePluginPortal()
     }
@@ -20,18 +17,19 @@ plugins {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        // zhihulite 自建仓库：luajvm 引擎 + 定制 material
         maven {
-            url uri(".${File.separator}mdc-repo")
+            name = 'zhihulite-releases'
+            url = 'https://raw.githubusercontent.com/zhihulite/maven-repository/main/repository/releases'
             content {
-                includeGroup("com.google.android.material")
+                includeGroup 'io.github.zhihulite'
+                // 只拦 material 一个模块，其余 com.google.* 仍走 google()
+                includeModule 'com.google.android.material', 'material'
             }
         }
         google()
-        maven { url 'https://maven.aliyun.com/repository/public' }
-        maven { url 'https://maven.aliyun.com/repository/google' }
-        maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
-        maven { url 'https://jitpack.io' }
         mavenCentral()
+        maven { url 'https://jitpack.io' }
     }
 }
 

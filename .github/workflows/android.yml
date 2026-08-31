@@ -1,13 +1,25 @@
 name: Android Build
 
 on:
-  push:
-    branches: [ "Reset" ]
   workflow_dispatch:
+    inputs:
+      build_type:
+        description: '选择构建类型'
+        required: true
+        type: choice
+        options:
+          - 'assembleRelease'
+          - 'build_and_send_telegram'
+          - 'build_and_publish'
+          - 'build_and_beta_publish'
+        default: 'assembleRelease'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
 
     steps:
       - name: Checkout Code
@@ -18,17 +30,94 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: gradle
 
       - name: Build with Gradle
         run: |
           chmod +x gradlew
           ./gradlew app:assembleRelease
 
+      - name: Send APK to Telegram
+        if: github.event.inputs.build_type == 'build_and_send_telegram'
+        env:
+          BRANCH_NAME: ${{ github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          APK_PATH=$(find app/build/outputs/apk/release/ -name "*.apk" | head -n 1)
+          COMMIT_MSG=$(git log -1 --pretty=%B | head -c 200)
+          CAPTION=$(printf "📦 <b>新构建完成</b>\n\n🔖 分支: <code>%s</code>\n💬 提交: %s\n🔢 SHA: <code>%s</code>" "$BRANCH_NAME" "$COMMIT_MSG" "$COMMIT_SHA")
+
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TG_BOT_TOKEN }}/sendDocument" \
+            -F chat_id="${{ secrets.TG_CHAT_ID }}" \
+            -F document=@"${APK_PATH}" \
+            -F caption="${CAPTION}" \
+            -F parse_mode="HTML"
+
       - name: Upload Release APK
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.build_type == 'assembleRelease'
         uses: actions/upload-artifact@v4
         with:
           name: release-apk
           path: |
             app/build/outputs/apk/release/*.apk
             app/build/outputs/mapping/release/mapping.txt
+
+      # 提取版本号（APK 命名 Hydrogen_<versionName>_<version>.apk）
+      - name: Extract version from APK filename
+        if: github.event_name == 'workflow_dispatch' && (github.event.inputs.build_type == 'build_and_publish' || github.event.inputs.build_type == 'build_and_beta_publish')
+        id: extract_version
+        run: |
+          APK_FILE=$(find app/build/outputs/apk/release/ -name "*.apk" | head -1)
+          if [ -n "$APK_FILE" ]; then
+            BUILD_TIME=$(stat -c '%y' "$APK_FILE" | cut -d'.' -f1)
+            echo "build_time=$BUILD_TIME" >> "$GITHUB_OUTPUT"
+            echo "APK 文件创建时间: $BUILD_TIME"
+
+            FILENAME=$(basename "$APK_FILE")
+            echo "APK 文件名: $FILENAME"
+
+            # 按照 _ 分割文件名：Hydrogen_<versionName>_<version>.apk
+            IFS='_' read -ra PARTS <<< "$FILENAME"
+
+            if [ ${#PARTS[@]} -ge 3 ]; then
+              APK_NAME="${PARTS[0]}"
+              VERSION_NAME="${PARTS[1]}"
+              VERSION="${PARTS[2]%.apk}"
+
+              echo "APK 名称: $APK_NAME"
+              echo "版本名称: $VERSION_NAME"
+              echo "版本: $VERSION"
+
+              echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+              echo "build_time=$BUILD_TIME" >> "$GITHUB_OUTPUT"
+              echo "apk_file=$APK_FILE" >> "$GITHUB_OUTPUT"
+              echo "apk_name=$APK_NAME" >> "$GITHUB_OUTPUT"
+              echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+            else
+              echo "文件名格式不符合预期: $FILENAME"
+              echo "期望格式: apkname_versionname_version.apk"
+              exit 1
+            fi
+          else
+            echo "未找到匹配的 APK 文件"
+            exit 1
+          fi
+
+      - name: Publish Release APK to GitHub Releases
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.build_type == 'build_and_publish'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.extract_version.outputs.version }}
+          name: Release v${{ steps.extract_version.outputs.version }}
+          files: |
+            ${{ steps.extract_version.outputs.apk_file }}
+
+      - name: Publish Release APK to GitHub Beta Build Releases
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.build_type == 'build_and_beta_publish'
+        id: beta_release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: beta-v${{ steps.extract_version.outputs.version }}-${{ github.run_number }}
+          name: Beta Build v${{ steps.extract_version.outputs.version }} (${{ steps.extract_version.outputs.build_time }})
+          files: |
+            ${{ steps.extract_version.outputs.apk_file }}
+          prerelease: true

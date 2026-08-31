@@ -1,4 +1,5 @@
 <resources>
+
     <style name="AppTheme.Teal" parent="AppTheme">
         <item name="colorPrimary">#67D9C9</item>
         <item name="colorOnPrimary">#003731</item>

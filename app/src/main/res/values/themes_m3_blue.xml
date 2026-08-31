@@ -1,4 +1,5 @@
 <resources>
+
     <style name="AppTheme.Blue" parent="AppTheme">
         <item name="colorPrimary">#24389C</item>
         <item name="colorOnPrimary">#FFFFFF</item>

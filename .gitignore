@@ -35,3 +35,7 @@ google-services.json
 # Android Studio APK outputs (release and debug)
 app/release/
 app/debug/
+
+# 预编译字节码：-PluaMode=luac 的构建产物，就地生成在 assets 下
+# （运行期靠"同名兄弟文件"定位，故不能改放 build/ 目录）
+*.luac

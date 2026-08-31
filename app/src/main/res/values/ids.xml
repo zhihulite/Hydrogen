@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- 使用tag传递数据。 -->
-    <item name="tag_last_time" type="id"/>
-    <item name="tag_last_name" type="id"/>
-    <item name="tag_txt_more_announce" type="id"/>
-    <item name="fragment_container" type="id"/>
-    <item name="content" type="id"/>
+    <item name="tag_last_time" type="id" />
+    <item name="tag_last_name" type="id" />
+    <item name="tag_txt_more_announce" type="id" />
+    <item name="fragment_container" type="id" />
+    <item name="content" type="id" />
+    <!-- Home 主页 BottomNavigationView Tab R.id（给 loadmenu 作有效 itemId，
+         避免 Android 14 Invalid resource ID + MenuBuilder 正常建 item view） -->
+    <item name="tab_recommend" type="id" />
+    <item name="tab_think" type="id" />
+    <item name="tab_hot" type="id" />
+    <item name="tab_follow" type="id" />
 </resources>
