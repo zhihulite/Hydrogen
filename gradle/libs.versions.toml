@@ -1,21 +1,23 @@
 [versions]
-appcompat = "1.7.1"
-transition = "1.7.0"
-fragment = "1.8.9"
+appcompat = "1.8.0"
+transition = "1.7.1"
+fragment = "1.9.0"
 viewpager2 = "1.1.0"
+viewpager = "1.1.0"
+recyclerview = "1.4.0"
 swiperefresh = "1.2.0"
 material = "1.14.0"
-glide = "5.0.7"
+glide = "5.0.9"
 photoview = "2.3.0"
 webviewup = "0.1.0"
 activity = "1.13.0"
-agp = "9.2.1"
+agp = "9.3.2"
 core = "1.19.0"
 splashscreen = "1.2.0"
-webkit = "1.16.0"
+webkit = "1.17.0"
 zxing-embedded = "4.3.0"
 zxing-core = "3.5.4"
-
+luajvm = "1.0.0"
 
 [libraries]
 # AndroidX
@@ -24,6 +26,8 @@ androidx-appcompat-resources = { group = "androidx.appcompat", name = "appcompat
 androidx-transition = { group = "androidx.transition", name = "transition", version.ref = "transition" }
 androidx-fragment = { group = "androidx.fragment", name = "fragment", version.ref = "fragment" }
 androidx-viewpager2 = { group = "androidx.viewpager2", name = "viewpager2", version.ref = "viewpager2" }
+androidx-viewpager = { group = "androidx.viewpager", name = "viewpager", version.ref = "viewpager" }
+androidx-recyclerview = { group = "androidx.recyclerview", name = "recyclerview", version.ref = "recyclerview" }
 androidx-swiperefresh = { group = "androidx.swiperefreshlayout", name = "swiperefreshlayout", version.ref = "swiperefresh" }
 androidx-core = { group = "androidx.core", name = "core", version.ref = "core"}
 androidx-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen" }
@@ -42,6 +46,10 @@ zxing-core = { module = "com.google.zxing:core", version.ref = "zxing-core" }
 
 # Activity
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
+
+# luajvm 引擎（Lua 5.5.1 纯 Java 移植）
+luajvm-core = { group = "io.github.zhihulite", name = "luajvm-core", version.ref = "luajvm" }
+luajvm-android = { group = "io.github.zhihulite", name = "luajvm-android", version.ref = "luajvm" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

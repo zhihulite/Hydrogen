@@ -6,7 +6,7 @@ appName="Hydrogen"--应用名称
 packageName="com.zhihu.hydrogen.x"--应用包名
 debugActivity="com.hydrogen.RunActivity"--运行Lua的Activity
 
-include={"project:app","project:androlua"}--导入，第一个为主程序
+include={"project:app"}--导入，第一个为主程序
 compileLua=false--编译Lua，nil为跟随全局
 alignZip = nil --优化APK，nil为跟随全局
 

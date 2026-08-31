@@ -1,5 +1,6 @@
 package com.hydrogen;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -12,8 +13,8 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
-
 import androidx.core.app.ActivityCompat;
+
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
@@ -69,18 +70,18 @@ public class RunActivity extends Activity {
 
     private void requestStoragePermission() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            // Android 11+ 需要管理全部文件权限
+            // Android 11+ 需管理全部文件权限
             if (!Environment.isExternalStorageManager()) {
                 showManageStorageDialog();
             } else {
                 showErrorAndExit("文件无法读取，请检查文件是否损坏");
             }
         } else {
-            // Android 6-10 需要运行时权限
-            if (checkSelfPermission(android.Manifest.permission.READ_EXTERNAL_STORAGE)
+            // Android 6-10 需运行时权限
+            if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                     != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(this,
-                        new String[]{android.Manifest.permission.READ_EXTERNAL_STORAGE},
+                        new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                         REQUEST_CODE_READ_STORAGE);
             } else {
                 showErrorAndExit("文件无法读取，请检查文件是否损坏");

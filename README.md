@@ -26,7 +26,7 @@
 
 ## 项目介绍
 
-Hydrogen 是一个基于 Androlua+ 开发的项目。
+Hydrogen 是一个基于 [LuaJVM](https://github.com/zhihulite/luajvm) 开发的项目。
 
 > **Aide Lua 调试提示**：
 > 你可以使用 [Aide Lua](https://gitee.com/AideLua/AideLua) 实现免打包快速调试 Lua 代码。
@@ -102,7 +102,7 @@ Hydrogen 采用分层架构，Lua 编写业务逻辑，桥接 Android 原生 API
 
 #### 技术栈
 
-- 语言：Lua 5.3 + Java（仅桥接层）
+- 语言：Lua 5.5.1 + Java（仅桥接层）
 - UI：Material Design Components（原生控件）
 - 网络：HTTP + Cookie + ZSE96 加密
 - 混合渲染：原生列表 + WebView（注入 JS）
@@ -122,7 +122,7 @@ Hydrogen 采用分层架构，Lua 编写业务逻辑，桥接 Android 原生 API
 
 #### 核心基础：initApp 与 Core
 
-- **initApp.lua**：每个 Lua 文件执行前必须引入的环境初始化脚本。负责检测运行环境（AndroLua/LuaJ++）、设置 Lua 模块搜索路径（`package.path`）、注入全局工具函数（`print`、`onError` 崩溃记录），是整个应用的**启动入口和运行环境基石**。
+- **initApp.lua**：每个 Lua 文件执行前必须引入的环境初始化脚本。是整个应用的**启动入口和运行环境基石**。
 - **Core**：应用核心模块集合，在 `initApp` 之后加载，提供：
   - `constants.lua`：全局常量定义（SharedPreferences 键名、默认配置）
   - `app_theme.lua`：主题管理（日间/夜间/OLED 模式，Material Design 3 颜色系统）
@@ -139,50 +139,6 @@ Hydrogen 采用分层架构，Lua 编写业务逻辑，桥接 Android 原生 API
 - **WebView 混合**：`WebViewHelper` 封装 WebView 设置与 JS 桥接，注入的 JS 实现暗色模式、图片查看、滚动恢复、截图等，与知乎 Hybrid 页面无缝配合。
 - **布局定义**：使用 Lua 表描述布局（类似 XML），运行时通过 `loadlayout` 转换为原生 View，支持主题属性和数据绑定。
 - **主题系统**：遵循 Material Design 3 颜色规范，支持日间/夜间/OLED 模式，动态切换。
-
-#### LuaJava 使用规范
-
-为避免意外重写所有非抽象方法（包括 `equals`、`hashCode` 等），请遵循以下规范：
-
-**1. 重写类方法：使用 `luajava.override`**
-
-```
--- ❌ 错误：会重写该类所有非抽象方法
-local adapter = {
-    getCount = function() return 10 end,
-    getItem = function(position) return data[position] end
-}
-
--- ✅ 正确：只重写指定方法
-local adapter = luajava.override(BaseAdapter, {
-    getCount = function() return 10 end,
-    getItem = function(position) return data[position] end
-})
-```
-
-**2. 实现接口：使用 `Extensions.UI.createFixedProxy`**
-
-lua
-
-```
--- ❌ 错误：ViewTreeObserver 等特殊监听器无法正确移除
-local listener = luajava.createProxy("android.view.ViewTreeObserver$OnGlobalLayoutListener", {
-    onGlobalLayout = function() print("layout changed") end
-})
-
--- ✅ 正确：可以正确添加和移除各类监听器
-local listener = Extensions.UI.createFixedProxy("android.view.ViewTreeObserver$OnGlobalLayoutListener", {
-    onGlobalLayout = function() print("layout changed") end
-})
-view.getViewTreeObserver().addOnGlobalLayoutListener(listener)
--- 后续可以正确移除：view.getViewTreeObserver().removeOnGlobalLayoutListener(listener)
-```
-
-**原因说明**：
-
-- 直接使用 `{}` 简写会重写指定类的**所有非抽象方法**，即使表中未定义该方法也会被重写，可能造成意外行为
-- `luajava.createProxy` 创建的代理缺少正确的 `equals` 方法实现，导致 ViewTreeObserver 等特殊监听器无法正确移除。
-- `Extensions.UI.createFixedProxy` 已正确处理 `equals` 方法，确保各类监听器均可正确注销，避免内存泄漏
 
 #### 扩展模块补充文档
 
