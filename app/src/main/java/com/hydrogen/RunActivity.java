@@ -1,7 +1,6 @@
 package com.hydrogen;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
@@ -13,13 +12,14 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 
-public class RunActivity extends Activity {
+public class RunActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_MANAGE_STORAGE = 1001;
     private static final int REQUEST_CODE_READ_STORAGE = 1002;
@@ -34,6 +34,10 @@ public class RunActivity extends Activity {
 
         Intent intent = getIntent();
         luaPath = intent.getData() != null ? intent.getData().getPath() : null;
+        // AIDE Lua 调试时传入的工程路径中脚本目录为 assets_bin，实际源码在 assets 下
+        if (luaPath != null && luaPath.contains("/assets_bin/")) {
+            luaPath = luaPath.replace("/assets_bin/", "/assets/");
+        }
         arg = intent.getStringExtra("arg");
         name = intent.getStringExtra("name");
 

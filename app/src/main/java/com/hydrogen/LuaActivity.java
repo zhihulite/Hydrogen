@@ -66,27 +66,8 @@ public class LuaActivity extends org.luajvm.android.host.LuaActivity {
             return luaPath;
         }
 
-        //  冷启动标记仅对进程内第一个 LuaActivity 生效。
-        //   正常冷启动：Welcome -> MainActivity（无 luaPath）-> fallback main.lua；
-        //   task 残留：pm clear / 系统恢复任务后，首个 MainActivity 直接拿到上次的
-        //   路由容器 Intent（luaPath=BlankActivity.lua + 过期参数）。
-        //   而 Router.go -> replaceActivity 发起的导航 Intent 一定发生在首次
-        //   getLuaPath 之后（标记已消费），必须放行，否则 main.lua -> Router.go("main")
-        //   会被误判为残留并强制 fallback main.lua，造成无限 relaunch 循环。
-        boolean coldStart = LuaApplication.isColdStart();
-        LuaApplication.consumeColdStart();
-
         luaPath = getIntent().getStringExtra("luaPath");
-        Log.d(TAG, "getLuaPath: luaPath from Intent = " + luaPath + " (coldStart=" + coldStart + ")");
-
-        if (luaPath != null && luaPath.contains("/pages/activity/blank/BlankActivity.lua")) {
-            if (coldStart) {
-                Log.w(TAG, "getLuaPath: ignore stale BlankActivity intent on cold start, use fallback");
-                luaPath = null;
-            } else {
-                Log.d(TAG, "getLuaPath: keep BlankActivity luaPath (navigation intent)");
-            }
-        }
+        Log.d(TAG, "getLuaPath: luaPath from Intent = " + luaPath);
 
         if (luaPath != null) {
             initLuaDir(luaPath);

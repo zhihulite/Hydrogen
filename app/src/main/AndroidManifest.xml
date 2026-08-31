@@ -124,7 +124,7 @@
         <activity
             android:name="com.hydrogen.RunActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize"
-            android:exported="false"
+            android:exported="true"
             android:launchMode="singleTask"
             android:windowSoftInputMode="adjustResize|stateHidden" />
 
