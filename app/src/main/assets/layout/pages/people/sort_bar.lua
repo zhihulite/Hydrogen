@@ -1,0 +1,57 @@
+-- layout/pages/people/sort_bar.lua
+-- 回答排序栏
+
+import "androidx.appcompat.widget.LinearLayoutCompat"
+import "com.google.android.material.card.MaterialCardView"
+import "androidx.appcompat.widget.AppCompatImageView"
+
+local L = Helpers.Layout
+
+local colors = AppTheme.colors
+
+return {
+  LinearLayoutCompat,
+  id = "sort_bar",
+  layout_width = "fill",
+  layout_height = "wrap_content",
+  orientation = "horizontal",
+  gravity = "center_vertical",
+  paddingLeft = "16dp",
+  paddingRight = "16dp",
+  paddingTop = "8dp",
+  paddingBottom = "8dp",
+  backgroundColor = colors.surface,
+  {
+    LinearLayoutCompat,
+    layout_width = 0,
+    layout_weight = 1,
+    layout_height = "wrap",
+  },
+  L.text("sort_label", AppTextStyle.bodySmall, "排序："),
+  {
+    MaterialCardView,
+    id = "sort_btn",
+    layout_width = "wrap",
+    layout_height = "32dp",
+    layout_marginLeft = AppSpacing.md,
+    cardBackgroundColor = colors.surfaceVariant,
+    clickable = true,
+    {
+      LinearLayoutCompat,
+      orientation = "horizontal",
+      gravity = "center",
+      layout_gravity = "center",
+      paddingLeft = "12dp",
+      paddingRight = "8dp",
+      L.text("sort_name", AppTextStyle.bodySmall, "默认", { gravity = "center" }),
+      {
+        AppCompatImageView,
+        layout_width = "18dp",
+        layout_height = "18dp",
+        layout_marginLeft = AppSpacing.xs,
+        imageBitmap = Helpers.Static.materialIcon("twotone_arrow_drop_down"),
+        colorFilter = AppTextStyle.bodySmall.color,
+      },
+    }
+  }
+}

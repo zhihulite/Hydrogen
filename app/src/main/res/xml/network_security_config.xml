@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 全局禁明文 HTTP，仅放行关于页 QQ 头像域 q.qlogo.cn（该域只提供 http 图片源） -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">q.qlogo.cn</domain>
+    </domain-config>
+</network-security-config>

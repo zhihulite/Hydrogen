@@ -26,7 +26,7 @@
 
 ## 项目介绍
 
-Hydrogen 是一个基于 Androlua+ 开发的项目。
+Hydrogen 是一个基于 [LuaJVM](https://github.com/zhihulite/luajvm) 开发的项目。
 
 > **Aide Lua 调试提示**：
 > 你可以使用 [Aide Lua](https://gitee.com/AideLua/AideLua) 实现免打包快速调试 Lua 代码。
@@ -102,7 +102,7 @@ Hydrogen 采用分层架构，Lua 编写业务逻辑，桥接 Android 原生 API
 
 #### 技术栈
 
-- 语言：Lua 5.3 + Java（仅桥接层）
+- 语言：Lua 5.5.1 + Java（仅桥接层）
 - UI：Material Design Components（原生控件）
 - 网络：HTTP + Cookie + ZSE96 加密
 - 混合渲染：原生列表 + WebView（注入 JS）
@@ -114,23 +114,27 @@ Hydrogen 采用分层架构，Lua 编写业务逻辑，桥接 Android 原生 API
 | **Pages**      | Activity / Fragment 页面容器，路由跳转                       |
 | **Components** | 可复用组件（适配器、弹窗、自定义 Span、WebViewHelper）       |
 | **Model**      | 数据 + 视图控制（加载、分页、刷新）                          |
-| **Services**   | 网络、缓存、文件、权限                                       |
-| **Extensions** | 配置管理、加密、文件操作、OOP 工具                           |
-| **Helpers**    | UI 工具、图片加载、链接解析                                  |
-| **luaLibs**    | Lua 层基础库（import、loadlayout、json、md5、base64 等），支撑整个框架的运行 |
-| **Core**       | 应用核心（初始化、常量、主题、路由、应用信息），在 Pages/Model 等之前加载，提供全局配置和基础能力 |
+| **Layout**     | Lua 表描述的布局，经 `Layouts.<目录>.<文件>` 惰性加载        |
+| **Services**   | 网络（含 ZSE96 签名、请求头、图片上传）、缓存、下载、权限     |
+| **Extensions** | 配置管理、文件操作、加密、OOP 工具                           |
+| **Helpers**    | UI 工具、布局脚手架、图片加载、资源访问、Material 组件、静态资源、底部弹窗、WebView JS 桥、截图合成、知乎数据与链接解析 |
+| **基础库**     | 引擎内置的全局与 Lua 库（`import`、`loadlayout`、`task`、`json`）与 `libs/` 下的 `md5.lua`、`base64.lua`，支撑整个框架的运行 |
+| **Core**       | 应用核心（初始化、常量、主题、文字样式、路由、应用信息），在 Pages/Model 等之前加载，提供全局配置和基础能力 |
 
-#### 核心基础：initApp 与 Core
+`extensions/`、`helpers/`、`services/` 三个目录的 `init.lua` 里注册的模块，由 `core/init.lua` 挂到同名全局命名空间，键名 snake_case 转 PascalCase（`ui` 特例为 `UI`）：文件操作走 `Extensions.File`，下载走 `Services.Download`，Material 组件走 `Helpers.MaterialWidgets`。
 
-- **initApp.lua**：每个 Lua 文件执行前必须引入的环境初始化脚本。负责检测运行环境（AndroLua/LuaJ++）、设置 Lua 模块搜索路径（`package.path`）、注入全局工具函数（`print`、`onError` 崩溃记录），是整个应用的**启动入口和运行环境基石**。
-- **Core**：应用核心模块集合，在 `initApp` 之后加载，提供：
-  - `constants.lua`：全局常量定义（SharedPreferences 键名、默认配置）
+#### 核心基础：init_app 与 Core
+
+- **init_app.lua**：入口脚本（`main.lua` 与独立 Activity）执行前引入的环境初始化脚本，带幂等标记只生效一次。是整个应用的**启动入口和运行环境基石**。
+- **Core**：应用核心模块集合，在 `init_app` 之后加载，提供：
+  - `constants.lua`：全局常量定义（SharedPreferences 键名、默认配置、请求头 key 与白名单）
   - `app_theme.lua`：主题管理（日间/夜间/OLED 模式，Material Design 3 颜色系统）
+  - `app_text_style.lua`：屏幕信息、字体、MD3 文字样式与卡片样式（`Screen`、`Fonts`、`AppTextStyle`、`AppCardStyle`）
   - `app_info.lua`：应用信息与版本更新检查
   - `router.lua`：路由系统，统一管理 Activity/Fragment 跳转
-  - `init.lua`：Core 模块的汇总导出，同时初始化全局变量（Screen、Fonts、AppTextStyle、Headers 等）
+  - `init.lua`：装载 Extensions/Helpers/Services 并挂到全局命名空间，注册常用全局（`json`、`Constants`、`AppTheme`、`Layouts`、`Router`、`tip`/`dp2px` 等），按序驱动请求头、文字样式与路由的初始化
 
-> **加载顺序**：`initApp` → `core/init` → Extensions/Helpers → Pages/Model/Components
+> **加载顺序**：`init_app` → `core/init`（Extensions / Helpers / Services → Constants / AppTheme / AppInfo → Layouts → 请求头与文字样式 → Router）→ Pages/Model/Components
 
 #### 核心设计
 
@@ -140,54 +144,11 @@ Hydrogen 采用分层架构，Lua 编写业务逻辑，桥接 Android 原生 API
 - **布局定义**：使用 Lua 表描述布局（类似 XML），运行时通过 `loadlayout` 转换为原生 View，支持主题属性和数据绑定。
 - **主题系统**：遵循 Material Design 3 颜色规范，支持日间/夜间/OLED 模式，动态切换。
 
-#### LuaJava 使用规范
-
-为避免意外重写所有非抽象方法（包括 `equals`、`hashCode` 等），请遵循以下规范：
-
-**1. 重写类方法：使用 `luajava.override`**
-
-```
--- ❌ 错误：会重写该类所有非抽象方法
-local adapter = {
-    getCount = function() return 10 end,
-    getItem = function(position) return data[position] end
-}
-
--- ✅ 正确：只重写指定方法
-local adapter = luajava.override(BaseAdapter, {
-    getCount = function() return 10 end,
-    getItem = function(position) return data[position] end
-})
-```
-
-**2. 实现接口：使用 `Extensions.UI.createFixedProxy`**
-
-lua
-
-```
--- ❌ 错误：ViewTreeObserver 等特殊监听器无法正确移除
-local listener = luajava.createProxy("android.view.ViewTreeObserver$OnGlobalLayoutListener", {
-    onGlobalLayout = function() print("layout changed") end
-})
-
--- ✅ 正确：可以正确添加和移除各类监听器
-local listener = Extensions.UI.createFixedProxy("android.view.ViewTreeObserver$OnGlobalLayoutListener", {
-    onGlobalLayout = function() print("layout changed") end
-})
-view.getViewTreeObserver().addOnGlobalLayoutListener(listener)
--- 后续可以正确移除：view.getViewTreeObserver().removeOnGlobalLayoutListener(listener)
-```
-
-**原因说明**：
-
-- 直接使用 `{}` 简写会重写指定类的**所有非抽象方法**，即使表中未定义该方法也会被重写，可能造成意外行为
-- `luajava.createProxy` 创建的代理缺少正确的 `equals` 方法实现，导致 ViewTreeObserver 等特殊监听器无法正确移除。
-- `Extensions.UI.createFixedProxy` 已正确处理 `equals` 方法，确保各类监听器均可正确注销，避免内存泄漏
-
 #### 扩展模块补充文档
 
-- **Helpers.material_widgets**：Material Design 组件库，支持以**原本只能在 XML 中设置的自定义属性**动态创建 Material 组件。
-- **Helpers.resource**：资源快速访问工具，提供颜色、字符串、尺寸、Drawable 等资源的便捷获取方法。
+- **Helpers.MaterialWidgets**（`helpers/material_widgets.lua`）：Material Design 组件库，支持以**原本只能在 XML 中设置的自定义属性**动态创建 Material 组件。
+- **Helpers.Resources**（`helpers/resources.lua`）：资源快速访问工具，提供颜色、字符串、尺寸、Drawable 等资源的便捷获取方法。
+- **Helpers.Layout**（`helpers/layout.lua`）：布局脚手架，把卡片外壳、图标计数行、空状态页、列表页骨架收敛成可组合的构造器。构造器清单与 id 契约见 [docs/layout-scaffold.md](docs/layout-scaffold.md)。
 
 ---
 
@@ -224,7 +185,8 @@ end
 |------|------|------|
 | **网络回调** | 使用 `runIfAlive` 包装 | `NetWork.get(url, headers, self:runIfAlive(function(code, data) ... end))` |
 | **post/runnable** | 使用 `runIfAlive` 包装 | `view.post(self:runIfAlive(function() ... end))` |
-| **task 延迟任务** | 使用 `runIfAlive` 包装 | `task(1000, self:runIfAlive(function() ... end))` |
+| **task 后台任务** | 主线程回调使用 `runIfAlive` 包装 | `task(bgFn, self:runIfAlive(function(result) ... end))` |
+| **延迟执行** | 使用 `runIfAlive` 包装 | `Helpers.UI.runDelayed(500, self:runIfAlive(function() ... end))` |
 | **PageTool** | PageTool 已自动处理，无需额外包装 | `pageTool:setupLoadFunction()` 内部已包装 |
 | **PageToolModel** | PageToolModel 已自动处理，无需额外包装 | `PageToolModel:refresh(key)` 内部已包装 |
 | **Model 回调或网络回调** | BaseModel 已自动处理，无需额外包装 | `model:load(params, callback)` 内部已包装 |
@@ -347,8 +309,8 @@ end
 
 ### 快速上手
 
-1. 入口：`main.lua` → `initApp` → `core/init` → 欢迎页或主页。
-2. 路由跳转：`Router.go("answer", { answerId = "123" })`
+1. 入口：`main.lua` → `init_app` → `core/init` → 欢迎页或主页。
+2. 路由跳转：`Router.go("answer", { id = "123" })`
 3. 新列表页：继承 `PageToolModel` → 实现 `getInitialUrl`、`parseItem`、`createAdapter` → Fragment 中调用 `setupSingle`
 4. 新详情页：继承 `BaseModel` → 实现 `load` → Fragment 中手动调用并更新 UI
 

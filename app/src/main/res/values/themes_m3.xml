@@ -1,14 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
     <style name="AppTheme" parent="Theme.Material3Expressive.Light.NoActionBar">
         <item name="android:navigationBarColor">?android:colorBackground</item>
         <item name="android:statusBarColor">?android:colorBackground</item>
     </style>
 
-    <style name="Theme.Default" parent="AppTheme.Blue"/>
-    <style name="Theme.Monet" parent="AppTheme.Monet"/>
-    <style name="Theme.Red" parent="AppTheme.Red"/>
-    <style name="Theme.Teal" parent="AppTheme.Teal"/>
-    <style name="Theme.Orange" parent="AppTheme.Orange"/>
-    <style name="Theme.Pink" parent="AppTheme.Pink"/>
+    <style name="Theme.Default" parent="AppTheme.Blue" />
+
+    <style name="Theme.Monet" parent="AppTheme.Monet" />
+
+    <style name="Theme.Red" parent="AppTheme.Red" />
+
+    <style name="Theme.Teal" parent="AppTheme.Teal" />
+
+    <style name="Theme.Orange" parent="AppTheme.Orange" />
+
+    <style name="Theme.Pink" parent="AppTheme.Pink" />
 </resources>
