@@ -26,4 +26,9 @@ public class WelcomeActivity extends Welcome {
     protected Class<?> getTargetActivity() {
         return MainActivity.class;
     }
+
+    @Override
+    protected long getMinDisplayTimeMillis() {
+        return 800;
+    }
 }
