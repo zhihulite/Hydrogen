@@ -14,8 +14,8 @@ local BitmapCompressFormat = luajava.bindClass("android.graphics.Bitmap$Compress
 local FileOutputStream = luajava.bindClass("java.io.FileOutputStream")
 local FileInputStream = luajava.bindClass("java.io.FileInputStream")
 local Intent = luajava.bindClass("android.content.Intent")
-local Uri = luajava.bindClass("android.net.Uri")
 local ActivityResultContracts = luajava.bindClass("androidx.activity.result.contract.ActivityResultContracts")
+local Uri = luajava.bindClass("android.net.Uri")
 local String = luajava.bindClass("java.lang.String")
 local BitmapFactoryOptions = luajava.bindClass("android.graphics.BitmapFactory$Options")
 local ByteArray = luajava.bindClass("[B")
@@ -28,6 +28,9 @@ local isProcessing = false
 local pickFileLauncher = nil
 local pickFileQueue = {}
 local pickFileProcessing = false
+
+local pickImageLauncher = nil
+local pickImageCallback = nil
 
 local initialized = false
 
@@ -141,7 +144,7 @@ local function checkStoragePermission(callback)
   end
 end
 
----初始化 SAF 启动器
+---初始化 SAF 启动器（启动期注册，经 core/init 调用，处于 Activity STARTED 前的注册窗口）
 function M.init()
   if initialized then return end
 
@@ -160,6 +163,15 @@ function M.init()
     end
     isProcessing = false
     if #saveQueue > 0 then M.processNext() end
+  end
+  )
+
+  pickImageLauncher = activity.registerForActivityResult(
+  ActivityResultContracts.OpenDocument(),
+  function(uri)
+    local cb = pickImageCallback
+    pickImageCallback = nil
+    if cb then cb(uri) end
   end
   )
 
@@ -644,6 +656,23 @@ function M.isGifFromUri(uri)
   end)
   if not ok then return false end
   return isGif
+end
+
+
+---选一张图片（SAF，无权限）；回调收 Uri 或 nil（用户取消）
+---@param callback function 回调 function(uri|nil)
+function M.pickImage(callback)
+  if not pickImageLauncher then
+    error("call File.init() first")
+  end
+  pickImageCallback = callback
+  local mimeArray = luajava.newArray(String, 1)
+  mimeArray[0] = "image/*"
+  local ok = pcall(function() pickImageLauncher.launch(mimeArray) end)
+  if not ok then
+    pickImageCallback = nil
+    callback(nil)
+  end
 end
 
 return M

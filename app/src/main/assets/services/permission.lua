@@ -4,8 +4,8 @@
 local M = {}
 
 import "androidx.core.app.ActivityCompat"
-import "android.content.pm.PackageManager"
 import "androidx.activity.result.contract.ActivityResultContracts"
+import "android.content.pm.PackageManager"
 import "com.google.android.material.dialog.MaterialAlertDialogBuilder"
 
 local launcher = nil
@@ -15,7 +15,7 @@ function M.check(permission)
   return ActivityCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_GRANTED
 end
 
--- 必须在 onCreate 里调用一次，提前注册 launcher
+-- 启动期注册（经 core/init 调用，处于 Activity STARTED 前的注册窗口）
 function M.init()
   if not launcher then
     launcher = activity.registerForActivityResult(

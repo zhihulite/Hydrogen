@@ -10,22 +10,22 @@ local SafeLinearLayoutManager = luajava.bindClass("com.hydrogen.SafeLinearLayout
 local OpenSourceFragment = Extensions.Class(BaseFragment)
 
 local licenses = {
-  { name = "AndroidX AppCompat", license = "Apache 2.0", message = "Android 兼容库", url = "https://developer.android.com/jetpack/androidx" },
-  { name = "AndroidX Core", license = "Apache 2.0", message = "Android 核心库", url = "https://developer.android.com/jetpack/androidx" },
-  { name = "AndroidX Transition", license = "Apache 2.0", message = "过渡动画库", url = "https://developer.android.com/jetpack/androidx" },
+  { name = "AndroidX AppCompat", license = "Apache 2.0", message = "向下兼容的 UI 与主题框架", url = "https://developer.android.com/jetpack/androidx" },
+  { name = "AndroidX Core", license = "Apache 2.0", message = "基础工具与向后兼容 API", url = "https://developer.android.com/jetpack/androidx" },
+  { name = "AndroidX Transition", license = "Apache 2.0", message = "页面过渡动画框架", url = "https://developer.android.com/jetpack/androidx" },
   { name = "AndroidX Fragment", license = "Apache 2.0", message = "Fragment 库", url = "https://developer.android.com/jetpack/androidx" },
   { name = "AndroidX ViewPager2", license = "Apache 2.0", message = "滑动页面库", url = "https://developer.android.com/jetpack/androidx" },
   { name = "AndroidX SwipeRefresh", license = "Apache 2.0", message = "下拉刷新库", url = "https://developer.android.com/jetpack/androidx" },
-  { name = "AndroidX Activity", license = "Apache 2.0", message = "Activity 扩展库", url = "https://developer.android.com/jetpack/androidx" },
+  { name = "AndroidX Activity", license = "Apache 2.0", message = "Activity 结果注册与生命周期扩展", url = "https://developer.android.com/jetpack/androidx" },
   { name = "AndroidX SplashScreen", license = "Apache 2.0", message = "启动画面库", url = "https://developer.android.com/jetpack/androidx" },
-  { name = "AndroidX WebKit", license = "Apache 2.0", message = "WebView 扩展库", url = "https://developer.android.com/jetpack/androidx" },
+  { name = "AndroidX WebKit", license = "Apache 2.0", message = "WebView 兼容特性支持", url = "https://developer.android.com/jetpack/androidx" },
   { name = "Material Design Components", license = "Apache 2.0", message = "Material Design 组件库", url = "https://github.com/material-components/material-components-android" },
   { name = "Glide", license = "Apache 2.0", message = "图片加载库", url = "https://github.com/bumptech/glide" },
   { name = "PhotoView", license = "Apache 2.0", message = "图片缩放库", url = "https://github.com/Baseflow/PhotoView" },
   { name = "WebViewUpgrade", license = "Apache 2.0", message = "WebView 内核更新库", url = "https://github.com/JonaNorman/WebViewUpgrade" },
   { name = "ZXing Embedded", license = "Apache 2.0", message = "二维码扫描库", url = "https://github.com/journeyapps/zxing-android-embedded" },
   { name = "ZXing Core", license = "Apache 2.0", message = "二维码核心库", url = "https://github.com/zxing/zxing" },
-  { name = "LuaJVM", license = "MIT", message = "LuaJVM 脚本框架 (基础运行时)", url = "https://github.com/zhihulite/luajvm" },
+  { name = "LuaJVM", license = "MIT", message = "Lua 5.5.1 纯 Java 移植引擎，应用运行时", url = "https://github.com/zhihulite/luajvm" },
 }
 
 function OpenSourceFragment:ctor()

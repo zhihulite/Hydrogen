@@ -6,11 +6,11 @@ local M = {}
 local ROOT = _G.ROOT
 local STATIC_DIR = ROOT .. "/static/"
 
-M.ICON_DIR = STATIC_DIR .. "/icons/"
-M.FONT_DIR = STATIC_DIR .. "/fonts/"
-M.IMAGE_DIR = STATIC_DIR .. "/images/"
-M.JS_DIR = STATIC_DIR .. "/js/"
-M.ZEMOJI_DIR = STATIC_DIR .. "/zemoji/"
+M.ICON_DIR = STATIC_DIR .. "icons/"
+M.FONT_DIR = STATIC_DIR .. "fonts/"
+M.IMAGE_DIR = STATIC_DIR .. "images/"
+M.JS_DIR = STATIC_DIR .. "js/"
+M.ZEMOJI_DIR = STATIC_DIR .. "zemoji/"
 
 local cache = {}
 
@@ -132,6 +132,14 @@ end
 
 function M.zemoji(name)
   return getBitmap(M.ZEMOJI_DIR, name)
+end
+
+--- 判断 zemoji 是否存在（静默探测，不产生"静态资源不存在"提示）
+--- 命中缺失缓存（false）直接返回，与 getBitmap 共享探测结果
+function M.zemojiExists(name)
+  local hit = cache[M.ZEMOJI_DIR .. name]
+  if hit ~= nil then return hit ~= false end
+  return getPath(M.ZEMOJI_DIR, name) ~= nil
 end
 
 function M.zemojiDrawable(name, sizeDp, raw)

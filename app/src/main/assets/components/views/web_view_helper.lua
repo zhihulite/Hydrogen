@@ -9,6 +9,8 @@ import "android.webkit.WebView"
 import "android.net.Uri"
 import "android.view.View"
 import "androidx.appcompat.widget.AppCompatEditText"
+import "androidx.activity.result.ActivityResultCallback"
+import "androidx.activity.result.contract.ActivityResultContracts"
 import "androidx.appcompat.widget.LinearLayoutCompat"
 import "androidx.appcompat.widget.PopupMenu"
 import "com.google.android.material.textview.MaterialTextView"
@@ -17,8 +19,6 @@ import "java.io.File"
 import "java.io.FileInputStream"
 import "org.luajvm.android.widget.LuaWebView"
 
-import "androidx.activity.result.ActivityResultCallback"
-import "androidx.activity.result.contract.ActivityResultContracts"
 import "android.webkit.WebChromeClient"
 import "android.webkit.DownloadListener"
 
@@ -111,7 +111,7 @@ function M:enableFileUpload(owner)
   self.fileUploadEnabled = true
   self.fileUploadOwner = owner
 
-  -- 注册 Launcher
+  -- 注册 Launcher（browser_fragment 在 onCreate 期调用，处于注册窗口内）
   self.fileUploadLauncher = self.fileUploadOwner.registerForActivityResult(
   ActivityResultContracts.OpenDocument(),
   luajava.createProxy(ActivityResultCallback, {
@@ -142,8 +142,8 @@ function M:disableFileUpload()
     self.filePathCallback.onReceiveValue(nil)
     self.filePathCallback = nil
   end
-  self.fileUploadLauncher = nil
   self.fileUploadOwner = nil
+  self.fileUploadLauncher = nil
   return self
 end
 

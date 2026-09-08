@@ -229,6 +229,10 @@ function SettingsFragment:buildSettingsData()
       item.summary = config.summary
       item.key = config.key
       item.arrow = config.arrow
+      -- 主题色条目动态显示当前主题；主题切换 recreate 后随重建刷新
+      if config.key == Constants.SharedDataKeys.THEME_SETTING then
+        item.summary = "当前：" .. AppTheme.getThemeDisplayName()
+      end
      elseif config.type == "switch" then
       item.title = config.title
       item.summary = config.summary

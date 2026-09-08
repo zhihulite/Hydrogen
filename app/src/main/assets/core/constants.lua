@@ -40,6 +40,9 @@ local SETTINGS = {
 
   -- 页面设置
   { name = "THEME_SETTING", default = "Default", desc = "主题设置" },
+  { name = "CUSTOM_SEED_COLOR", default = nil, desc = "自定义种子色" },
+  { name = "CUSTOM_COLOR_VARIANT", default = "Content", desc = "自定义配色方案" },
+  { name = "CUSTOM_COLOR_CONTRAST", default = 0, desc = "自定义对比度等级" },
   { name = "PARALLEL_WORLD", default = false, desc = "平行世界" },
   { name = "PREDICTIVE_BACK", default = false, desc = "预见性返回手势" },
   { name = "USE_SIMPLE_ANIMATION", default = false, desc = "关闭共享元素动画" },

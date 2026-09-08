@@ -2,4 +2,5 @@
 <resources>
     <color name="mb">@android:color/system_neutral1_50</color>
     <color name="mf">@android:color/system_neutral1_900</color>
+    <color name="dynamic_primary">@android:color/system_accent1_600</color>
 </resources>

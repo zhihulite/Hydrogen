@@ -6,6 +6,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
 
+import androidx.activity.EdgeToEdge;
 import androidx.core.splashscreen.SplashScreen;
 
 import com.google.android.material.color.MaterialColors;
@@ -57,14 +58,15 @@ public class LuaActivity extends org.luajvm.android.host.LuaActivity {
         return LuaActivity.class;
     }
 
-    // 错误日志页兜底背景：本 Activity 窗口继承 Theme.TransparentSplash 的透明
-    // windowBackground，日志页自身不画背景时整页透出窗口下方内容。按当前主题的
-    // colorBackground 补一层不透明窗口背景，使日志页与状态栏跟随深浅色主题
+    // 错误日志页兜底：Lua 启动失败时不会走到页面的 setupEdgeToEdge，
+    // 状态栏区域由本方法补齐——窗口背景按主题 colorBackground 不透明化，
+    // EdgeToEdge.enable 让状态栏明暗跟随背景并给内容让位
     @Override
     public void applyDefaultView() {
         super.applyDefaultView();
         getWindow().setBackgroundDrawable(new ColorDrawable(
                 MaterialColors.getColor(this, android.R.attr.colorBackground, 0xFF14151A)));
+        EdgeToEdge.enable(this);
     }
 
     @Override

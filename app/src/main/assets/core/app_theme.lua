@@ -132,20 +132,83 @@ function M.getThemeConfig()
   return Extensions.Config.getString(Constants.SharedDataKeys.THEME_SETTING)
 end
 
+--- 主题显示名表，主题选择页与设置页摘要共用
+M.themeNames = {
+  Default = "默认",
+  Monet = "Monet 蓝",
+  Teal = "青色",
+  Orange = "橙色",
+  Pink = "粉色",
+  Red = "红色",
+  Dynamic = "动态取色",
+  Custom = "自定义颜色",
+}
+
+--- 当前主题的显示名
+--- @return string
+function M.getThemeDisplayName()
+  local name = M.getThemeConfig()
+  return M.themeNames[name] or name
+end
+
+--- 动态取色是否可用（SDK 与厂商白名单门，异常按不可用）
+--- @return boolean
+function M.isDynamicColorAvailable()
+  local ThemeColors = luajava.bindClass("com.hydrogen.theme.ThemeColors")
+  local ok, available = pcall(ThemeColors.isDynamicAvailable)
+  return ok and available == true
+end
+
+--- 读自定义种子色并转 ARGB int；未配置或格式非法返回 nil
+--- @return number|nil
+local function getCustomSeedColor()
+  local hex = Extensions.Config.getString(Constants.SharedDataKeys.CUSTOM_SEED_COLOR)
+  if type(hex) ~= "string" then return nil end
+  local rgb = hex:match("^#(%x%x%x%x%x%x)$")
+  if not rgb then return nil end
+  return 0xFF000000 | tonumber(rgb, 16)
+end
+
 -- 应用主题
 function M.applyTheme()
   local themeName = M.getThemeConfig()
   -- 获取主题资源 ID
   local resources = activity.resources
   local packageName = activity.packageName
-  local themeResId = resources.getIdentifier("Theme." .. themeName, "style", packageName)
-  -- 主题名失效时回落默认主题，并写回配置
-  if themeResId == 0 then
-    M.setThemeConfig("Default")
+  local themeResId = 0
+
+  if themeName == "Dynamic" then
+    -- 动态取色覆盖层会盖掉全部颜色 attr，基底仅作失败回落
     themeResId = resources.getIdentifier("Theme.Default", "style", packageName)
+   elseif themeName == "Custom" then
+    themeResId = resources.getIdentifier("Theme.Default", "style", packageName)
+   else
+    themeResId = resources.getIdentifier("Theme." .. themeName, "style", packageName)
+    -- 主题名失效时回落默认主题，并写回配置
+    if themeResId == 0 then
+      M.setThemeConfig("Default")
+      themeResId = resources.getIdentifier("Theme.Default", "style", packageName)
+    end
   end
   if themeResId ~= 0 then
     activity.theme = themeResId
+  end
+
+  -- 动态/自定义取色须在静态主题叠加之后：setTheme 是 applyStyle 叠加，
+  -- 先应用会被静态色板压回。失败保持 Default 底色，不回写配置
+  if themeName == "Dynamic" then
+    pcall(function()
+      local DynamicColors = luajava.bindClass("com.google.android.material.color.DynamicColors")
+      DynamicColors.applyToActivityIfAvailable(activity)
+    end)
+   elseif themeName == "Custom" then
+    local seed = getCustomSeedColor()
+    if seed then
+      local variant = Extensions.Config.getString(Constants.SharedDataKeys.CUSTOM_COLOR_VARIANT) or "Content"
+      local contrast = Extensions.Config.get(Constants.SharedDataKeys.CUSTOM_COLOR_CONTRAST) or 0
+      local ThemeColors = luajava.bindClass("com.hydrogen.theme.ThemeColors")
+      pcall(ThemeColors.applyCustomColors, activity, seed, variant, tonumber(contrast) or 0, M.isAppNight())
+    end
   end
 
   -- OLED 纯黑：经主题覆盖层叠加，?attr/colorSurface 系列与 AppTheme.colors 同步生效

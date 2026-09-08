@@ -27,7 +27,10 @@ local EMOJI_PATTERN = Pattern.compile("\\[([^\\s\\[\\]]{1,10})\\]")
 local CommentModel = Extensions.Class(PageToolModel)
 
 local function calcImageSize(w, h)
-  if not w or not h or w <= 0 or h <= 0 then return 0, 0 end
+  -- 贴图锚点不带宽高信息（data-width/height 为 0），按方形兜底
+  if not w or not h or w <= 0 or h <= 0 then
+    return dp2px(120), dp2px(120)
+  end
 
   if h > w then
     -- 竖图（高度大于宽度）
@@ -84,8 +87,12 @@ function CommentModel:formatContent(content)
   local img_width = 0
   local img_height = 0
 
-  -- 提取图片信息（查看图片/动图标签）
-  local a_start, a_end = content:find('<a[^>]*>查看[^<]+</a>')
+  -- 提取图片/贴图附件锚点：贴图锚文本是 [表情名] 形式、图片是 查看 图片/动图；
+  -- 贴图同样是网络图片，须在本地表情解析之前取出，否则 [xxx] 会被当成表情名查找
+  local a_start, a_end = content:find('<a[^>]*>%[[^%]]-%]</a>')
+  if not a_start then
+    a_start, a_end = content:find('<a[^>]*>查看[^<]+</a>')
+  end
   if a_start then
     local a_tag = content:sub(a_start, a_end)
     img_url = a_tag:match('href="([^"]+)"')
@@ -135,8 +142,9 @@ function CommentModel:formatContent(content)
     local endPos = matcher["end"]()
     -- 检查是否已有 Span（避免重复替换）
     local existing = spannable.getSpans(startPos, endPos, ImageSpan)
-    if not existing or #existing == 0 then
-      -- EmojiSpan.new 找不到同名位图时返回 nil
+    if (not existing or #existing == 0)
+        -- 未知名称（错字/普通方括号文本）静默跳过，保持原文字符
+        and Helpers.Static.zemojiExists(emojiName) then
       local emojiSpan = EmojiSpan.new(emojiName, 18)
       if emojiSpan then
         emojiSpan.setSpan(spannable, startPos, endPos, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)

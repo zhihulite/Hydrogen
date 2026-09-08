@@ -8,7 +8,7 @@ local L = Helpers.Layout
 return {
   LinearLayoutCompat,
   layout_width = "fill",
-  layout_height = "wrap",
+  layout_height = "48dp",
   gravity = "center_vertical",
-  L.text("title", AppTextStyle.labelSmall, nil, { paddingLeft = AppCardStyle.setting.innerPaddingLeft, paddingRight = AppCardStyle.setting.innerPaddingLeft, paddingTop = AppCardStyle.setting.innerPaddingTop, paddingBottom = AppCardStyle.setting.innerPaddingBottom })
+  L.text("title", AppTextStyle.labelLarge, nil, { layout_marginLeft = AppCardStyle.setting.marginLeft + dp2px(4), layout_marginRight = AppCardStyle.setting.marginRight, layout_marginTop = AppCardStyle.setting.marginTop, layout_marginBottom = AppCardStyle.setting.marginBottom })
 }
