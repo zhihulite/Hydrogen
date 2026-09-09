@@ -122,6 +122,21 @@ view.setOnClickListener(luajava.createProxy(View.OnClickListener, {
 local span = luajava.override(ReplacementSpan, { ... })
 ```
 
+## 代理回调的形参约定
+
+两种代理的回调形参**不同**，写错形参不会报错但行为错乱：
+
+- **`createProxy`（接口代理）**：Lua 回调形参与 Java 方法形参**一一对应，无附加参数**。
+  `onClick(View v)` → `function(v)`。
+- **`override`（类代理）**：Lua 回调**首个形参固定为 super 表**，其后才是 Java 形参。
+  `ReplacementSpan.getSize(Paint, CharSequence, int, int, FontMetricsInt)` →
+  `function(super, paint, cs, start, end_, fm)`。
+
+形参数量少写（如 3 个 Java 形参只声明 2 个）时后续形参整体错位一格，取到的是前一个
+参数的值；返回基元的方法错位后 `LuaClassProxy` 吞掉异常并回落零值
+（movement flags = 0、canDropOver = false 等），**表现为静默不可拖/不可点，没有任何报错**。
+排查这类症状先核对回调形参数是否等于 `super + Java 形参个数`。
+
 ## 常用工具
 
 | API | 用途 |

@@ -18,7 +18,7 @@ local LAYOUTS = {
 }
 
 -- HOME_TAB_ORDER 形如 "推荐,热榜,关注,推荐"：逗号分隔的启用 Tab 顺序，末位重复的那项是主页。
--- 列表把「当前」「其他」两个分组标题行与 Tab 项混排，标题行只有 header 字段、没有 title。
+-- 列表把「当前」「未开启」两个分组标题行与 Tab 项混排，标题行只有 header 字段、没有 title。
 local function buildPageData()
   local config = Extensions.Config.getString(SharedDataKeys.HOME_TAB_ORDER)
   local enabledTabs = {}
@@ -37,49 +37,84 @@ local function buildPageData()
   for _, item in ipairs(enabledTabs) do
     table.insert(pageData, { title = item, isHome = (item == homeTab) })
   end
-  table.insert(pageData, { header = "其他" })
+  table.insert(pageData, { header = "未开启" })
   for tab in pairs(restTabs) do
     table.insert(pageData, { title = tab, isHome = false })
   end
   return pageData
 end
 
--- 「其他」标题行之前的 Tab 按列表顺序写入配置，末位再追加一次主页名
+-- 「未开启」标题行之前的 Tab 按列表顺序写入配置，末位再追加一次主页名
 local function saveOrder(pageData)
   local selected, conf = nil, {}
   for _, v in ipairs(pageData) do
     if v.title then
       table.insert(conf, v.title)
       if v.isHome then selected = v.title end
-     elseif v.header == "其他" then break
+     elseif v.header == "未开启" then break
     end
   end
   if #conf < 2 or not selected then
     tip("需至少开启两页且选一个主页")
-    return
+    return false
   end
   table.insert(conf, selected)
   Extensions.Config.set(SharedDataKeys.HOME_TAB_ORDER, table.concat(conf, ","))
   tip("保存成功，下次启动生效")
+  return true
 end
 
 --- 显示主页 Tab 排序弹窗，确定后写入 HOME_TAB_ORDER 配置
 function M.show()
   local pageData = buildPageData()
   local dialogViews = {}
+  local adapter
 
-  MaterialAlertDialogBuilder(activity)
+  local function resetToDefault()
+    -- 重置为默认顺序（推荐,热榜,关注 + 主页推荐），原选中项清空
+    local defaultConf = "推荐,热榜,关注,推荐"
+    table.clear(pageData)
+    local enabled = {}
+    for tab in defaultConf:gmatch("[^,]+") do
+      table.insert(enabled, tab)
+    end
+    local homeTab = table.remove(enabled)
+
+    table.insert(pageData, { header = "当前" })
+    for _, item in ipairs(enabled) do
+      table.insert(pageData, { title = item, isHome = (item == homeTab) })
+    end
+    table.insert(pageData, { header = "未开启" })
+    local rest = { ["推荐"] = true, ["想法"] = true, ["热榜"] = true, ["关注"] = true }
+    for _, item in ipairs(enabled) do rest[item] = nil end
+    for tab in pairs(rest) do
+      table.insert(pageData, { title = tab, isHome = false })
+    end
+    adapter.notifyDataSetChanged()
+    tip("已恢复默认，确定后生效")
+  end
+
+  local dialog = MaterialAlertDialogBuilder(activity)
   .setTitle("主页Tab排序")
   .setView(loadlayout(LAYOUTS.dialog, dialogViews))
-  .setPositiveButton("确定", {
-    onClick = function()
-      saveOrder(pageData)
-    end
-  })
+  .setPositiveButton("确定", nil)
   .setNegativeButton("取消", nil)
+  .setNeutralButton("恢复默认", nil)
   .show()
 
-  local adapter = SimpleRecyclerAdapter.new({
+  -- 点确定/恢复默认不自动关窗：操作结果留在弹窗里继续调整，
+  -- 确定在校验失败（需至少两页且选主页）时不丢用户已排好的顺序；取消才 dismiss
+  dialog.getButton(dialog.BUTTON_POSITIVE).onClick = function()
+    if saveOrder(pageData) then dialog.dismiss() end
+  end
+  dialog.getButton(dialog.BUTTON_NEUTRAL).onClick = function()
+    resetToDefault()
+  end
+  dialog.getButton(dialog.BUTTON_NEGATIVE).onClick = function()
+    dialog.dismiss()
+  end
+
+  adapter = SimpleRecyclerAdapter.new({
     items = pageData,
     getItemViewType = function(pos, item)
       return item.header and 1 or 0
@@ -124,21 +159,20 @@ function M.show()
   })
 
   local dragCallback = luajava.override(ItemTouchHelper.Callback, {
-    -- 分组标题行不参与拖动，只有 Tab 项可上下移动
-    getMovementFlags = function(_, _, vh)
-      local row = pageData[vh.adapterPosition + 1]
-      if not row or row.header then
-        return int(0)
-      end
+    -- 只有位置 0（「当前」标题）不可拖也不可落：其余行（含「未开启」标题）任意拖动换位
+    getMovementFlags = function(super, recyclerView, viewHolder)
+      local pos = viewHolder.adapterPosition
+      if pos <= 0 then return int(0) end
       return int(ItemTouchHelper.Callback.makeMovementFlags(ItemTouchHelper.UP | ItemTouchHelper.DOWN, 0))
     end,
-    -- 位置 0 是「当前」标题行，不能作为落点
-    canDropOver = function(_, _, current, target)
+    canDropOver = function(super, recyclerView, current, target)
       return target.adapterPosition > 0
     end,
-    onMove = function(_, _, vh, target)
-      local from = vh.adapterPosition + 1
+    onMove = function(super, recyclerView, viewHolder, target)
+      local from = viewHolder.adapterPosition + 1
       local to = target.adapterPosition + 1
+      if from == to or to == 1 then return false end
+
       pageData[from], pageData[to] = pageData[to], pageData[from]
       adapter.notifyItemMoved(from - 1, to - 1)
       return true

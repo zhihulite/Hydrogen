@@ -65,35 +65,7 @@ _G.fromHtml = function(text)
   return Html.fromHtml(text)
 end
 
--- 工具函数
-function table.merge(t1, t2)
-  local result = {}
-  if t1 then
-    for k, v in pairs(t1) do result[k] = v end
-  end
-  if t2 then
-    for k, v in pairs(t2) do result[k] = v end
-  end
-  return result
-end
-
-function table.clone(t)
-  local result = {}
-  for k, v in pairs(t) do
-    if type(v) == "table" then
-      result[k] = table.clone(v)
-     else
-      result[k] = v
-    end
-  end
-  return result
-end
-
-function table.size(t)
-  local count = 0
-  for _ in pairs(t) do count = count + 1 end
-  return count
-end
+-- 标准库扩展（table.merge/clone/size/dump）：extensions/stdlib_ext.lua 加载时自行挂到 table 全局
 
 -- 设备 ID 与请求头
 local headers = require("services.api.headers")

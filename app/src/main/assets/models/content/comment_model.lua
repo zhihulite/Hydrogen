@@ -87,7 +87,7 @@ function CommentModel:formatContent(content)
   local img_width = 0
   local img_height = 0
 
-  -- 提取图片/贴图附件锚点：贴图锚文本是 [表情名] 形式、图片是 查看 图片/动图；
+  -- 提取附件锚点（评论最多带一个附件）：贴图锚文本是 [表情名] 形式、图片是 查看 图片/动图；
   -- 贴图同样是网络图片，须在本地表情解析之前取出，否则 [xxx] 会被当成表情名查找
   local a_start, a_end = content:find('<a[^>]*>%[[^%]]-%]</a>')
   if not a_start then

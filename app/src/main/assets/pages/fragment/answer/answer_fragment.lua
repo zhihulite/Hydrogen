@@ -106,14 +106,14 @@ function AnswerFragment:setupToolbar()
 end
 
 function AnswerFragment:onBridgeMessage(action, data)
-  -- 桥回调跑在 WebView 的 JavaBridge 线程，写 ViewPager2 会连带改无障碍 action 列表，必须切主线程
+  -- 桥回调在 WebView 的 JavaBridge 线程，须切主线程写 ViewPager2
   if action == "disableParentScroll" then
     activity.runOnUiThread(self:runIfAlive(function()
       self.views.view_pager.userInputEnabled = false
     end))
    elseif action == "enableParentScroll" then
     activity.runOnUiThread(self:runIfAlive(function()
-      -- 单页模式保持禁翻页，不被代码块横滑结束时的恢复消息解开
+      -- 单页模式保持禁翻页
       if not self.singlePage then
         self.views.view_pager.userInputEnabled = true
       end
@@ -126,24 +126,24 @@ function AnswerFragment:onBridgeMessage(action, data)
 end
 
 function AnswerFragment:showScreenshotPreview(base64)
-  -- 解码在 IO 线程进行，期间用户可能翻页，据此固定截图所属的回答
+  -- IO 线程解码期间可能翻页，先固定所属回答
   local answerId = self.currentAnswerId
   local pageIds = self.currentPageIds
 
   Helpers.Screenshot.decodeBase64(base64, self:runIfAlive(function(bmp)
-    -- 解码期间翻了页，位图属于旧回答，与当前页的卡片高度和作者信息不匹配
+    -- 解码期间翻了页：位图属旧回答
     if answerId ~= self.currentAnswerId then
       bmp.recycle()
       return
     end
 
-    -- 截图回调与页面销毁存在竞态，视图表已清空时放弃本次合成
+    -- 视图表已清空（页面销毁竞态）时放弃合成
     if not pageIds or not pageIds.user_card_wrapper then
       bmp.recycle()
       return
     end
 
-    -- 裁剪高度取自 user_card_wrapper，须先把卡片高度同步成网页 paddingTop
+    -- 裁剪高度取自卡片，先同步进网页 paddingTop
     self:updateWebViewPadding(pageIds)
 
     Helpers.Screenshot.composeAndPreview(bmp, {
@@ -187,7 +187,7 @@ function AnswerFragment:saveToLocal()
     title = title,
     id = id,
     author = authorText,
-    -- 同一页内所有回答共享同一 questionId；为 nil（问题信息未回填）时本地不落该字段
+    -- questionId 为 nil（问题信息未回填）时本地不落该字段
     questionId = self.questionId
   })
 end
@@ -290,9 +290,8 @@ function AnswerFragment:setupWebView(webview, answerId, pageIds)
   -- 设置回答页配置
   helper:setSettings({
     pageType = "answer",
-    -- 开始记录历史记录
     enable_scroll_tracking = self.isFirstLoad,
-    -- true 时 JS 侧把代码块改 pre-wrap 换行，false 时装横滑手势
+    -- true: 代码块换行；false: 横滑手势
     answer_code_wrap = Extensions.Config.getBool(Constants.SharedDataKeys.CODE_WRAP),
     enable_screenshot = true
   })
@@ -312,21 +311,19 @@ function AnswerFragment:setupWebView(webview, answerId, pageIds)
       self:updateWebViewPadding(pageIds)
       pageIds.progress.visibility = View.GONE
       pageIds.webview.visibility = View.VISIBLE
-      -- 加载完成才置 loaded：loadWebView 的 guard 靠这两个标志判重，
-      -- 不复位会让该回答页在同一进程内永远无法再次加载。
+      -- loaded 不复位则同页永远无法再次加载（loadWebView 靠 loaded/loading 判重）
       local page = self.pageData[answerId]
       if page then
         page.loaded = true
         page.loading = false
-        -- 视频附件注入必须等页面真实加载完：WebView 尚在 about:blank 时
-        -- evaluateJavascript 跑在 window.VideoAnswer 出现之前，静默 no-op
+        -- 附件注入须等页面加载完，about:blank 期 VideoAnswer 未定义会静默 no-op
         if page.data and page.data.attachmentUrl then
           self:handleVideoAttachment(pageIds, page.data)
         end
       end
     end,
     onReceivedError = function(view, errorCode, description, failingUrl)
-      -- 失败只复位 loading、不置 loaded：使重试可行，同时不把失败当成已加载。
+      -- 失败只复位 loading：可重试且不算已加载
       local page = self.pageData[answerId]
       if page then page.loading = false end
       if pageIds.progress then pageIds.progress.visibility = View.GONE end
@@ -369,7 +366,6 @@ function AnswerFragment:setupViewPager2()
   local touchSlopField = RecyclerView.getDeclaredField("mTouchSlop")
   touchSlopField.accessible = true
   local touchSlop = touchSlopField.get(recyclerView)
-  -- 必须使用 int
   touchSlopField.setInt(recyclerView, int(touchSlop * scrollSense))
 
   viewPager.offscreenPageLimit = 2
@@ -431,7 +427,7 @@ function AnswerFragment:createPageView(answerId)
       end)
     })
 
-    -- 超时保护：1秒后还没加载就直接加载
+    -- 1 秒超时兜底直接加载
     Helpers.UI.runDelayed(1000, self:runIfAlive(function()
       if self.pageData[answerId] and not self.pageData[answerId].loading then
         self:loadWebView(answerId, pageIds)
@@ -498,9 +494,7 @@ end
 
 -- 处理视频回答
 function AnswerFragment:handleVideoAttachment(pageIds, data)
-  -- onPageFinished 触发时数据可能仍在飞行中（超时兜底先 loadWebView 的场景），静默跳过：
-  -- 后续 loadAnswer 回调到达时 data 已存 page，但页面已加载完不会再触发注入，
-  -- 该场景由 onBridgeMessage 之外无恢复点，接受此竞态（视频回答占比低且超时是兜底路径）
+  -- 超时兜底先 loadWebView 时数据可能仍在飞行，页面加载完不再触发注入，接受此竞态
   if not data then return end
 
   local attachmentUrl = data.attachmentUrl
@@ -644,21 +638,17 @@ function AnswerFragment:setupFloatButtons()
     local webview = self.currentPageIds.webview
 
     if direction == "up" then
-      -- 向上：获取当前滚动位置
       webview.evaluateJavascript("window.scrollY", {
         onReceiveValue = function(scrollY)
           local currentScroll = tonumber(scrollY) or 0
           if currentScroll <= 0 then
-            -- 在顶部：展开 AppBar
             self.views.appbar.setExpanded(true, true)
            else
-            -- 不在顶部：向上滚动一屏
             webview.evaluateJavascript("window.scrollBy(0, -window.innerHeight)", nil)
           end
         end
       })
      else -- direction == "down"
-      -- 向下：滚动一屏 + 收缩 AppBar
       webview.evaluateJavascript("window.scrollBy(0, window.innerHeight)", nil)
       self.views.appbar.setExpanded(false, true)
     end
@@ -675,8 +665,7 @@ function AnswerFragment:initViews()
     bottom = {
       -- 浮动滚动按钮避让导航栏
       { view = views.float_scroll_container, useMargin = true }
-      -- 浮动工具栏 floating_toolbar 是 FloatingToolbarLayout，会自动处理 EdgeToEdge ，无需设置 bottomMargin。
-      -- ViewPager2 底部暂不留出导航栏间距
+      -- floating_toolbar / ViewPager2 自行适配，不设 bottomMargin
     },
   })
 

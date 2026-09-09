@@ -111,6 +111,16 @@ function HistoryFragment:updateEmptyState()
   local isEmpty = #self.items == 0
   self.views.swipe_refresh.visibility = isEmpty and View.GONE or View.VISIBLE
   self.views.empty_view.visibility = isEmpty and View.VISIBLE or View.GONE
+  if isEmpty then
+    -- 全部 tab 空是真的没有历史；具体分类空只是过滤结果，提示仍可切回全部
+    if self.currentTab == "all" then
+      self.views.empty_title.text = "暂无历史记录"
+      self.views.empty_subtitle.text = "浏览过的内容会显示在这里"
+     else
+      self.views.empty_title.text = "该分类暂无记录"
+      self.views.empty_subtitle.text = "其他分类可能仍有内容，切到「全部」查看"
+    end
+  end
 end
 
 function HistoryFragment:initListView()
@@ -169,7 +179,12 @@ function HistoryFragment:showSearchDialog()
     if keyword ~= "" then
       local results = HistoryService.search(keyword)
       self:setItems(results)
-      tip(string.format("找到 %d 条结果", #results))
+      if #results > 0 then
+        tip(string.format("找到 %d 条结果", #results))
+       else
+        self.views.empty_title.text = "未找到\"" .. keyword .. "\""
+        self.views.empty_subtitle.text = "换个关键词，或清空搜索框后切 tab 恢复"
+      end
     end
   end)
   .setNegativeButton("取消", nil)

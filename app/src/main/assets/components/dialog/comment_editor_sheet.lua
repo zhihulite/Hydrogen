@@ -528,7 +528,7 @@ function M.show(opts)
       unfriendly_check = "strict",
     })
 
-    NetWork.post(postUrl, postData, nil, function(code, _)
+    NetWork.post(postUrl, postData, nil, function(code, content)
       if code == 200 then
         tip("发送成功")
         if opts.onSuccess then opts.onSuccess() end

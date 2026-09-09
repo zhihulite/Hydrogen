@@ -37,27 +37,27 @@ function LoginActivity:initViews()
   :initSettings()
   :initDownloadListener()
   :setWebViewClient({
-    shouldOverrideUrlLoading = function(_, url)
+    shouldOverrideUrlLoading = function(view, url)
       if url:find("utm_id") or url:match("zhihu%.com/?$") then
         return self:checkLogin()
       end
       if url:find("qq.com") then
-        _.stopLoading()
+        view.stopLoading()
         self.webViewHelper:setQQUA()
-        _.loadUrl(url)
+        view.loadUrl(url)
         return true
       end
       return false
     end,
-    onPageFinished = function(_, url)
+    onPageFinished = function(view, url)
       views.progress.visibility = View.GONE
       views.webview.visibility = View.VISIBLE
     end,
   })
   :setWebChromeClient({
-    onProgressChanged = function(_, p)
-      views.progress.visibility = p < 100 and View.VISIBLE or View.GONE
-      views.webview.visibility = p < 100 and View.GONE or View.VISIBLE
+    onProgressChanged = function(view, newProgress)
+      views.progress.visibility = newProgress < 100 and View.VISIBLE or View.GONE
+      views.webview.visibility = newProgress < 100 and View.GONE or View.VISIBLE
     end,
   })
   :setMessageListener(function(action, data)

@@ -9,5 +9,5 @@ return {
   LinearLayoutCompat,
   layout_width = "fill",
   layout_height = "wrap",
-  L.text("header", AppTextStyle.labelSmall, nil, { layout_margin = AppSpacing.xl })
+  L.text("header", AppTextStyle.labelLarge, nil, { layout_marginLeft = AppSpacing.xl, layout_marginTop = AppSpacing.lg, layout_marginBottom = AppSpacing.xs })
 }

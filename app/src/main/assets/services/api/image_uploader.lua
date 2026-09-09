@@ -53,7 +53,7 @@ local function ossPutObject(uploadUrl, objectKey, imageBytes, contentType, token
   }
 
   local url = uploadUrl .. "/" .. objectKey
-  NetWork.put(url, imageBytes, headers, function(code, _)
+  NetWork.put(url, imageBytes, headers, function(code, content)
     callback(code == 200)
   end)
 end
@@ -162,7 +162,7 @@ function M.upload(imageBytes, callback)
         -- OSS 上传成功后，通知知乎服务器
         local imageId = uploadFile.image_id
         local statusUrl = "https://api.zhihu.com/images/" .. imageId .. "/uploading_status"
-        NetWork.put(statusUrl, '{"upload_result":"success"}', Headers["postApp"], function(code, _)
+        NetWork.put(statusUrl, '{"upload_result":"success"}', Headers["postApp"], function(code, content)
           if code ~= 200 then callback(false, nil) return end
           waitForImageSrc(uploadFile.image_id, callback)
         end)

@@ -27,12 +27,9 @@ assignees: ''
 
 **崩溃日志**：
 
-请根据手机情况选择合适的方式导出日志：
+仅支持应用内导出，两种打开方式任选其一，打开后点 **导出崩溃日志压缩包** → 上传保存的压缩包（导出后崩溃日志自动删除）：
 
-- **应用内导出**（推荐）：打开软件 **设置** → **管理** → **Android/data存储** → 进入 `files/crash/` → 导出日志文件上传
-- **录制日志**：使用 [LogFox](https://github.com/FlynnSW/LogFox) 录制崩溃过程 → 导出日志文件上传
-- **Root 设备**：直接访问 `files/crash/` 目录 → 导出日志文件上传
-
-> 如果以上方式都无法获取日志，请说明具体情况
+- **直接打开**：[点击此处](https://zhihulite.github.io/logs.html)
+- **adb 打开**：电脑连接手机后执行 `adb shell am start -a android.intent.action.VIEW -d "hydrogen://logs"`
 
 **截图/录屏**（可选）：

@@ -8,5 +8,6 @@ M.account = require("extensions.account")
 M.file = require("extensions.file")
 M.crypto = require("extensions.crypto")
 M.class = require("extensions.class")
+M.stdlib_ext = require("extensions.stdlib_ext")
 
 return M

@@ -319,7 +319,7 @@ function SettingsFragment:initListView()
     end,
     onBind = function(views, item, position, holder)
       if not views then
-        print(dump(item))
+        print(table.dump(item))
       end
       if item.title then
         views.title.text = item.title or ""

@@ -116,6 +116,23 @@
             android:theme="@style/Theme.TransparentSplash"
             android:windowSoftInputMode="adjustResize|stateHidden" />
 
+        <!-- 日志导出页：hydrogen://logs 供外部/adb 拉起 -->
+        <activity
+            android:name="com.hydrogen.LogExportActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|uiMode"
+            android:exported="true"
+            android:theme="@style/Theme.Main"
+            android:windowSoftInputMode="adjustResize|stateHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data
+                    android:host="logs"
+                    android:scheme="hydrogen" />
+            </intent-filter>
+        </activity>
+
         <activity
             android:name="org.luajvm.android.host.LuaRunActivity"
             android:configChanges="keyboardHidden|orientation|screenSize|smallestScreenSize"

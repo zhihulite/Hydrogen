@@ -232,7 +232,7 @@ function M.show(options)
     local postUrl = "https://api.zhihu.com/" .. contentType .. "s/" .. contentId .. "/republish"
     local postData = json.encode({ action = "create", column = selectedColumnId })
 
-    NetWork.post(postUrl, postData, Headers.postApp, function(code, _)
+    NetWork.post(postUrl, postData, Headers.postApp, function(code, content)
       if code == 200 then
         tip("已移动到专栏：" .. selectedColumnTitle)
         if options.onSuccess then options.onSuccess(selectedColumnId, selectedColumnTitle) end

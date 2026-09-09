@@ -58,14 +58,14 @@ local function setupRecyclerView(rv, adapter, onLoadMore)
 
   local lm = rv.layoutManager
   rv.addOnScrollListener(luajava.override(RecyclerView.OnScrollListener, {
-    onScrollStateChanged = function(super, _, state)
+    onScrollStateChanged = function(super, recyclerView, newState)
       if state == RecyclerView.SCROLL_STATE_IDLE then
         Glide.with(activity).resumeRequests()
        else
         Glide.with(activity).pauseRequests()
       end
     end,
-    onScrolled = function(super, _, _, dy)
+    onScrolled = function(super, recyclerView, dx, dy)
       if dy > 0 then
         local lastVisible = lm.findLastVisibleItemPosition()
         local totalCount = rv.adapter.itemCount

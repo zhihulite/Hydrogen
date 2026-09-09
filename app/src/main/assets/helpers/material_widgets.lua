@@ -229,7 +229,7 @@ if debug then
   print("Classes: " .. classCount .. ", Functions: " .. funcCount)
 
   -- 完整打印M表结构
-  error(dump(M))
+  error(table.dump(M))
 end
 
 return M

@@ -102,6 +102,27 @@ jobs:
             exit 1
           fi
 
+      - name: Delete existing release and tag if present
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.build_type == 'build_and_publish'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: v${{ steps.extract_version.outputs.version }}
+        run: |
+          # gh release delete --cleanup-tag：删 Release 连带删 tag（gh 2.50+）；
+          # 远端操作，不受 checkout fetch-depth 影响
+          if gh release view "${TAG}" >/dev/null 2>&1; then
+            echo "release ${TAG} 已存在，删除后重发"
+            gh release delete "${TAG}" --yes --cleanup-tag
+          else
+            # Release 不存在但 tag 可能存在（孤儿 tag）
+            if git ls-remote --tags origin "refs/tags/${TAG}" | grep -q "${TAG}"; then
+              echo "孤儿 tag ${TAG} 存在，删除"
+              git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" --delete "refs/tags/${TAG}"
+            else
+              echo "release 与 tag 均不存在，直接发布"
+            fi
+          fi
+
       - name: Publish Release APK to GitHub Releases
         if: github.event_name == 'workflow_dispatch' && github.event.inputs.build_type == 'build_and_publish'
         uses: softprops/action-gh-release@v2

@@ -263,7 +263,7 @@ function WelcomeActivity:createAgreementPage(agreement, index)
 
   self.agreementStatus[index] = false
   views.check.setOnCheckedChangeListener(luajava.createProxy(CompoundButton.OnCheckedChangeListener, {
-    onCheckedChanged = function(_, isChecked)
+    onCheckedChanged = function(buttonView, isChecked)
       self.agreementStatus[index] = isChecked
       self:updateUI()
   end}))

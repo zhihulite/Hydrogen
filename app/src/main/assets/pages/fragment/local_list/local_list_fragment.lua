@@ -206,7 +206,12 @@ function LocalListFragment:showSearchDialog()
       for _, item in ipairs(results) do table.insert(self.items, item) end
       self.adapter.notifyDataSetChanged()
       self:updateEmptyState()
-      tip(string.format("找到 %d 条结果", #results))
+      if #results > 0 then
+        tip(string.format("找到 %d 条结果", #results))
+       else
+        self.views.empty_title.text = "未找到\"" .. kw .. "\""
+        self.views.empty_subtitle.text = "换个关键词，或返回清空搜索状态"
+      end
     end
   end)
   .setNegativeButton("取消", nil)
