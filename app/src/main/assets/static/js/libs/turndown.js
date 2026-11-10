@@ -1,5 +1,5 @@
 // https://unpkg.com/turndown/dist/turndown.js
-// 当前版本：turndown 7.2.4
+// 当前版本：turndown 7.2.5
 
 var TurndownService = (function () {
   'use strict';
@@ -717,8 +717,8 @@ var TurndownService = (function () {
    * Reduces a DOM node down to its Markdown string equivalent
    * @private
    * @param {HTMLElement} parentNode The node to convert
-   * @returns A Markdown representation of the node
-   * @type String
+   * @returns Accumulator with Markdown representation parts of the node
+   * @type Array
    */
 
   function process(parentNode) {
@@ -731,14 +731,15 @@ var TurndownService = (function () {
       } else if (node.nodeType === 1) {
         replacement = replacementForNode.call(self, node);
       }
-      return join(output, replacement);
-    }, '');
+      join(output, replacement);
+      return output;
+    }, []);
   }
 
   /**
    * Appends strings as each rule requires and trims the output
    * @private
-   * @param {String} output The conversion output
+   * @param {Array} output The conversion output accumulator
    * @returns A trimmed version of the ouput
    * @type String
    */
@@ -747,10 +748,10 @@ var TurndownService = (function () {
     var self = this;
     this.rules.forEach(function (rule) {
       if (typeof rule.append === 'function') {
-        output = join(output, rule.append(self.options));
+        join(output, rule.append(self.options));
       }
     });
-    return output.replace(/^[\t\r\n]+/, '').replace(/[\t\r\n\s]+$/, '');
+    return output.join('').replace(/^[\t\r\n]+/, '').replace(/[\t\r\n\s]+$/, '');
   }
 
   /**
@@ -763,27 +764,29 @@ var TurndownService = (function () {
 
   function replacementForNode(node) {
     var rule = this.rules.forNode(node);
-    var content = process.call(this, node);
+    var content = process.call(this, node).join('');
     var whitespace = node.flankingWhitespace;
     if (whitespace.leading || whitespace.trailing) content = content.trim();
     return whitespace.leading + rule.replacement(content, node, this.options) + whitespace.trailing;
   }
 
   /**
-   * Joins replacement to the current output with appropriate number of new lines
+   * Joins replacement with the current output accumulator using the appropriate number of new lines
+   * (makes sure the only trailing whitespace will be in the last array element)
    * @private
-   * @param {String} output The current conversion output
+   * @param {String} output The current conversion output accumulator
    * @param {String} replacement The string to append to the output
-   * @returns Joined output
-   * @type String
    */
 
   function join(output, replacement) {
-    var s1 = trimTrailingNewlines(output);
+    var tail = output.pop() || '';
+    var s1 = trimTrailingNewlines(tail);
     var s2 = trimLeadingNewlines(replacement);
-    var nls = Math.max(output.length - s1.length, replacement.length - s2.length);
+    var nls = Math.max(tail.length - s1.length, replacement.length - s2.length);
     var separator = '\n\n'.substring(0, nls);
-    return s1 + separator + s2;
+    if (s1) output.push(s1);
+    if (separator) output.push(separator);
+    if (s2) output.push(s2);
   }
 
   /**
