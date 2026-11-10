@@ -17,7 +17,7 @@ function M.getUserId()
   return Extensions.Config.get(Constants.SharedDataKeys.USER_ID)
 end
 
---- 登录凭证 JSON 原文（WebView oauth 响应体），未登录返回 nil
+--- 登录凭证 JSON 原文（WebView oauth 响应体），未登录或凭证为空返回 nil
 --- @return string|nil
 function M.getSignInData()
   return Extensions.Config.getString(Constants.SharedDataKeys.SIGN_IN_DATA)

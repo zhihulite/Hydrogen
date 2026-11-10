@@ -67,6 +67,9 @@ end
 
 -- 标准库扩展（table.merge/clone/size/dump）：extensions/stdlib_ext.lua 加载时自行挂到 table 全局
 
+-- 屏幕信息、字体、文字样式与卡片样式
+require("core.app_text_style")
+
 -- 设备 ID 与请求头
 local headers = require("services.api.headers")
 _G.DEVICE_ID = headers.deviceId
@@ -75,9 +78,6 @@ _G.buildHeaders = function()
   _G.Headers = headers.build()
 end
 buildHeaders()
-
--- 屏幕信息、字体、文字样式与卡片样式
-require("core.app_text_style")
 
 -- 路由
 _G.Router = require("core.router")

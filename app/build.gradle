@@ -88,6 +88,8 @@ dependencies {
     implementation libs.webviewup.core
     implementation libs.zxing.embedded
     implementation libs.zxing.core
+    // 解除隐藏 API 反射限制（关闭预测性返回用）
+    implementation libs.hiddenapibypass
 
     implementation fileTree("libs")
 }

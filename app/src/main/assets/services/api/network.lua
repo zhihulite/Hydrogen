@@ -102,9 +102,7 @@ pcall(function()
   zse96Encrypt = require("services.api.zse96").encrypt
 end)
 
---- 归位可选参数：headers 省略时它的位置上是 callback，据类型归一两个可选参数。
---- fallbackKey 传 Headers 的身份 key 而非头表本身：_G.Headers 的 defaultHead / post
---- 经 __index 每次读取都重新构建并现取 cookie，只有真的缺省时才该触发这次构建
+--- 归位可选参数：headers 省略时它的位置上是 callback，据类型归一两个可选参数
 --- @param headers table|function|nil
 --- @param callback function|nil
 --- @param fallbackKey string|nil headers 缺省时取用的 Headers 身份 key
@@ -119,13 +117,9 @@ local function resolveArgs(headers, callback, fallbackKey)
   return fallbackKey and _G.Headers[fallbackKey], callback
 end
 
---- 给 zhihu.com 的请求补 zse96 签名（skipZse96 为真时跳过）。
---- 触发范围：M.get / M.getRaw 中 URL 含 https://www.zhihu.com 的请求。
---- zse96.encrypt 只产出 cookie 与 x-zse-96 等签名头，返回的 headers 在此整体替换
---- 调用方传入的 headers、返回的 URL 替换原 URL——对这些请求 headers 参数不生效，
---- model 经 requestHeadKey 选出的身份头同样被丢弃
---- 未登录（无 d_c0 cookie）时 zse96.encrypt 会 error——捕获并提示登录、以 401 回调收尾，
---- 避免 LuaError 冒泡到 UI 线程导致崩溃/卡死（热榜等需签名接口在未登录下的预期行为）
+--- 给 zhihu.com 的请求补 zse96 签名（skipZse96 为真时跳过）：
+--- 命中的请求其 URL 与 headers 会被签名结果整体替换，调用方传入的 headers 不生效；
+--- 未登录时 zse96.encrypt 会 error，捕获后提示登录并按 401 回调收尾
 --- @return string url, table|nil headers, boolean ok 为 false 时调用方应立即返回
 local function signIfNeeded(url, headers, callback, skipZse96)
   if skipZse96 or not zse96Encrypt or not url:find("https://www.zhihu.com") then

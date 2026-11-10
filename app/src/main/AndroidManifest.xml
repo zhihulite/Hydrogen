@@ -26,7 +26,7 @@
 
     <!--  必须要 android:supportsRtl="true" 否则部分 MaterialWidgets 的部分 View 可能显示异常  -->
     <application
-        android:name="org.luajvm.android.LuaApplication"
+        android:name="com.hydrogen.HydrogenApplication"
         android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"

@@ -20,14 +20,6 @@ end
 M.deviceId = udid
 
 --- 构建请求头表，core/init.lua 挂为 _G.Headers、并由 _G.buildHeaders 重建
---- 四个 key 的身份语义：app 走 app 接口（Authorization Bearer），defaultHead 走网页
---- 接口（cookie），post / postApp 是各自加 json content-type 的 POST 版本，
---- key 常量与合法值白名单见 Constants.RequestHeadKeys / Constants.ValidRequestHeadKeys；
---- 发往 www.zhihu.com 的 GET 请求头会被 zse96 签名结果整体替换（见 network.lua signIfNeeded），
---- requestHeadKey 对这类请求不生效
---- defaultHead / post 在字段被读取时才向 CookieManager 取 cookie：
---- 模块加载期不触发 CookieManager 首次访问引发的 Chromium 内核同步初始化，
---- 登录/登出后每次请求取到的也是当前 cookie
 --- @return table 请求头表，app / postApp 为实体键，defaultHead / post 经 __index 懒构建
 function M.build()
   local function buildBaseHeaders()
@@ -65,6 +57,9 @@ function M.build()
     if token then
       appHeaders["Authorization"] = "Bearer " .. token
     end
+  elseif Extensions.Account.isLoggedIn() then
+    -- 已登录而凭证为空：登录态已过期
+    tip("登录已过期，请重新登录")
   end
 
   return setmetatable({

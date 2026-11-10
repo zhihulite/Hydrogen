@@ -706,16 +706,11 @@ function HomeFragment:updateToolbarMenu(pageName)
 end
 
 --- 更新底部导航栏布局方向（响应横竖屏/宽屏切换）
---- 依赖 style: Widget.Material3Expressive.BottomNavigationView
---- 内部读取 m3expressive_bottom_nav_icon_gravity 和 m3expressive_bottom_nav_item_gravity
---- 注意：这些资源 ID 可能在 Material Components 版本更新后变化
 function HomeFragment:updateBottomNavLayout()
   local bottomNav = self.homePageViews and self.homePageViews.bottom_nav
   if not bottomNav then return end
 
-  -- 夜间模式切换等场景可能导致 Activity 被重建（recreate）
-  -- 重建过程中，EdgeToEdgeUtils.remove 调用的 luajava.clear 可能意外清理 View 使其变为 nil
-  -- 此处判断 View 是否为 nil，避免访问空值引发异常（亦可使用 pcall 包装）
+  -- Activity 重建期间 EdgeToEdgeUtils.remove 的 luajava.clear 可能把 View 置空，判空防访问异常
   if Objects.isNull(bottomNav) then return end
   bottomNav.itemIconGravity = Helpers.Resources.app.integer.m3expressive_bottom_nav_icon_gravity
   bottomNav.itemGravity = Helpers.Resources.app.integer.m3expressive_bottom_nav_item_gravity

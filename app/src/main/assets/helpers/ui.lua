@@ -375,10 +375,8 @@ local function clearAppCacheImpl()
   return string.format("已清理缓存，释放 %.2f MB", mb)
 end
 
---- 后台线程清理缓存，完成后主线程清图片内存缓存并提示。
---- Glide.clearMemory 要求主线程；两棵目录树（内部缓存/外部图片）
---- 可能数千文件，同步删除会阻塞主线程数秒，留在后台线程。
---- 无可清理内容时同样清内存缓存并提示「没有可清理的缓存」
+--- 后台线程清理缓存，完成后主线程清图片内存缓存并提示
+--- Glide.clearMemory 要求主线程，数千文件的同步删除会阻塞主线程，故删除留在后台线程
 function M.clearAppCache()
   task(function()
     return clearAppCacheImpl()

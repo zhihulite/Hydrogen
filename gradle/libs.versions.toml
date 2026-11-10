@@ -1,10 +1,11 @@
 [versions]
 glide = "5.0.9"
 webviewup = "0.1.0"
-agp = "9.3.2"
+agp = "9.4.1"
 zxing-embedded = "4.3.0"
 zxing-core = "3.5.4"
 luajvm = "1.0.0"
+hiddenapibypass = "6.1"
 
 [libraries]
 # Third-party
@@ -13,6 +14,7 @@ glide-compiler = { group = "com.github.bumptech.glide", name = "compiler", versi
 webviewup-core = { group = "io.github.jonanorman.android.webviewup", name = "core", version.ref = "webviewup" }
 zxing-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxing-embedded" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing-core" }
+hiddenapibypass = { group = "org.lsposed.hiddenapibypass", name = "hiddenapibypass", version.ref = "hiddenapibypass" }
 
 # luajvm 引擎（Lua 5.5.1 纯 Java 移植）
 luajvm-core = { group = "io.github.zhihulite", name = "luajvm-core", version.ref = "luajvm" }

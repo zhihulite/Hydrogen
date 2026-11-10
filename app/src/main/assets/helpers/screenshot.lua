@@ -55,10 +55,8 @@ local function circleFromDrawable(drawable)
   return circle
 end
 
---- 解码 WebView 回传的 base64 截图数据
---- base64 解码与 Bitmap 生成放在 IO 线程；onDecoded 在主线程收到非空 Bitmap，
---- 后续裁剪与合成依赖视图高度与布局测量，只能由 onDecoded 在主线程继续。
---- 调用方需自行用 runIfAlive 包裹 onDecoded。
+--- 解码 WebView 回传的 base64 截图数据：IO 线程解码，onDecoded 在主线程收到 Bitmap
+--- 调用方需自行用 runIfAlive 包裹 onDecoded
 --- @param base64 string base64 图像数据
 --- @param onDecoded function 主线程回调，参数为解码出的 Bitmap
 function M.decodeBase64(base64, onDecoded)

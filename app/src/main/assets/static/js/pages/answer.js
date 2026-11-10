@@ -167,50 +167,110 @@
     // 付费回答模块
     const PaidAnswerHandler = {
         run() {
-            DomHelper.onElement('.ExtraInfo', (extraInfo) => {
-                const parent = extraInfo.parentElement;
-                if (!parent) return;
-
-                const div = parent.querySelector('div:last-child');
-                if (div && div.innerText.includes('使用 App 查看完整内容') && div.innerText.includes('🔗App 内查看')) {
-                    const tip = document.createElement('div');
-                    tip.className = 'ExtraInfo';
-                    tip.innerText = '该回答为付费回答';
-                    extraInfo.insertBefore(tip, extraInfo.firstChild);
-
-                    const link = div.querySelector('a');
-                    if (link) {
-                        link.href = 'javascript:void(0)';
-                        link.textContent = '🔗立即加载';
-                        link.onclick = () => this.loadPaidContent(link, div);
-                    }
-                }
-            });
+            DomHelper.onElement('.RichText', (richtext) => this.setupGate(richtext));
         },
 
-        async loadPaidContent(link, container) {
+        // 门禁块为 RichText 内最后一个 div，文本含 App 与 查看
+        setupGate(richtext) {
+            const divs = richtext.getElementsByTagName('div');
+            if (divs.length === 0) return;
+
+            const gate = divs[divs.length - 1];
+            const gateText = gate.innerText;
+            if (!(gateText.includes('App') || gateText.includes('app')) || !gateText.includes('查看')) return;
+
+            const extraInfo = document.querySelector('.ExtraInfo');
+            if (extraInfo) {
+                const tip = document.createElement('div');
+                tip.className = 'ExtraInfo';
+                tip.innerText = '该回答为付费回答';
+                extraInfo.insertBefore(tip, extraInfo.firstChild);
+            }
+
+            const link = gate.querySelector('a');
+            if (!link) return;
+            link.href = 'javascript:void(0);';
+            link.textContent = '🔗立即加载';
+            link.onclick = () => this.loadPaidContent(link, richtext, gate);
+        },
+
+        // 定位预览结尾元素（倒数第二个，最后一个为门禁块）在完整内容中的位置，其后即付费部分；
+        // 同文本元素可能在预览内重复出现，按其在预览中出现的序次对齐
+        findPaidStartIndex(richtext, sourceRich) {
+            const targetChildren = Array.from(richtext.children);
+            const sourceChildren = Array.from(sourceRich.children);
+            if (targetChildren.length < 2 || sourceChildren.length < 2) return -1;
+
+            const tailText = targetChildren[targetChildren.length - 2].textContent.trim();
+            let remaining = targetChildren.filter(child => child.textContent.trim() === tailText).length;
+            return sourceChildren.findIndex(child => child.textContent.trim() === tailText && --remaining === 0);
+        },
+
+        async loadPaidContent(link, richtext, gate) {
             if (link.textContent === '加载中...') return;
             link.textContent = '加载中...';
 
-            const id = window.location.pathname.split('/').pop();
             try {
+                const id = window.location.pathname.split('/').pop();
                 const res = await fetch(`https://www.zhihu.com/appview/v2/answer/${id}`);
-                const html = await res.text();
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
-                const sourceRich = new DOMParser().parseFromString(html, 'text/html').querySelector('.RichText');
-                const targetRich = document.querySelector('.RichText');
+                const sourceRich = new DOMParser().parseFromString(await res.text(), 'text/html').querySelector('.RichText');
+                if (!sourceRich) throw new Error('未找到正文');
 
-                if (sourceRich && targetRich) {
-                    Array.from(sourceRich.children).forEach(child => {
-                        targetRich.appendChild(child.cloneNode(true));
-                    });
-                    container.remove();
+                // appview 未返回付费内容时完整版仍以预览结尾收尾，两种文本一致即未购买/未开通会员
+                if (richtext.children[richtext.children.length - 2].textContent === sourceRich.children[sourceRich.children.length - 1].textContent) {
+                    link.textContent = '🔗立即加载';
+                    alert('获取失败 请检查是否开通会员或是否购买');
+                    return;
                 }
+
+                const index = this.findPaidStartIndex(richtext, sourceRich);
+                if (index === -1) throw new Error('未找到对齐元素');
+
+                Array.from(sourceRich.children).slice(index + 1).forEach(node => {
+                    const added = richtext.appendChild(node.cloneNode(true));
+                    this.resolveEle(added);
+                });
+
+                gate.remove();
             } catch (e) {
-                alert('加载失败');
-            } finally {
+                alert('出错了 请更新或反馈 错误信息' + e);
                 link.textContent = '🔗立即加载';
             }
+        },
+
+        // 搬入的 figure 以 data:image 占位（懒加载），需换回原图并提供重试
+        resolveEle(ele) {
+            if (ele.tagName !== 'FIGURE') return;
+            let img = ele.querySelector('img');
+            if (!img) return;
+
+            const orisrc = img.src;
+            const loadsrc = img.dataset.original || img.dataset.src;
+            if (orisrc.slice(0, 10) !== 'data:image') return;
+
+            const figure = ele.children[0].tagName === 'FIGURE' ? ele.children[0] : ele;
+            figure.innerHTML += '<div class="ImageLoader-message">加载中...</div>';
+            // innerHTML 重写后原 img 引用失效，重新获取
+            img = ele.querySelector('img');
+            const tipEl = ele.querySelector('.ImageLoader-message');
+            const errortip = '加载失败，点击重试';
+
+            tipEl.addEventListener('click', function () {
+                if (this.innerText !== errortip) return;
+                this.innerText = '加载中...';
+                img.src = loadsrc;
+            });
+            img.addEventListener('load', () => {
+                if (img.src !== orisrc) tipEl.remove();
+            });
+            img.addEventListener('error', () => {
+                img.src = orisrc;
+                tipEl.innerText = errortip;
+            });
+
+            img.src = loadsrc;
         }
     };
 
